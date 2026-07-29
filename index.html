@@ -902,17 +902,24 @@
       .reduce(function (s, t) { return s + t.amount; }, 0);
   }
 
+  function incomeInRange(label, start, end) {
+    return state.transactions
+      .filter(function (t) { return t.bankCard === label && t.type === "income" && t.date >= start && t.date < end; })
+      .reduce(function (s, t) { return s + t.amount; }, 0);
+  }
+
   /* A debit card's opening balance for any period is derived, not stored:
-     the one-time starting balance (set in Settings) minus every expense
-     dated before the period began. So "close" a month simply by moving to
-     the next one - its opening balance is automatically last month's
-     closing available balance, with no explicit rollover step needed. */
+     the one-time starting balance (set in Settings), net of every expense
+     (subtracted) and income/deposit (added) dated before the period began.
+     So "close" a month simply by moving to the next one - its opening
+     balance is automatically last month's closing available balance, with
+     no explicit rollover step needed. */
   function openingBalanceAt(label, periodStartISO) {
     var initial = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
-    var priorExpenses = state.transactions
-      .filter(function (t) { return t.bankCard === label && t.type === "expense" && t.date < periodStartISO; })
-      .reduce(function (s, t) { return s + t.amount; }, 0);
-    return initial - priorExpenses;
+    var priorNet = state.transactions
+      .filter(function (t) { return t.bankCard === label && t.date < periodStartISO && (t.type === "expense" || t.type === "income"); })
+      .reduce(function (s, t) { return s + (t.type === "income" ? t.amount : -t.amount); }, 0);
+    return initial + priorNet;
   }
 
   function renderBankCardSummary(range) {
@@ -924,10 +931,12 @@
     debitCards.forEach(function (label) {
       var opening = openingBalanceAt(label, range.start);
       var expensed = expensedInRange(label, range.start, range.end);
-      var available = opening - expensed;
-      var pct = opening > 0 ? Math.min(Math.max(expensed / opening, 0), 1) : 0;
+      var income = incomeInRange(label, range.start, range.end);
+      var available = opening + income - expensed;
+      var effectiveBase = opening + income;
+      var pct = effectiveBase > 0 ? Math.min(Math.max(expensed / effectiveBase, 0), 1) : 0;
       var status = available < 0 ? "critical" : utilStatus(pct);
-      html += bankCardRow(label, "Opening", opening, "Expensed", expensed, available, status, pct);
+      html += bankCardRow(label, "Opening", opening, "Expensed", expensed, available, status, pct, income);
     });
     html += '</div>';
 
@@ -935,24 +944,27 @@
     creditCards.forEach(function (label) {
       var limit = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
       var used = expensedInRange(label, range.start, range.end);
-      var available = limit - used;
+      var refunded = incomeInRange(label, range.start, range.end);
+      var available = limit + refunded - used;
       var pct = limit > 0 ? Math.min(Math.max(used / limit, 0), 1) : 0;
       var status = available < 0 ? "critical" : utilStatus(pct);
-      html += bankCardRow(label, "Limit", limit, "Used", used, available, status, pct);
+      html += bankCardRow(label, "Limit", limit, "Used", used, available, status, pct, refunded);
     });
     html += '</div>';
 
     return html;
   }
 
-  function bankCardRow(label, capLabel, capValue, usedLabel, usedValue, available, status, pct) {
+  function bankCardRow(label, capLabel, capValue, usedLabel, usedValue, available, status, pct, income) {
     var html = '<div style="margin-bottom:14px">';
     html += '<div style="display:flex;justify-content:space-between;align-items:baseline">';
     html += '<span style="font-size:14px;font-weight:600">' + escapeHtml(label) + '</span>';
     html += '<span class="chip ' + status + '">' + fmtMoney(available) + ' left</span>';
     html += '</div>';
     html += '<div class="bar-track"><div class="bar-fill ' + status + '" style="width:' + (pct * 100) + '%"></div></div>';
-    html += '<div class="footnote num">' + capLabel + ' ' + fmtMoney(capValue) + ' · ' + usedLabel + ' ' + fmtMoney(usedValue) + '</div>';
+    html += '<div class="footnote num">' + capLabel + ' ' + fmtMoney(capValue) +
+      (income ? ' · Income ' + fmtMoney(income) : '') +
+      ' · ' + usedLabel + ' ' + fmtMoney(usedValue) + '</div>';
     html += '</div>';
     return html;
   }
