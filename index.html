@@ -461,18 +461,44 @@
   var OTHER_COLOR = "var(--cat-other)";
 
   var DEFAULT_CATEGORIES = [
-    { id: "transport", name: "Transport", slot: 0, isSystem: true, keywords: ["uber","careem","lyft","taxi","fuel","petrol","gas station","parking","metro","adnoc","enoc"] },
-    { id: "dining", name: "Dining", slot: 1, isSystem: true, keywords: ["restaurant","cafe","coffee","starbucks","costa","mcdonald","kfc","talabat","deliveroo","doordash","uber eats"] },
-    { id: "groceries", name: "Groceries", slot: 2, isSystem: true, keywords: ["carrefour","lulu","spinneys","whole foods","trader joe","kroger","grocery","supermarket","market"] },
-    { id: "utilities", name: "Utilities", slot: 3, isSystem: true, keywords: ["electricity","water bill","etisalat","telecom","internet","utility","dewa","sewa"] },
-    { id: "shopping", name: "Shopping", slot: 4, isSystem: true, keywords: ["amazon","noon","shein","mall","store","shop"] },
-    { id: "rent", name: "Rent & Housing", slot: 5, isSystem: true, keywords: ["rent","mortgage","landlord","housing"] },
-    { id: "subscriptions", name: "Subscriptions", slot: 6, isSystem: true, keywords: ["netflix","spotify","icloud","youtube premium","disney+","amazon prime","shahid","osn"] },
-    { id: "entertainment", name: "Entertainment", slot: 7, isSystem: true, keywords: ["cinema","movie","vox","theatre","concert","game"] },
+    { id: "transport", name: "Transport", slot: null, isSystem: true, keywords: ["uber","careem","lyft","taxi","fuel","petrol","gas station","parking","metro","adnoc","enoc"] },
+    { id: "dining", name: "Dining", slot: null, isSystem: true, keywords: ["restaurant","cafe","coffee","starbucks","costa","mcdonald","kfc","talabat","deliveroo","doordash","uber eats"] },
+    { id: "groceries", name: "Groceries", slot: null, isSystem: true, keywords: ["carrefour","lulu","spinneys","whole foods","trader joe","kroger","grocery","supermarket","market"] },
+    { id: "utilities", name: "Utilities", slot: null, isSystem: true, keywords: ["electricity","water bill","etisalat","telecom","internet","utility","dewa","sewa"] },
+    { id: "shopping", name: "Shopping", slot: null, isSystem: true, keywords: ["amazon","noon","shein","mall","store","shop"] },
+    { id: "rent", name: "Rent & Housing", slot: null, isSystem: true, keywords: ["rent","mortgage","landlord","housing"] },
+    { id: "subscriptions", name: "Subscriptions", slot: null, isSystem: true, keywords: ["netflix","spotify","icloud","youtube premium","disney+","amazon prime","shahid","osn"] },
+    { id: "entertainment", name: "Entertainment", slot: null, isSystem: true, keywords: ["cinema","movie","vox","theatre","concert","game"] },
     { id: "health", name: "Health", slot: null, isSystem: true, keywords: ["pharmacy","clinic","hospital","doctor","insurance"] },
     { id: "income", name: "Income", slot: null, isSystem: true, keywords: ["salary","payroll","deposit","transfer in","refund"] },
     { id: "other", name: "Other", slot: null, isSystem: true, keywords: [] }
   ];
+
+  /* Chart colors are earned, not pre-assigned: the first 8 categories that
+     actually have an expense transaction (in category list order) get a
+     real color slot, persisted permanently once assigned. Categories never
+     used for an expense (or created after all 8 slots are taken) stay
+     grey and fold into "Other / Uncategorized" on the donut - this way an
+     unused default category doesn't block a real custom category from
+     getting its own color. */
+  function assignCategorySlots() {
+    var used = {};
+    state.categories.forEach(function (c) { if (typeof c.slot === "number") used[c.slot] = true; });
+    var changed = false;
+    state.categories.forEach(function (c) {
+      if (typeof c.slot === "number") return;
+      var freeSlot = -1;
+      for (var i = 0; i < 8; i++) { if (!used[i]) { freeSlot = i; break; } }
+      if (freeSlot === -1) return;
+      var hasExpense = state.transactions.some(function (t) { return t.categoryId === c.id && t.type === "expense"; });
+      if (hasExpense) {
+        c.slot = freeSlot;
+        used[freeSlot] = true;
+        changed = true;
+      }
+    });
+    return changed;
+  }
 
   var CURRENCIES = ["USD","EUR","GBP","AED","SAR","EGP","KWD","QAR"];
 
@@ -522,6 +548,7 @@
   }
 
   var state = load();
+  if (assignCategorySlots()) save();
 
   function normalizeState(parsed) {
     if (!parsed.categories || !parsed.categories.length) parsed.categories = defaultState().categories;
@@ -532,6 +559,14 @@
     BANK_CARDS.forEach(function (label) { if (!parsed.bankCardConfig[label]) parsed.bankCardConfig[label] = { value: 0 }; });
     if (!parsed.settings) parsed.settings = { currency: guessCurrency() };
     if (parsed.settings.currency === "USD") parsed.settings.currency = "SAR";
+    // One-time migration: chart color slots used to be permanently baked into
+    // the 8 original default categories regardless of use, which starved any
+    // custom category of ever getting a real color. Clear that out once so
+    // usage-based assignment (assignCategorySlots) can take over.
+    if (!parsed.categorySlotsMigratedV2) {
+      parsed.categories.forEach(function (c) { c.slot = null; });
+      parsed.categorySlotsMigratedV2 = true;
+    }
     return parsed;
   }
 
@@ -1189,6 +1224,7 @@
       } else {
         state.transactions.push(record);
       }
+      assignCategorySlots();
       save(); closeModal(); renderAll();
     });
   }
@@ -1207,7 +1243,8 @@
     html += '</div><input type="hidden" name="kind" value="' + (existing ? existing.kind : "subscription") + '" /></div>';
     html += '<div class="field"><label>Frequency</label><select name="frequency">';
     ["weekly","monthly","quarterly","biannual","yearly"].forEach(function (f) {
-      html += '<option value="' + f + '"' + (existing && existing.frequency === f ? " selected" : "") + '>' + FREQUENCY_LABELS[f] + '</option>';
+      var isSelected = existing ? existing.frequency === f : f === "monthly";
+      html += '<option value="' + f + '"' + (isSelected ? " selected" : "") + '>' + FREQUENCY_LABELS[f] + '</option>';
     });
     html += '</select></div>';
     html += '<div class="field"><label>Next due date</label><input type="date" name="nextDueDate" value="' + (existing ? existing.nextDueDate : todayISO()) + '" required /></div>';
