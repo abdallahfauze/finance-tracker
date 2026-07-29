@@ -1044,8 +1044,30 @@
     document.querySelectorAll("#tab-recurring [data-mark-paid]").forEach(function (el) {
       el.addEventListener("click", function (e) {
         e.stopPropagation();
-        markPaid(el.getAttribute("data-mark-paid"));
+        openMarkPaidConfirm(el.getAttribute("data-mark-paid"));
       });
+    });
+  }
+
+  function openMarkPaidConfirm(id) {
+    var r = byId(state.recurring, id);
+    if (!r) return;
+
+    var html = '<div class="modal-head"><h3>Mark as Paid</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<p style="font-size:14.5px;color:var(--ink-2);margin:0 0 16px">' + escapeHtml(r.name) + ' · ' + fmtMoney(r.amount) + '</p>';
+    html += '<div class="field"><label>Paid with</label><select name="bankCard" id="mark-paid-bank"><option value="">None</option>';
+    BANK_CARDS.forEach(function (bc) {
+      html += '<option value="' + escapeAttr(bc) + '"' + (r.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
+    });
+    html += '</select></div>';
+    html += '<button type="button" class="btn primary" data-confirm-paid>Confirm Payment</button>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    document.querySelector("[data-confirm-paid]").addEventListener("click", function () {
+      var bankCard = document.getElementById("mark-paid-bank").value || null;
+      markPaid(id, bankCard);
+      closeModal();
     });
   }
 
@@ -1055,7 +1077,7 @@
       var cat = byId(state.categories, r.categoryId);
       html += '<div class="row" data-open-recurring="' + r.id + '" style="opacity:' + (r.isActive ? 1 : 0.45) + '">';
       html += badgeHtml(cat, 34);
-      html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + (FREQUENCY_LABELS[r.frequency] || capitalize(r.frequency)) + ' · due ' + fmtDateShort(r.nextDueDate) + '</div></div>';
+      html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + (FREQUENCY_LABELS[r.frequency] || capitalize(r.frequency)) + ' · due ' + fmtDateShort(r.nextDueDate) + (r.bankCard ? ' · ' + escapeHtml(r.bankCard) : '') + '</div></div>';
       html += '<div class="amount num">' + fmtMoney(r.amount) + '</div>';
       html += '<button class="icon-btn ghost" data-mark-paid="' + r.id + '" aria-label="Mark as paid" style="width:30px;height:30px">' + icon("check") + '</button>';
       html += '</div>';
@@ -1066,11 +1088,13 @@
 
   function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
-  function markPaid(id) {
+  function markPaid(id, bankCard) {
     var r = byId(state.recurring, id);
     if (!r) return;
-    state.transactions.push({ id: uid(), amount: r.amount, merchant: r.name, note: "Recurring payment", date: todayISO(), type: "expense", categoryId: r.categoryId, cardId: null });
+    state.transactions.push({ id: uid(), amount: r.amount, merchant: r.name, note: "Recurring payment", date: todayISO(), type: "expense", categoryId: r.categoryId, cardId: null, bankCard: bankCard || null });
+    r.bankCard = bankCard || null;
     r.nextDueDate = addInterval(r.nextDueDate, r.frequency);
+    assignCategorySlots();
     save();
     renderAll();
   }
@@ -1253,6 +1277,11 @@
       html += '<option value="' + c.id + '"' + (existing && existing.categoryId === c.id ? " selected" : "") + '>' + escapeHtml(c.name) + '</option>';
     });
     html += '</select></div>';
+    html += '<div class="field"><label>Usual Bank / Card</label><select name="bankCard"><option value="">None</option>';
+    BANK_CARDS.forEach(function (bc) {
+      html += '<option value="' + escapeAttr(bc) + '"' + (existing && existing.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
+    });
+    html += '</select></div>';
     html += '<div class="toggle-row"><span>Active</span><label class="switch"><input type="checkbox" name="isActive" ' + (!existing || existing.isActive ? "checked" : "") + ' /><span class="track"></span><span class="thumb"></span></label></div>';
     html += '<button type="submit" class="btn primary" style="margin-top:8px">Save</button>';
     if (existing) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
@@ -1288,6 +1317,7 @@
         frequency: f.get("frequency"),
         nextDueDate: f.get("nextDueDate"),
         categoryId: f.get("categoryId") || null,
+        bankCard: f.get("bankCard") || null,
         isActive: f.get("isActive") === "on"
       };
       if (isNaN(record.amount) || !record.name) return;
