@@ -351,6 +351,17 @@
   .disclosure svg { width: 16px; height: 16px; color: var(--ink-muted); }
   .chevron-flip { transform: rotate(180deg); }
 
+  .forecast-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: -4px -16px 0; padding: 4px 16px 4px; }
+  .forecast-table { border-collapse: collapse; font-size: 12.5px; white-space: nowrap; }
+  .forecast-table th, .forecast-table td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--line); }
+  .forecast-table th:first-child, .forecast-table td:first-child {
+    text-align: left; position: sticky; left: 0; background: var(--surface);
+    box-shadow: 1px 0 0 var(--line);
+  }
+  .forecast-table thead th { color: var(--ink-muted); font-weight: 700; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.03em; }
+  .forecast-table tfoot td { font-weight: 700; border-bottom: none; border-top: 2px solid var(--line); }
+  .forecast-table td.zero { color: var(--ink-muted); }
+
   .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
   .switch { position: relative; width: 46px; height: 27px; }
   .switch input { opacity: 0; width: 100%; height: 100%; margin: 0; position: absolute; cursor: pointer; }
@@ -386,6 +397,10 @@
   <symbol id="i-swap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <line x1="4" y1="8" x2="18" y2="8" /><polyline points="14 4 18 8 14 12" />
     <line x1="20" y1="16" x2="6" y2="16" /><polyline points="10 12 6 16 10 20" />
+  </symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+    <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
   </symbol>
   <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" />
@@ -440,6 +455,7 @@
     <section class="tab active" id="tab-dashboard"></section>
     <section class="tab" id="tab-transactions"></section>
     <section class="tab" id="tab-recurring"></section>
+    <section class="tab" id="tab-forecast"></section>
     <section class="tab" id="tab-transfer"></section>
     <section class="tab" id="tab-settings"></section>
   </main>
@@ -448,6 +464,7 @@
     <button data-tab="dashboard" class="active"><svg><use href="#i-pie"/></svg><span>Dashboard</span></button>
     <button data-tab="transactions"><svg><use href="#i-list"/></svg><span>Transactions</span></button>
     <button data-tab="recurring"><svg><use href="#i-refresh"/></svg><span>Recurring</span></button>
+    <button data-tab="forecast"><svg><use href="#i-grid"/></svg><span>Forecast</span></button>
     <button data-tab="transfer"><svg><use href="#i-swap"/></svg><span>Transfer</span></button>
     <button data-tab="settings"><svg><use href="#i-sliders"/></svg><span>Settings</span></button>
   </nav>
@@ -768,6 +785,7 @@
     dashboard: { title: "Dashboard", sub: "Overview" },
     transactions: { title: "Transactions", sub: "All activity" },
     recurring: { title: "Recurring", sub: "Bills & subscriptions" },
+    forecast: { title: "Forecast", sub: "Expected monthly payments" },
     transfer: { title: "Transfer", sub: "Move funds between accounts" },
     settings: { title: "Settings", sub: "Finance Tracker" }
   };
@@ -783,7 +801,7 @@
     document.getElementById("appbar-title").textContent = TAB_META[tab].title;
     document.getElementById("appbar-sub").textContent = TAB_META[tab].sub;
     var actionBtn = document.getElementById("appbar-action");
-    actionBtn.style.visibility = (tab === "settings") ? "hidden" : "visible";
+    actionBtn.style.visibility = (tab === "settings" || tab === "forecast") ? "hidden" : "visible";
     renderAll();
   }
 
@@ -1112,12 +1130,31 @@
 
   /* ---------- render: recurring ---------- */
 
+  var recurringSortMode = "date";
+
+  function sortRecurring(list) {
+    var sorted = list.slice();
+    if (recurringSortMode === "amount") {
+      sorted.sort(function (a, b) { return a.amount - b.amount; });
+    } else {
+      sorted.sort(function (a, b) { return a.nextDueDate < b.nextDueDate ? -1 : (a.nextDueDate > b.nextDueDate ? 1 : 0); });
+    }
+    return sorted;
+  }
+
   function renderRecurring() {
-    var fixed = state.recurring.filter(function (r) { return r.kind === "fixed"; });
-    var subs = state.recurring.filter(function (r) { return r.kind === "subscription"; });
+    var fixed = sortRecurring(state.recurring.filter(function (r) { return r.kind === "fixed"; }));
+    var subs = sortRecurring(state.recurring.filter(function (r) { return r.kind === "subscription"; }));
     var monthlyTotal = state.recurring.filter(function (r) { return r.isActive; }).reduce(function (s, r) { return s + monthlyEquivalent(r); }, 0);
 
     var html = '<div class="card"><div class="disclosure"><span style="font-weight:600">Monthly total</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(monthlyTotal) + '</span></div></div>';
+
+    if (state.recurring.length) {
+      html += '<div class="segmented" id="recurring-sort-seg" style="margin-bottom:14px">';
+      html += '<button type="button" data-val="date" class="' + (recurringSortMode === "date" ? "active" : "") + '">Date: Nearest first</button>';
+      html += '<button type="button" data-val="amount" class="' + (recurringSortMode === "amount" ? "active" : "") + '">Amount: Low to high</button>';
+      html += '</div>';
+    }
 
     if (!state.recurring.length) {
       html += emptyState("refresh", "No recurring payments", "Add fixed bills or subscriptions to track them here.");
@@ -1139,6 +1176,9 @@
         e.stopPropagation();
         openMarkPaidConfirm(el.getAttribute("data-mark-paid"));
       });
+    });
+    document.querySelectorAll("#recurring-sort-seg button").forEach(function (b) {
+      b.addEventListener("click", function () { recurringSortMode = b.getAttribute("data-val"); renderRecurring(); });
     });
   }
 
@@ -1190,6 +1230,71 @@
     assignCategorySlots();
     save();
     renderAll();
+  }
+
+  /* ---------- render: forecast ---------- */
+
+  function renderForecast() {
+    var base = new Date(today.getFullYear(), today.getMonth(), 1);
+    var months = [];
+    for (var i = 0; i < 12; i++) {
+      var d = new Date(base.getFullYear(), base.getMonth() + i, 1);
+      months.push({
+        key: d.getFullYear() + "-" + pad(d.getMonth() + 1),
+        label: d.toLocaleDateString(undefined, { month: "short" }) + " " + String(d.getFullYear()).slice(2)
+      });
+    }
+    var windowStart = months[0].key + "-01";
+    var windowEndDate = new Date(base.getFullYear(), base.getMonth() + 12, 1);
+    var windowEnd = windowEndDate.getFullYear() + "-" + pad(windowEndDate.getMonth() + 1) + "-01";
+
+    var matrix = {};
+    var catTotals = {};
+    state.recurring.filter(function (r) { return r.isActive; }).forEach(function (r) {
+      var catKey = r.categoryId || "__none";
+      var d2 = r.nextDueDate;
+      var guard = 0;
+      while (d2 < windowStart && guard < 500) { d2 = addInterval(d2, r.frequency); guard++; }
+      guard = 0;
+      while (d2 < windowEnd && guard < 500) {
+        var mk = d2.slice(0, 7);
+        if (!matrix[catKey]) matrix[catKey] = {};
+        matrix[catKey][mk] = (matrix[catKey][mk] || 0) + r.amount;
+        catTotals[catKey] = (catTotals[catKey] || 0) + r.amount;
+        d2 = addInterval(d2, r.frequency);
+        guard++;
+      }
+    });
+
+    var catKeys = Object.keys(matrix).sort(function (a, b) { return catTotals[b] - catTotals[a]; });
+
+    var html = '<div class="card"><p class="footnote" style="margin:0">Projected from your active recurring payments (fixed bills and subscriptions) over the next 12 months.</p></div>';
+
+    if (!catKeys.length) {
+      html += emptyState("grid", "Nothing to forecast", "Add active recurring payments to see expected monthly totals here.");
+    } else {
+      html += '<div class="card"><div class="forecast-scroll"><table class="forecast-table"><thead><tr><th>Category</th>';
+      months.forEach(function (m) { html += '<th>' + m.label + '</th>'; });
+      html += '</tr></thead><tbody>';
+      catKeys.forEach(function (catKey) {
+        var cat = catKey === "__none" ? null : byId(state.categories, catKey);
+        html += '<tr><td>' + escapeHtml(cat ? cat.name : "Uncategorized") + '</td>';
+        months.forEach(function (m) {
+          var amt = (matrix[catKey] && matrix[catKey][m.key]) || 0;
+          html += '<td class="num' + (amt === 0 ? ' zero' : '') + '">' + (amt === 0 ? '–' : fmtMoney(amt)) + '</td>';
+        });
+        html += '</tr>';
+      });
+      html += '</tbody><tfoot><tr><td>Total</td>';
+      months.forEach(function (m) {
+        var colTotal = 0;
+        catKeys.forEach(function (catKey) { colTotal += (matrix[catKey] && matrix[catKey][m.key]) || 0; });
+        html += '<td class="num">' + fmtMoney(colTotal) + '</td>';
+      });
+      html += '</tr></tfoot></table></div></div>';
+    }
+
+    document.getElementById("tab-forecast").innerHTML = html;
   }
 
   /* ---------- render: transfer ---------- */
@@ -1717,6 +1822,7 @@
     renderDashboard();
     renderTransactions();
     renderRecurring();
+    renderForecast();
     renderTransfer();
     renderSettings();
   }
