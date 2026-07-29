@@ -607,6 +607,8 @@
   function addInterval(iso, frequency) {
     var d = new Date(iso + "T00:00:00");
     if (frequency === "weekly") d.setDate(d.getDate() + 7);
+    else if (frequency === "quarterly") d.setMonth(d.getMonth() + 3);
+    else if (frequency === "biannual") d.setMonth(d.getMonth() + 6);
     else if (frequency === "yearly") d.setFullYear(d.getFullYear() + 1);
     else d.setMonth(d.getMonth() + 1);
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
@@ -619,8 +621,18 @@
     return Math.round((target - now) / 86400000);
   }
 
+  var FREQUENCY_LABELS = {
+    weekly: "Weekly",
+    monthly: "Monthly",
+    quarterly: "Quarterly",
+    biannual: "Bi-Annually",
+    yearly: "Yearly"
+  };
+
   function monthlyEquivalent(payment) {
     if (payment.frequency === "weekly") return payment.amount * 4.345;
+    if (payment.frequency === "quarterly") return payment.amount / 3;
+    if (payment.frequency === "biannual") return payment.amount / 6;
     if (payment.frequency === "yearly") return payment.amount / 12;
     return payment.amount;
   }
@@ -1008,7 +1020,7 @@
       var cat = byId(state.categories, r.categoryId);
       html += '<div class="row" data-open-recurring="' + r.id + '" style="opacity:' + (r.isActive ? 1 : 0.45) + '">';
       html += badgeHtml(cat, 34);
-      html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + capitalize(r.frequency) + ' · due ' + fmtDateShort(r.nextDueDate) + '</div></div>';
+      html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + (FREQUENCY_LABELS[r.frequency] || capitalize(r.frequency)) + ' · due ' + fmtDateShort(r.nextDueDate) + '</div></div>';
       html += '<div class="amount num">' + fmtMoney(r.amount) + '</div>';
       html += '<button class="icon-btn ghost" data-mark-paid="' + r.id + '" aria-label="Mark as paid" style="width:30px;height:30px">' + icon("check") + '</button>';
       html += '</div>';
@@ -1194,8 +1206,8 @@
     html += '<button type="button" data-val="fixed" class="' + (existing && existing.kind === "fixed" ? "active" : "") + '">Fixed Payment</button>';
     html += '</div><input type="hidden" name="kind" value="' + (existing ? existing.kind : "subscription") + '" /></div>';
     html += '<div class="field"><label>Frequency</label><select name="frequency">';
-    ["weekly","monthly","yearly"].forEach(function (f) {
-      html += '<option value="' + f + '"' + (existing && existing.frequency === f ? " selected" : "") + '>' + capitalize(f) + '</option>';
+    ["weekly","monthly","quarterly","biannual","yearly"].forEach(function (f) {
+      html += '<option value="' + f + '"' + (existing && existing.frequency === f ? " selected" : "") + '>' + FREQUENCY_LABELS[f] + '</option>';
     });
     html += '</select></div>';
     html += '<div class="field"><label>Next due date</label><input type="date" name="nextDueDate" value="' + (existing ? existing.nextDueDate : todayISO()) + '" required /></div>';
