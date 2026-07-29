@@ -348,6 +348,7 @@
 
   .disclosure { display: flex; align-items: center; justify-content: space-between; }
   .disclosure svg { width: 16px; height: 16px; color: var(--ink-muted); }
+  .chevron-flip { transform: rotate(180deg); }
 
   .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
   .switch { position: relative; width: 46px; height: 27px; }
@@ -639,6 +640,52 @@
   }
   function monthKeyOf(iso) { return iso.slice(0, 7); }
 
+  /* ---------- dashboard period (month/year navigation) ---------- */
+
+  var today = new Date();
+  var viewPeriod = { type: "month", year: today.getFullYear(), month: today.getMonth() + 1 };
+
+  function periodRange(period) {
+    if (period.type === "year") {
+      return {
+        start: period.year + "-01-01",
+        end: (period.year + 1) + "-01-01",
+        label: String(period.year)
+      };
+    }
+    var start = period.year + "-" + pad(period.month) + "-01";
+    var nextMonthDate = new Date(period.year, period.month, 1);
+    var end = nextMonthDate.getFullYear() + "-" + pad(nextMonthDate.getMonth() + 1) + "-01";
+    var label = new Date(period.year, period.month - 1, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    return { start: start, end: end, label: label };
+  }
+
+  function isCurrentMonthPeriod(period) {
+    return period.type === "month" && period.year === today.getFullYear() && period.month === today.getMonth() + 1;
+  }
+
+  function shiftPeriod(delta) {
+    if (viewPeriod.type === "year") {
+      viewPeriod = { type: "year", year: viewPeriod.year + delta };
+    } else {
+      var m = viewPeriod.month + delta;
+      var y = viewPeriod.year;
+      while (m > 12) { m -= 12; y++; }
+      while (m < 1) { m += 12; y--; }
+      viewPeriod = { type: "month", year: y, month: m };
+    }
+    renderDashboard();
+  }
+
+  function setPeriodType(type) {
+    viewPeriod = { type: type, year: viewPeriod.year, month: viewPeriod.month };
+    renderDashboard();
+  }
+
+  function transactionsInRange(start, end) {
+    return state.transactions.filter(function (t) { return t.date >= start && t.date < end; });
+  }
+
   function addInterval(iso, frequency) {
     var d = new Date(iso + "T00:00:00");
     if (frequency === "weekly") d.setDate(d.getDate() + 7);
@@ -703,7 +750,7 @@
   /* ---------- tab / modal chrome ---------- */
 
   var TAB_META = {
-    dashboard: { title: "Dashboard", sub: "This month" },
+    dashboard: { title: "Dashboard", sub: "Overview" },
     transactions: { title: "Transactions", sub: "All activity" },
     recurring: { title: "Recurring", sub: "Bills & subscriptions" },
     cards: { title: "Credit Cards", sub: "Balances & limits" },
@@ -773,26 +820,34 @@
   /* ---------- render: dashboard ---------- */
 
   function renderDashboard() {
-    var mk = currentMonthKey();
-    var monthTx = state.transactions.filter(function (t) { return monthKeyOf(t.date) === mk; });
-    var spent = monthTx.filter(function (t) { return t.type === "expense"; }).reduce(function (s, t) { return s + t.amount; }, 0);
-    var income = monthTx.filter(function (t) { return t.type === "income"; }).reduce(function (s, t) { return s + t.amount; }, 0);
+    var range = periodRange(viewPeriod);
+    var periodTx = transactionsInRange(range.start, range.end);
+    var spent = periodTx.filter(function (t) { return t.type === "expense"; }).reduce(function (s, t) { return s + t.amount; }, 0);
+    var income = periodTx.filter(function (t) { return t.type === "income"; }).reduce(function (s, t) { return s + t.amount; }, 0);
 
     var byCat = {};
-    monthTx.filter(function (t) { return t.type === "expense"; }).forEach(function (t) {
+    periodTx.filter(function (t) { return t.type === "expense"; }).forEach(function (t) {
       byCat[t.categoryId || "__none"] = (byCat[t.categoryId || "__none"] || 0) + t.amount;
     });
 
     var html = "";
     html += '<div class="card">';
-    html += '<h2>' + new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" }) + '</h2>';
-    html += '<div class="stat-row">';
+    html += '<div class="segmented" id="period-type-seg">';
+    html += '<button type="button" data-val="month" class="' + (viewPeriod.type === "month" ? "active" : "") + '">Month</button>';
+    html += '<button type="button" data-val="year" class="' + (viewPeriod.type === "year" ? "active" : "") + '">Year</button>';
+    html += '</div>';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">';
+    html += '<button class="icon-btn ghost" id="period-prev" aria-label="Previous" style="width:32px;height:32px">' + icon("chevron", "chevron-flip") + '</button>';
+    html += '<h2 style="margin:0;font-size:15px">' + range.label + '</h2>';
+    html += '<button class="icon-btn ghost" id="period-next" aria-label="Next" style="width:32px;height:32px">' + icon("chevron") + '</button>';
+    html += '</div>';
+    html += '<div class="stat-row" style="margin-top:14px">';
     html += '<div class="stat spent"><div class="label">Spent</div><div class="value num">' + fmtMoney(spent) + '</div></div>';
     html += '<div class="stat income"><div class="label">Income</div><div class="value num">' + fmtMoney(income) + '</div></div>';
     html += '<div class="stat"><div class="label">Net</div><div class="value num">' + fmtMoney(income - spent) + '</div></div>';
     html += '</div></div>';
 
-    html += renderBankCardSummary();
+    html += renderBankCardSummary(range);
 
     if (spent > 0) {
       html += '<div class="card"><h2>Spending by Category</h2>';
@@ -800,21 +855,23 @@
       html += '</div>';
     }
 
-    var upcoming = state.recurring.filter(function (r) { return r.isActive && daysUntil(r.nextDueDate) <= 30; })
-      .sort(function (a, b) { return a.nextDueDate < b.nextDueDate ? -1 : 1; });
-    if (upcoming.length) {
-      html += '<div class="card"><h2>Upcoming Bills</h2>';
-      upcoming.forEach(function (r) {
-        var cat = byId(state.categories, r.categoryId);
-        var d = daysUntil(r.nextDueDate);
-        html += '<div class="row" data-open-recurring="' + r.id + '">';
-        html += badgeHtml(cat, 30);
-        html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + fmtDateShort(r.nextDueDate) + '</div></div>';
-        if (d <= 3) html += dueChip(d);
-        html += '<div class="amount num">' + fmtMoney(r.amount) + '</div>';
+    if (isCurrentMonthPeriod(viewPeriod)) {
+      var upcoming = state.recurring.filter(function (r) { return r.isActive && daysUntil(r.nextDueDate) <= 30; })
+        .sort(function (a, b) { return a.nextDueDate < b.nextDueDate ? -1 : 1; });
+      if (upcoming.length) {
+        html += '<div class="card"><h2>Upcoming Bills</h2>';
+        upcoming.forEach(function (r) {
+          var cat = byId(state.categories, r.categoryId);
+          var d = daysUntil(r.nextDueDate);
+          html += '<div class="row" data-open-recurring="' + r.id + '">';
+          html += badgeHtml(cat, 30);
+          html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + fmtDateShort(r.nextDueDate) + '</div></div>';
+          if (d <= 3) html += dueChip(d);
+          html += '<div class="amount num">' + fmtMoney(r.amount) + '</div>';
+          html += '</div>';
+        });
         html += '</div>';
-      });
-      html += '</div>';
+      }
     }
 
     if (state.cards.length) {
@@ -825,7 +882,7 @@
       html += '</div>';
     }
 
-    if (!monthTx.length && !upcoming.length && !state.cards.length) {
+    if (!periodTx.length && !state.cards.length) {
       html += emptyState("inbox", "Nothing yet", "Add a transaction to see your dashboard come to life.");
     }
 
@@ -839,21 +896,34 @@
     return '<span class="chip ' + cls + '">' + icon("alert") + label + '</span>';
   }
 
-  function totalExpensedFor(label) {
+  function expensedInRange(label, start, end) {
     return state.transactions
-      .filter(function (t) { return t.bankCard === label && t.type === "expense"; })
+      .filter(function (t) { return t.bankCard === label && t.type === "expense" && t.date >= start && t.date < end; })
       .reduce(function (s, t) { return s + t.amount; }, 0);
   }
 
-  function renderBankCardSummary() {
+  /* A debit card's opening balance for any period is derived, not stored:
+     the one-time starting balance (set in Settings) minus every expense
+     dated before the period began. So "close" a month simply by moving to
+     the next one - its opening balance is automatically last month's
+     closing available balance, with no explicit rollover step needed. */
+  function openingBalanceAt(label, periodStartISO) {
+    var initial = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
+    var priorExpenses = state.transactions
+      .filter(function (t) { return t.bankCard === label && t.type === "expense" && t.date < periodStartISO; })
+      .reduce(function (s, t) { return s + t.amount; }, 0);
+    return initial - priorExpenses;
+  }
+
+  function renderBankCardSummary(range) {
     var debitCards = BANK_CARDS.filter(function (l) { return bankCardType(l) === "debit"; });
     var creditCards = BANK_CARDS.filter(function (l) { return bankCardType(l) === "credit"; });
 
     var html = "";
     html += '<div class="card"><h2>Debit Cards (MADA)</h2>';
     debitCards.forEach(function (label) {
-      var opening = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
-      var expensed = totalExpensedFor(label);
+      var opening = openingBalanceAt(label, range.start);
+      var expensed = expensedInRange(label, range.start, range.end);
       var available = opening - expensed;
       var pct = opening > 0 ? Math.min(Math.max(expensed / opening, 0), 1) : 0;
       var status = available < 0 ? "critical" : utilStatus(pct);
@@ -864,7 +934,7 @@
     html += '<div class="card"><h2>Credit Cards (Visa / Mastercard)</h2>';
     creditCards.forEach(function (label) {
       var limit = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
-      var used = totalExpensedFor(label);
+      var used = expensedInRange(label, range.start, range.end);
       var available = limit - used;
       var pct = limit > 0 ? Math.min(Math.max(used / limit, 0), 1) : 0;
       var status = available < 0 ? "critical" : utilStatus(pct);
@@ -950,6 +1020,11 @@
     document.querySelectorAll("#tab-dashboard [data-open-card]").forEach(function (el) {
       el.addEventListener("click", function () { openCardForm(el.getAttribute("data-open-card")); });
     });
+    document.querySelectorAll("#period-type-seg button").forEach(function (b) {
+      b.addEventListener("click", function () { setPeriodType(b.getAttribute("data-val")); });
+    });
+    document.getElementById("period-prev").addEventListener("click", function () { shiftPeriod(-1); });
+    document.getElementById("period-next").addEventListener("click", function () { shiftPeriod(1); });
   }
 
   /* ---------- render: transactions ---------- */
@@ -1442,6 +1517,7 @@
     html += '</select></div>';
 
     html += '<div class="card"><h2>Debit Cards — Opening Balance</h2>';
+    html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">Set this once, as your starting balance when you began tracking. Each month\'s opening balance after that rolls forward automatically from the previous month\'s closing balance on the Dashboard.</p>';
     BANK_CARDS.filter(function (l) { return bankCardType(l) === "debit"; }).forEach(function (label) {
       html += bankCardConfigField(label);
     });
