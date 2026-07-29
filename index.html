@@ -520,7 +520,13 @@
   ];
 
   function bankCardType(label) {
+    var custom = state.customBankCards.filter(function (c) { return c.label === label; })[0];
+    if (custom) return custom.type;
     return label.indexOf("MADA") !== -1 ? "debit" : "credit";
+  }
+
+  function allBankCards() {
+    return BANK_CARDS.concat(state.customBankCards.map(function (c) { return c.label; }));
   }
 
   function defaultBankCardConfig() {
@@ -544,6 +550,7 @@
       transactions: [],
       recurring: [],
       cards: [],
+      customBankCards: [],
       bankCardConfig: defaultBankCardConfig(),
       settings: { currency: guessCurrency() }
     };
@@ -561,8 +568,11 @@
     if (!parsed.transactions) parsed.transactions = [];
     if (!parsed.recurring) parsed.recurring = [];
     if (!parsed.cards) parsed.cards = [];
+    if (!parsed.customBankCards) parsed.customBankCards = [];
     if (!parsed.bankCardConfig) parsed.bankCardConfig = defaultBankCardConfig();
-    BANK_CARDS.forEach(function (label) { if (!parsed.bankCardConfig[label]) parsed.bankCardConfig[label] = { value: 0 }; });
+    BANK_CARDS.concat(parsed.customBankCards.map(function (c) { return c.label; })).forEach(function (label) {
+      if (!parsed.bankCardConfig[label]) parsed.bankCardConfig[label] = { value: 0 };
+    });
     if (!parsed.settings) parsed.settings = { currency: guessCurrency() };
     if (parsed.settings.currency === "USD") parsed.settings.currency = "SAR";
     // One-time migration: chart color slots used to be permanently baked into
@@ -924,8 +934,8 @@
   }
 
   function renderBankCardSummary(range) {
-    var debitCards = BANK_CARDS.filter(function (l) { return bankCardType(l) === "debit"; });
-    var creditCards = BANK_CARDS.filter(function (l) { return bankCardType(l) === "credit"; });
+    var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
+    var creditCards = allBankCards().filter(function (l) { return bankCardType(l) === "credit"; });
 
     var html = "";
     html += '<div class="card"><h2>Debit Cards (MADA)</h2>';
@@ -1049,7 +1059,7 @@
 
     html += '<select id="tx-filter-bank" style="margin-bottom:16px">';
     html += '<option value="">All banks / cards</option>';
-    BANK_CARDS.forEach(function (bc) {
+    allBankCards().forEach(function (bc) {
       html += '<option value="' + escapeAttr(bc) + '"' + (txFilterBank === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
     });
     html += '</select>';
@@ -1139,7 +1149,7 @@
     var html = '<div class="modal-head"><h3>Mark as Paid</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
     html += '<p style="font-size:14.5px;color:var(--ink-2);margin:0 0 16px">' + escapeHtml(r.name) + ' · ' + fmtMoney(r.amount) + '</p>';
     html += '<div class="field"><label>Paid with</label><select name="bankCard" id="mark-paid-bank"><option value="">None</option>';
-    BANK_CARDS.forEach(function (bc) {
+    allBankCards().forEach(function (bc) {
       html += '<option value="' + escapeAttr(bc) + '"' + (r.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
     });
     html += '</select></div>';
@@ -1249,10 +1259,10 @@
     html += '<form id="transfer-form">';
     html += '<div class="field"><input class="amount-input num" type="number" step="0.01" min="0.01" inputmode="decimal" name="amount" placeholder="0.00" required /></div>';
     html += '<div class="field"><label>From</label><select name="from" required><option value="">Select account</option>';
-    BANK_CARDS.forEach(function (bc) { html += '<option value="' + escapeAttr(bc) + '">' + escapeHtml(bc) + '</option>'; });
+    allBankCards().forEach(function (bc) { html += '<option value="' + escapeAttr(bc) + '">' + escapeHtml(bc) + '</option>'; });
     html += '</select></div>';
     html += '<div class="field"><label>To</label><select name="to" required><option value="">Select account</option>';
-    BANK_CARDS.forEach(function (bc) { html += '<option value="' + escapeAttr(bc) + '">' + escapeHtml(bc) + '</option>'; });
+    allBankCards().forEach(function (bc) { html += '<option value="' + escapeAttr(bc) + '">' + escapeHtml(bc) + '</option>'; });
     html += '</select></div>';
     html += '<div class="field"><label>Date</label><input type="date" name="date" value="' + todayISO() + '" required /></div>';
     html += '<div class="field"><label>Note (optional)</label><input type="text" name="note" /></div>';
@@ -1298,7 +1308,7 @@
     });
     html += '</select></div>';
     html += '<div class="field"><label>Bank / Card</label><select name="bankCard"><option value="">None</option>';
-    BANK_CARDS.forEach(function (bc) {
+    allBankCards().forEach(function (bc) {
       html += '<option value="' + escapeAttr(bc) + '"' + (existing && existing.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
     });
     html += '</select></div>';
@@ -1384,7 +1394,7 @@
     });
     html += '</select></div>';
     html += '<div class="field"><label>Usual Bank / Card</label><select name="bankCard"><option value="">None</option>';
-    BANK_CARDS.forEach(function (bc) {
+    allBankCards().forEach(function (bc) {
       html += '<option value="' + escapeAttr(bc) + '"' + (existing && existing.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
     });
     html += '</select></div>';
@@ -1481,8 +1491,42 @@
 
   function bankCardConfigField(label) {
     var value = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
-    return '<div class="field" style="margin-bottom:10px"><label>' + escapeHtml(label) + '</label>' +
-      '<input type="number" step="0.01" min="0" class="bank-card-config" data-label="' + escapeAttr(label) + '" value="' + value + '" /></div>';
+    var isCustom = state.customBankCards.some(function (c) { return c.label === label; });
+    var html = '<div class="field" style="margin-bottom:10px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center"><label style="margin-bottom:0">' + escapeHtml(label) + '</label>';
+    if (isCustom) html += '<button type="button" class="icon-btn ghost" data-remove-bank="' + escapeAttr(label) + '" aria-label="Remove account" style="width:24px;height:24px;flex-shrink:0">' + icon("trash") + '</button>';
+    html += '</div>';
+    html += '<input type="number" step="0.01" min="0" class="bank-card-config" data-label="' + escapeAttr(label) + '" value="' + value + '" />';
+    html += '</div>';
+    return html;
+  }
+
+  function openAddBankCardForm(type) {
+    var typeLabel = type === "debit" ? "Debit Account" : "Credit Card";
+    var html = '<div class="modal-head"><h3>Add ' + typeLabel + '</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<form id="add-bank-form">';
+    html += '<div class="field"><label>Name</label><input type="text" name="label" placeholder="e.g. ' + (type === "debit" ? "Alinma Savings" : "ENBD Titanium") + '" required /></div>';
+    html += '<div class="field"><label>' + (type === "debit" ? "Opening Balance" : "Credit Limit") + '</label><input type="number" step="0.01" min="0" name="value" value="0" required /></div>';
+    html += '<button type="submit" class="btn primary">Add</button>';
+    html += '</form>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+
+    document.getElementById("add-bank-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var f = new FormData(e.target);
+      var label = f.get("label").trim();
+      var value = parseFloat(f.get("value"));
+      if (!label || isNaN(value)) return;
+      if (allBankCards().indexOf(label) !== -1) {
+        showMessage("You already have an account named \"" + label + "\".");
+        return;
+      }
+      state.customBankCards.push({ label: label, type: type });
+      state.bankCardConfig[label] = { value: value };
+      save(); closeModal(); renderAll();
+    });
   }
 
   function renderSettings() {
@@ -1497,15 +1541,17 @@
     });
     html += '</select></div>';
 
-    html += '<div class="card"><h2>Debit Cards — Opening Balance</h2>';
+    html += '<div class="card">';
+    html += '<div class="disclosure" style="margin-bottom:12px"><h2 style="margin:0">Debit Cards — Opening Balance</h2><button class="icon-btn ghost" data-add-bank="debit" aria-label="Add debit account" style="width:26px;height:26px;flex-shrink:0">' + icon("plus") + '</button></div>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">Set this once, as your starting balance when you began tracking. Each month\'s opening balance after that rolls forward automatically from the previous month\'s closing balance on the Dashboard.</p>';
-    BANK_CARDS.filter(function (l) { return bankCardType(l) === "debit"; }).forEach(function (label) {
+    allBankCards().filter(function (l) { return bankCardType(l) === "debit"; }).forEach(function (label) {
       html += bankCardConfigField(label);
     });
     html += '</div>';
 
-    html += '<div class="card"><h2>Credit Cards — Credit Limit</h2>';
-    BANK_CARDS.filter(function (l) { return bankCardType(l) === "credit"; }).forEach(function (label) {
+    html += '<div class="card">';
+    html += '<div class="disclosure" style="margin-bottom:12px"><h2 style="margin:0">Credit Cards — Credit Limit</h2><button class="icon-btn ghost" data-add-bank="credit" aria-label="Add credit account" style="width:26px;height:26px;flex-shrink:0">' + icon("plus") + '</button></div>';
+    allBankCards().filter(function (l) { return bankCardType(l) === "credit"; }).forEach(function (label) {
       html += bankCardConfigField(label);
     });
     html += '</div>';
@@ -1536,6 +1582,18 @@
         var v = parseFloat(e.target.value);
         state.bankCardConfig[e.target.getAttribute("data-label")] = { value: isNaN(v) ? 0 : v };
         save(); renderAll();
+      });
+    });
+    document.querySelectorAll("[data-add-bank]").forEach(function (btn) {
+      btn.addEventListener("click", function () { openAddBankCardForm(btn.getAttribute("data-add-bank")); });
+    });
+    document.querySelectorAll("[data-remove-bank]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var label = btn.getAttribute("data-remove-bank");
+        confirmAction("Remove " + label + "? Existing transactions tagged with it are kept but will show as an unrecognized account.", "Remove", function () {
+          state.customBankCards = state.customBankCards.filter(function (c) { return c.label !== label; });
+          save(); renderAll();
+        });
       });
     });
     document.getElementById("export-backup").addEventListener("click", exportBackup);
