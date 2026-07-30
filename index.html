@@ -474,13 +474,14 @@
      stay a single wider column rather than being force-fit into a grid. */
   @media (min-width: 760px) {
     .app, nav.tabbar { max-width: 900px; }
+    /* CSS columns (not grid) so cards of very different heights pack tightly
+       top-to-bottom per column instead of being forced into equal-height
+       rows with dead space, which is what a grid would do here. */
     #tab-dashboard.active {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 14px;
-      align-items: start;
+      column-width: 320px;
+      column-gap: 14px;
     }
-    #tab-dashboard.active .card { margin-top: 0; }
+    #tab-dashboard.active .card { break-inside: avoid; margin-top: 0; margin-bottom: 14px; }
   }
 </style>
 
