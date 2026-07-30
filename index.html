@@ -165,18 +165,22 @@
   }
   nav.tabbar button {
     flex: 1;
+    min-width: 0;
     border: none;
     background: none;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 9px 2px 8px;
+    gap: 2px;
+    padding: 8px 1px 7px;
     color: var(--ink-muted);
     cursor: pointer;
   }
-  nav.tabbar button svg { width: 22px; height: 22px; }
-  nav.tabbar button span { font-size: 10.5px; font-weight: 600; letter-spacing: 0.01em; }
+  nav.tabbar button svg { width: 20px; height: 20px; flex-shrink: 0; }
+  nav.tabbar button span {
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   nav.tabbar button.active { color: var(--accent); }
 
   .card {
@@ -402,6 +406,9 @@
     <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
     <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
   </symbol>
+  <symbol id="i-trend-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" />
+  </symbol>
   <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" />
     <line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" />
@@ -456,15 +463,17 @@
     <section class="tab" id="tab-transactions"></section>
     <section class="tab" id="tab-recurring"></section>
     <section class="tab" id="tab-forecast"></section>
+    <section class="tab" id="tab-loans"></section>
     <section class="tab" id="tab-transfer"></section>
     <section class="tab" id="tab-settings"></section>
   </main>
 
   <nav class="tabbar">
-    <button data-tab="dashboard" class="active"><svg><use href="#i-pie"/></svg><span>Dashboard</span></button>
-    <button data-tab="transactions"><svg><use href="#i-list"/></svg><span>Transactions</span></button>
+    <button data-tab="dashboard" class="active"><svg><use href="#i-pie"/></svg><span>Home</span></button>
+    <button data-tab="transactions"><svg><use href="#i-list"/></svg><span>Activity</span></button>
     <button data-tab="recurring"><svg><use href="#i-refresh"/></svg><span>Recurring</span></button>
     <button data-tab="forecast"><svg><use href="#i-grid"/></svg><span>Forecast</span></button>
+    <button data-tab="loans"><svg><use href="#i-trend-down"/></svg><span>Loans</span></button>
     <button data-tab="transfer"><svg><use href="#i-swap"/></svg><span>Transfer</span></button>
     <button data-tab="settings"><svg><use href="#i-sliders"/></svg><span>Settings</span></button>
   </nav>
@@ -566,6 +575,7 @@
       categories: DEFAULT_CATEGORIES.map(function (c) { return Object.assign({}, c); }),
       transactions: [],
       recurring: [],
+      loans: [],
       cards: [],
       customBankCards: [],
       bankCardConfig: defaultBankCardConfig(),
@@ -584,6 +594,7 @@
     if (!parsed.categories || !parsed.categories.length) parsed.categories = defaultState().categories;
     if (!parsed.transactions) parsed.transactions = [];
     if (!parsed.recurring) parsed.recurring = [];
+    if (!parsed.loans) parsed.loans = [];
     if (!parsed.cards) parsed.cards = [];
     if (!parsed.customBankCards) parsed.customBankCards = [];
     if (!parsed.bankCardConfig) parsed.bankCardConfig = defaultBankCardConfig();
@@ -786,6 +797,7 @@
     transactions: { title: "Transactions", sub: "All activity" },
     recurring: { title: "Recurring", sub: "Bills & subscriptions" },
     forecast: { title: "Forecast", sub: "Expected monthly payments" },
+    loans: { title: "Loans", sub: "Long-term debt payoff" },
     transfer: { title: "Transfer", sub: "Move funds between accounts" },
     settings: { title: "Settings", sub: "Finance Tracker" }
   };
@@ -812,6 +824,7 @@
   document.getElementById("appbar-action").addEventListener("click", function () {
     if (currentTab === "dashboard" || currentTab === "transactions") openTransactionForm(null);
     else if (currentTab === "recurring") openRecurringForm(null);
+    else if (currentTab === "loans") openLoanForm(null);
     else if (currentTab === "transfer") openTransferForm();
   });
 
@@ -1230,6 +1243,162 @@
     assignCategorySlots();
     save();
     renderAll();
+  }
+
+  /* ---------- render: loans ---------- */
+
+  function loanProgress(loan) {
+    var amountPaid = Math.min(loan.paymentsMade * loan.monthlyPayment, loan.totalAmount);
+    var balance = Math.max(loan.totalAmount - amountPaid, 0);
+    var pct = loan.totalAmount > 0 ? Math.min(amountPaid / loan.totalAmount, 1) : 0;
+    var estTotalPayments = loan.monthlyPayment > 0 ? Math.ceil(loan.totalAmount / loan.monthlyPayment) : loan.paymentsMade;
+    return { amountPaid: amountPaid, balance: balance, pct: pct, estTotalPayments: estTotalPayments, isPaidOff: balance <= 0 };
+  }
+
+  function renderLoans() {
+    var html = "";
+    if (!state.loans.length) {
+      html += emptyState("trend-down", "No loans tracked", "Add a car payment, personal loan, or other long-term debt to track its payoff progress.");
+    } else {
+      var totalBalance = state.loans.filter(function (l) { return l.isActive; }).reduce(function (s, l) { return s + loanProgress(l).balance; }, 0);
+      html += '<div class="card"><div class="disclosure"><span style="font-weight:600">Total balance remaining</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalBalance) + '</span></div></div>';
+      html += '<div class="card" style="padding:4px 16px">';
+      state.loans.forEach(function (loan) { html += loanCard(loan); });
+      html += '</div>';
+    }
+
+    document.getElementById("tab-loans").innerHTML = html;
+
+    document.querySelectorAll("#tab-loans [data-open-loan]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        if (e.target.closest("[data-mark-loan-paid]")) return;
+        openLoanForm(el.getAttribute("data-open-loan"));
+      });
+    });
+    document.querySelectorAll("#tab-loans [data-mark-loan-paid]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.stopPropagation();
+        openLoanMarkPaidConfirm(el.getAttribute("data-mark-loan-paid"));
+      });
+    });
+  }
+
+  function loanCard(loan) {
+    var p = loanProgress(loan);
+    var d = daysUntil(loan.nextPaymentDate);
+
+    var html = '<div data-open-loan="' + loan.id + '" style="margin-bottom:16px;opacity:' + (loan.isActive ? 1 : 0.5) + '">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">';
+    html += '<span style="font-size:14.5px;font-weight:600">' + escapeHtml(loan.name) + '</span>';
+    if (p.isPaidOff) html += '<span class="chip good">' + icon("check") + 'Paid Off</span>';
+    else if (d <= 3) html += dueChip(d);
+    html += '</div>';
+    html += '<div class="bar-track"><div class="bar-fill" style="background:var(--accent);width:' + (p.pct * 100) + '%"></div></div>';
+    html += '<div class="footnote num">Paid ' + fmtMoney(p.amountPaid) + ' of ' + fmtMoney(loan.totalAmount) + ' · ' + loan.paymentsMade + ' of ~' + p.estTotalPayments + ' payments</div>';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">';
+    html += '<span class="footnote num" style="margin:0">Balance ' + fmtMoney(p.balance) + (p.isPaidOff ? '' : ' · Next ' + fmtDateShort(loan.nextPaymentDate)) + '</span>';
+    if (!p.isPaidOff) html += '<button class="icon-btn ghost" data-mark-loan-paid="' + loan.id + '" aria-label="Mark payment paid" style="width:28px;height:28px;flex-shrink:0">' + icon("check") + '</button>';
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  function openLoanMarkPaidConfirm(id) {
+    var loan = byId(state.loans, id);
+    if (!loan) return;
+
+    var html = '<div class="modal-head"><h3>Mark Payment Paid</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<p style="font-size:14.5px;color:var(--ink-2);margin:0 0 16px">' + escapeHtml(loan.name) + ' · ' + fmtMoney(loan.monthlyPayment) + '</p>';
+    html += '<div class="field"><label>Paid with</label><select name="bankCard" id="loan-mark-paid-bank"><option value="">None</option>';
+    allBankCards().forEach(function (bc) {
+      html += '<option value="' + escapeAttr(bc) + '"' + (loan.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
+    });
+    html += '</select></div>';
+    html += '<button type="button" class="btn primary" data-confirm-loan-paid>Confirm Payment</button>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    document.querySelector("[data-confirm-loan-paid]").addEventListener("click", function () {
+      var bankCard = document.getElementById("loan-mark-paid-bank").value || null;
+      markLoanPaid(id, bankCard);
+      closeModal();
+    });
+  }
+
+  function markLoanPaid(id, bankCard) {
+    var loan = byId(state.loans, id);
+    if (!loan) return;
+    state.transactions.push({ id: uid(), amount: loan.monthlyPayment, merchant: loan.name, note: "Loan payment", date: todayISO(), type: "expense", categoryId: loan.categoryId, bankCard: bankCard || null });
+    loan.bankCard = bankCard || null;
+    loan.paymentsMade += 1;
+    loan.nextPaymentDate = addInterval(loan.nextPaymentDate, "monthly");
+    assignCategorySlots();
+    save();
+    renderAll();
+  }
+
+  function openLoanForm(id) {
+    var existing = id ? byId(state.loans, id) : null;
+    var html = '<div class="modal-head"><h3>' + (existing ? "Edit Loan" : "Add Loan") + '</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<form id="loan-form">';
+    html += '<div class="field"><label>Name</label><input type="text" name="name" placeholder="e.g. Car Loan, Personal Loan" value="' + escapeAttr(existing ? existing.name : "") + '" required /></div>';
+    html += '<div class="field"><label>Total Debt Value</label><input type="number" step="0.01" min="0" name="totalAmount" value="' + (existing ? existing.totalAmount : "") + '" required /></div>';
+    html += '<div class="field"><label>Monthly Payment</label><input type="number" step="0.01" min="0.01" name="monthlyPayment" value="' + (existing ? existing.monthlyPayment : "") + '" required /></div>';
+    html += '<div class="field"><label>Start Date</label><input type="date" name="startDate" value="' + (existing ? existing.startDate : todayISO()) + '" required /></div>';
+    html += '<div class="field"><label>End Date</label><input type="date" name="endDate" value="' + (existing ? existing.endDate : "") + '" /></div>';
+    html += '<div class="field"><label>Payments Already Made</label><input type="number" step="1" min="0" name="paymentsMade" value="' + (existing ? existing.paymentsMade : "0") + '" required />';
+    html += '<div class="footnote">If this loan is already in progress, enter how many payments you\'ve made so far so the balance starts accurate.</div></div>';
+    html += '<div class="field"><label>Next Payment Date</label><input type="date" name="nextPaymentDate" value="' + (existing ? existing.nextPaymentDate : todayISO()) + '" required /></div>';
+    html += '<div class="field"><label>Category</label><select name="categoryId"><option value="">None</option>';
+    state.categories.forEach(function (c) {
+      html += '<option value="' + c.id + '"' + (existing && existing.categoryId === c.id ? " selected" : "") + '>' + escapeHtml(c.name) + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div class="field"><label>Usual Bank / Card</label><select name="bankCard"><option value="">None</option>';
+    allBankCards().forEach(function (bc) {
+      html += '<option value="' + escapeAttr(bc) + '"' + (existing && existing.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div class="toggle-row"><span>Active</span><label class="switch"><input type="checkbox" name="isActive" ' + (!existing || existing.isActive ? "checked" : "") + ' /><span class="track"></span><span class="thumb"></span></label></div>';
+    html += '<button type="submit" class="btn primary" style="margin-top:8px">Save</button>';
+    if (existing) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
+    html += '</form>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+
+    if (existing) document.querySelector("[data-delete]").addEventListener("click", function () {
+      confirmAction("Delete this loan? Its payment history in Transactions is kept.", "Delete", function () {
+        state.loans = state.loans.filter(function (l) { return l.id !== existing.id; });
+        save(); renderAll();
+      });
+    });
+
+    document.getElementById("loan-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var f = new FormData(e.target);
+      var record = {
+        id: existing ? existing.id : uid(),
+        name: f.get("name").trim(),
+        totalAmount: parseFloat(f.get("totalAmount")),
+        monthlyPayment: parseFloat(f.get("monthlyPayment")),
+        startDate: f.get("startDate"),
+        endDate: f.get("endDate") || null,
+        paymentsMade: parseInt(f.get("paymentsMade"), 10) || 0,
+        nextPaymentDate: f.get("nextPaymentDate"),
+        categoryId: f.get("categoryId") || null,
+        bankCard: f.get("bankCard") || null,
+        isActive: f.get("isActive") === "on"
+      };
+      if (isNaN(record.totalAmount) || isNaN(record.monthlyPayment) || !record.name) return;
+      if (existing) {
+        var idx = state.loans.findIndex(function (l) { return l.id === existing.id; });
+        state.loans[idx] = record;
+      } else {
+        state.loans.push(record);
+      }
+      save(); closeModal(); renderAll();
+    });
   }
 
   /* ---------- render: forecast ---------- */
@@ -1823,6 +1992,7 @@
     renderTransactions();
     renderRecurring();
     renderForecast();
+    renderLoans();
     renderTransfer();
     renderSettings();
   }
