@@ -455,6 +455,7 @@
   .lock-card input:focus { border-color: var(--accent); outline: none; }
   .lock-error { color: var(--critical); font-size: 12.5px; margin: 12px 0 0; min-height: 16px; }
   .lock-status { color: var(--ink-muted); font-size: 12.5px; margin: 8px 0 0; min-height: 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .lock-toggle { background: none; border: none; color: var(--accent); font-size: 12.5px; cursor: pointer; margin-top: 14px; padding: 4px; }
 
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
@@ -579,6 +580,7 @@
     </form>
     <p class="lock-error" id="lock-error"></p>
     <p class="lock-status" id="lock-status"></p>
+    <button type="button" class="lock-toggle" id="lock-toggle">First time here? Set up your PIN</button>
   </div>
 </div>
 
@@ -783,13 +785,20 @@
   }
 
   function showLockScreen(mode) {
+    pendingFirstAccount = mode === "setup";
     document.getElementById("lock-screen").classList.add("open");
     document.getElementById("lock-pin-confirm").style.display = mode === "setup" ? "block" : "none";
     document.getElementById("lock-title").textContent = mode === "setup" ? "Set Your PIN" : "Enter PIN";
     document.getElementById("lock-sub").textContent = mode === "setup"
       ? "First time here — choose a PIN (6+ characters) to protect and sync your data."
       : "Unlock to sync across your devices.";
+    document.getElementById("lock-toggle").textContent = mode === "setup"
+      ? "Already have a PIN? Sign in instead"
+      : "First time here? Set up your PIN";
+    document.getElementById("lock-pin").value = "";
+    document.getElementById("lock-pin-confirm").value = "";
     document.getElementById("lock-error").textContent = "";
+    document.getElementById("lock-status").textContent = "";
   }
 
   function hideLockScreen() {
@@ -826,6 +835,10 @@
       }
     });
 
+    document.getElementById("lock-toggle").addEventListener("click", function () {
+      showLockScreen(pendingFirstAccount ? "check" : "setup");
+    });
+
     document.getElementById("lock-form").addEventListener("submit", function (e) {
       e.preventDefault();
       var pin = document.getElementById("lock-pin").value;
@@ -847,8 +860,6 @@
       auth.signInWithEmailAndPassword(ACCOUNT_EMAIL, pin).catch(function (err) {
         lockStatus("");
         if (err.code === "auth/user-not-found") {
-          pendingFirstAccount = true;
-          document.getElementById("lock-pin").value = "";
           showLockScreen("setup");
         } else if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
           lockError("Incorrect PIN.");
