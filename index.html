@@ -429,6 +429,33 @@
   .footnote { font-size: 12.5px; color: var(--ink-muted); line-height: 1.5; margin-top: 4px; }
   a { color: var(--accent); }
 
+  .lock-screen {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--page);
+    background-image: radial-gradient(circle, var(--line) 1px, transparent 1px);
+    background-size: 18px 18px;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .lock-screen.open { display: flex; }
+  .lock-card { width: 100%; max-width: 320px; text-align: center; }
+  .lock-eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--ink-muted);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .lock-card h1 { margin: 6px 0 4px; font-size: 22px; }
+  .lock-sub { font-size: 13px; color: var(--ink-2); margin: 0 0 24px; line-height: 1.5; }
+  .lock-card input {
+    width: 100%; text-align: center; letter-spacing: 0.3em;
+    padding: 14px; margin-bottom: 10px;
+    border-radius: var(--radius-md); border: 1px solid var(--line);
+    background: var(--surface-2); color: var(--ink); font-size: 18px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .lock-card input:focus { border-color: var(--accent); outline: none; }
+  .lock-error { color: var(--critical); font-size: 12.5px; margin: 12px 0 0; min-height: 16px; }
+  .lock-status { color: var(--ink-muted); font-size: 12.5px; margin: 8px 0 0; min-height: 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
   }
@@ -539,6 +566,25 @@
 <div class="modal-overlay" id="modal-overlay">
   <div class="modal-sheet" id="modal-sheet"></div>
 </div>
+
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-eyebrow">FINANCE TRACKER</div>
+    <h1 id="lock-title">Enter PIN</h1>
+    <p class="lock-sub" id="lock-sub">Unlock to sync across your devices.</p>
+    <form id="lock-form">
+      <input type="password" inputmode="text" autocomplete="off" id="lock-pin" placeholder="PIN" required />
+      <input type="password" inputmode="text" autocomplete="off" id="lock-pin-confirm" placeholder="Confirm PIN" style="display:none" />
+      <button type="submit" class="btn primary" id="lock-submit">Unlock</button>
+    </form>
+    <p class="lock-error" id="lock-error"></p>
+    <p class="lock-status" id="lock-status"></p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
 <script>
 (function () {
@@ -681,6 +727,136 @@
 
   function save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    pushToCloud();
+  }
+
+  /* ---------- cloud sync (Firebase Auth + Firestore) ----------
+     Single-user app: sign-in is just a PIN, backed by a real Firebase
+     Auth account under a fixed email so the PIN is genuinely verified
+     server-side rather than a fake local lock screen. First entry with
+     no existing account creates it; after that the PIN must match. */
+
+  var ACCOUNT_EMAIL = "abdallahfauze@gmail.com";
+  var firebaseConfig = {
+    apiKey: "AIzaSyA-YbIZYUxgc-4LPR1XJIc30WzuKIjuAeM",
+    authDomain: "finance-tracker-32c9e.firebaseapp.com",
+    projectId: "finance-tracker-32c9e",
+    storageBucket: "finance-tracker-32c9e.firebasestorage.app",
+    messagingSenderId: "474926389794",
+    appId: "1:474926389794:web:043d382fb237b0c502c87b"
+  };
+
+  var cloudEnabled = typeof firebase !== "undefined";
+  var auth = null, db = null;
+  var isApplyingRemoteUpdate = false;
+  var unsubscribeSnapshot = null;
+  var pendingFirstAccount = false;
+
+  function pushToCloud() {
+    if (!cloudEnabled || isApplyingRemoteUpdate || !auth.currentUser) return;
+    // Firestore rejects any field valued `undefined`; round-tripping through
+    // JSON strips those defensively rather than risking a write failure.
+    var payload = JSON.parse(JSON.stringify(state));
+    db.collection("users").doc(auth.currentUser.uid).set(payload).catch(function (err) {
+      console.error("Cloud sync failed (will retry once back online):", err);
+    });
+  }
+
+  function startSync(uid) {
+    stopSync();
+    unsubscribeSnapshot = db.collection("users").doc(uid).onSnapshot(function (snap) {
+      if (snap.metadata.hasPendingWrites) return; // our own optimistic write echoing back
+      var data = snap.data();
+      if (!data) { pushToCloud(); return; } // brand-new account, seed the cloud doc
+      isApplyingRemoteUpdate = true;
+      state = normalizeState(data);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderAll();
+      isApplyingRemoteUpdate = false;
+    }, function (err) {
+      console.error("Cloud sync listener error:", err);
+    });
+  }
+
+  function stopSync() {
+    if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+  }
+
+  function showLockScreen(mode) {
+    document.getElementById("lock-screen").classList.add("open");
+    document.getElementById("lock-pin-confirm").style.display = mode === "setup" ? "block" : "none";
+    document.getElementById("lock-title").textContent = mode === "setup" ? "Set Your PIN" : "Enter PIN";
+    document.getElementById("lock-sub").textContent = mode === "setup"
+      ? "First time here — choose a PIN (6+ characters) to protect and sync your data."
+      : "Unlock to sync across your devices.";
+    document.getElementById("lock-error").textContent = "";
+  }
+
+  function hideLockScreen() {
+    document.getElementById("lock-screen").classList.remove("open");
+  }
+
+  function lockError(message) {
+    document.getElementById("lock-error").textContent = message;
+  }
+
+  function lockStatus(message) {
+    document.getElementById("lock-status").textContent = message;
+  }
+
+  function initCloud() {
+    if (!cloudEnabled) {
+      // Firebase failed to load (offline, blocked, etc.) - degrade to local-only.
+      renderAll();
+      return;
+    }
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    db.enablePersistence({ synchronizeTabs: true }).catch(function () {});
+
+    auth.onAuthStateChanged(function (user) {
+      if (user) {
+        hideLockScreen();
+        startSync(user.uid);
+        renderAll();
+      } else {
+        stopSync();
+        showLockScreen("check");
+      }
+    });
+
+    document.getElementById("lock-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var pin = document.getElementById("lock-pin").value;
+      lockError("");
+
+      if (pendingFirstAccount) {
+        var confirmPin = document.getElementById("lock-pin-confirm").value;
+        if (pin !== confirmPin) { lockError("PINs don't match — try again."); return; }
+        if (pin.length < 6) { lockError("PIN must be at least 6 characters."); return; }
+        lockStatus("Setting up…");
+        auth.createUserWithEmailAndPassword(ACCOUNT_EMAIL, pin).catch(function (err) {
+          lockStatus("");
+          lockError(err.message);
+        });
+        return;
+      }
+
+      lockStatus("Checking…");
+      auth.signInWithEmailAndPassword(ACCOUNT_EMAIL, pin).catch(function (err) {
+        lockStatus("");
+        if (err.code === "auth/user-not-found") {
+          pendingFirstAccount = true;
+          document.getElementById("lock-pin").value = "";
+          showLockScreen("setup");
+        } else if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+          lockError("Incorrect PIN.");
+        } else {
+          lockError(err.message);
+        }
+      });
+    });
   }
 
   /* ---------- helpers ---------- */
@@ -1939,8 +2115,13 @@
     });
     html += '</div>';
 
+    html += '<div class="card"><h2>Account</h2>';
+    html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
+    if (cloudEnabled) html += '<button class="btn plain" id="sign-out">Sign Out</button>';
+    html += '</div>';
+
     html += '<div class="card"><h2>Backup</h2>';
-    html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">Everything lives only in this browser — there is no account, server, or cloud copy. Tap below regularly (a weekly habit is enough) to download a backup file, then use your phone’s share sheet or the Files app to save it into Google Drive so it survives even if this device is lost or reset.</p>';
+    html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">A local backup is still worth keeping occasionally as a second copy. Tap below to download it, then use your phone’s share sheet or the Files app to save it into Google Drive.</p>';
     html += '<button class="btn primary" id="export-backup" style="margin-bottom:10px">' + icon("download", "") + ' Save Backup (JSON)</button>';
     html += '<button class="btn plain" id="import-backup">Restore from Backup</button>';
     html += '<input type="file" id="import-backup-file" accept="application/json,.json" style="display:none" />';
@@ -1951,7 +2132,7 @@
     html += '<button class="btn danger" id="reset-data">Reset All Data</button>';
     html += '</div>';
 
-    html += '<p class="footnote" style="padding:0 4px">Everything is stored locally in this browser. There is no server, account, or bank connection — transactions are entered manually.</p>';
+    html += '<p class="footnote" style="padding:0 4px">Transactions are entered manually — there\'s no bank connection. Data syncs to your account when cloud sync is available, with a local copy kept for offline use.</p>';
 
     document.getElementById("tab-settings").innerHTML = html;
 
@@ -1977,6 +2158,12 @@
           state.customBankCards = state.customBankCards.filter(function (c) { return c.label !== label; });
           save(); renderAll();
         });
+      });
+    });
+    var signOutBtn = document.getElementById("sign-out");
+    if (signOutBtn) signOutBtn.addEventListener("click", function () {
+      confirmAction("Sign out? You'll need your PIN to unlock this device again.", "Sign Out", function () {
+        auth.signOut();
       });
     });
     document.getElementById("export-backup").addEventListener("click", exportBackup);
@@ -2106,6 +2293,6 @@
     renderSettings();
   }
 
-  renderAll();
+  initCloud();
 })();
 </script>
