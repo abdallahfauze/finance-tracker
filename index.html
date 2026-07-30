@@ -161,6 +161,10 @@
     background: var(--surface-2);
     color: var(--ink);
   }
+  .icon-btn.accent-ghost {
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
   .icon-btn svg { width: 18px; height: 18px; }
   .icon-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
     outline: 2px solid var(--accent);
@@ -229,7 +233,7 @@
     top: 1px; left: 14px; right: 14px;
     height: 3px;
     background-image: repeating-linear-gradient(to right, var(--accent) 0 2px, transparent 2px 7px);
-    opacity: 0.55;
+    opacity: 0.85;
     pointer-events: none;
   }
   .card h2 {
@@ -261,6 +265,7 @@
   .stat .value { font-size: 19px; margin-top: 4px; }
   .stat.spent .value { color: var(--critical); }
   .stat.income .value { color: var(--good); }
+  .stat.net .value { color: var(--accent); }
 
   .donut-wrap { position: relative; width: 176px; height: 176px; margin: 18px auto 4px; }
   .donut-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
@@ -459,6 +464,23 @@
 
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
+  }
+
+  /* Wider viewports (laptop/desktop): the app no longer needs to stay
+     phone-width. Widen the shell, and let the dashboard's cards - which are
+     all independent, self-contained panels - line up side by side instead
+     of stacking in a single column. Other tabs keep their existing markup
+     (search bars, section headers, etc. aren't independent cards) so they
+     stay a single wider column rather than being force-fit into a grid. */
+  @media (min-width: 760px) {
+    .app, nav.tabbar { max-width: 900px; }
+    #tab-dashboard.active {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+    #tab-dashboard.active .card { margin-top: 0; }
   }
 </style>
 
@@ -1158,14 +1180,14 @@
     html += '<button type="button" data-val="year" class="' + (viewPeriod.type === "year" ? "active" : "") + '">Year</button>';
     html += '</div>';
     html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px">';
-    html += '<button class="icon-btn ghost" id="period-prev" aria-label="Previous" style="width:32px;height:32px">' + icon("chevron", "chevron-flip") + '</button>';
+    html += '<button class="icon-btn accent-ghost" id="period-prev" aria-label="Previous" style="width:32px;height:32px">' + icon("chevron", "chevron-flip") + '</button>';
     html += '<h2 style="margin:0;font-size:15px">' + range.label + '</h2>';
-    html += '<button class="icon-btn ghost" id="period-next" aria-label="Next" style="width:32px;height:32px">' + icon("chevron") + '</button>';
+    html += '<button class="icon-btn accent-ghost" id="period-next" aria-label="Next" style="width:32px;height:32px">' + icon("chevron") + '</button>';
     html += '</div>';
     html += '<div class="stat-row" style="margin-top:14px">';
     html += '<div class="stat spent"><div class="label">Spent</div><div class="value num">' + fmtMoney(spent) + '</div></div>';
     html += '<div class="stat income"><div class="label">Income</div><div class="value num">' + fmtMoney(income) + '</div></div>';
-    html += '<div class="stat"><div class="label">Net</div><div class="value num">' + fmtMoney(income - spent) + '</div></div>';
+    html += '<div class="stat net"><div class="label">Net</div><div class="value num">' + fmtMoney(income - spent) + '</div></div>';
     html += '</div></div>';
 
     html += renderBankCardSummary(range);
@@ -2128,6 +2150,7 @@
 
     html += '<div class="card"><h2>Account</h2>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
+    if (cloudEnabled && auth && auth.currentUser) html += '<button class="btn plain" id="change-pin" style="margin-bottom:10px">Change PIN</button>';
     if (cloudEnabled) html += '<button class="btn plain" id="sign-out">Sign Out</button>';
     html += '</div>';
 
@@ -2171,6 +2194,8 @@
         });
       });
     });
+    var changePinBtn = document.getElementById("change-pin");
+    if (changePinBtn) changePinBtn.addEventListener("click", openChangePinForm);
     var signOutBtn = document.getElementById("sign-out");
     if (signOutBtn) signOutBtn.addEventListener("click", function () {
       confirmAction("Sign out? You'll need your PIN to unlock this device again.", "Sign Out", function () {
@@ -2192,6 +2217,43 @@
         state = defaultState();
         save(); renderAll();
       });
+    });
+  }
+
+  function openChangePinForm() {
+    var html = '<div class="modal-head"><h3>Change PIN</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<div class="field"><label>Current PIN</label><input type="password" autocomplete="off" id="change-pin-current" required /></div>';
+    html += '<div class="field"><label>New PIN</label><input type="password" autocomplete="off" id="change-pin-new" required /></div>';
+    html += '<div class="field"><label>Confirm New PIN</label><input type="password" autocomplete="off" id="change-pin-confirm" required /></div>';
+    html += '<p class="lock-error" id="change-pin-error" style="margin:0 0 12px"></p>';
+    html += '<button type="button" class="btn primary" data-save-pin>Update PIN</button>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    document.querySelector("[data-save-pin]").addEventListener("click", function () {
+      var current = document.getElementById("change-pin-current").value;
+      var next = document.getElementById("change-pin-new").value;
+      var confirmNext = document.getElementById("change-pin-confirm").value;
+      var errorEl = document.getElementById("change-pin-error");
+      errorEl.textContent = "";
+
+      if (next !== confirmNext) { errorEl.textContent = "New PINs don't match — try again."; return; }
+      if (next.length < 6) { errorEl.textContent = "New PIN must be at least 6 characters."; return; }
+
+      var credential = firebase.auth.EmailAuthProvider.credential(ACCOUNT_EMAIL, current);
+      auth.currentUser.reauthenticateWithCredential(credential)
+        .then(function () { return auth.currentUser.updatePassword(next); })
+        .then(function () {
+          closeModal();
+          showMessage("Your PIN has been updated. Use the new PIN next time you sign in on another device.");
+        })
+        .catch(function (err) {
+          if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
+            errorEl.textContent = "Current PIN is incorrect.";
+          } else {
+            errorEl.textContent = err.message;
+          }
+        });
     });
   }
 
