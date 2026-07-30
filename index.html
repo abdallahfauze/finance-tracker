@@ -171,14 +171,14 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 8px 1px 7px;
+    gap: 3px;
+    padding: 9px 2px 8px;
     color: var(--ink-muted);
     cursor: pointer;
   }
-  nav.tabbar button svg { width: 20px; height: 20px; flex-shrink: 0; }
+  nav.tabbar button svg { width: 22px; height: 22px; flex-shrink: 0; }
   nav.tabbar button span {
-    font-size: 9.5px; font-weight: 600; letter-spacing: 0;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.01em;
     max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   nav.tabbar button.active { color: var(--accent); }
@@ -354,6 +354,7 @@
   .disclosure { display: flex; align-items: center; justify-content: space-between; }
   .disclosure svg { width: 16px; height: 16px; color: var(--ink-muted); }
   .chevron-flip { transform: rotate(180deg); }
+  .chevron-sm { width: 16px; height: 16px; color: var(--ink-muted); flex-shrink: 0; }
 
   .forecast-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: -4px -16px 0; padding: 4px 16px 4px; }
   .forecast-table { border-collapse: collapse; font-size: 12.5px; white-space: nowrap; }
@@ -409,6 +410,9 @@
   <symbol id="i-trend-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" />
   </symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+  </symbol>
   <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" />
     <line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" />
@@ -453,9 +457,14 @@
       <div class="sub" id="appbar-sub">Finance Tracker</div>
       <h1 id="appbar-title">Dashboard</h1>
     </div>
-    <button class="icon-btn" id="appbar-action" aria-label="Add">
-      <svg><use href="#i-plus"/></svg>
-    </button>
+    <div style="display:flex;gap:8px">
+      <button class="icon-btn ghost" id="appbar-menu" aria-label="More">
+        <svg><use href="#i-menu"/></svg>
+      </button>
+      <button class="icon-btn" id="appbar-action" aria-label="Add">
+        <svg><use href="#i-plus"/></svg>
+      </button>
+    </div>
   </header>
 
   <main>
@@ -469,13 +478,10 @@
   </main>
 
   <nav class="tabbar">
-    <button data-tab="dashboard" class="active"><svg><use href="#i-pie"/></svg><span>Home</span></button>
-    <button data-tab="transactions"><svg><use href="#i-list"/></svg><span>Activity</span></button>
+    <button data-tab="dashboard" class="active"><svg><use href="#i-pie"/></svg><span>Dashboard</span></button>
+    <button data-tab="transactions"><svg><use href="#i-list"/></svg><span>Transactions</span></button>
     <button data-tab="recurring"><svg><use href="#i-refresh"/></svg><span>Recurring</span></button>
-    <button data-tab="forecast"><svg><use href="#i-grid"/></svg><span>Forecast</span></button>
     <button data-tab="loans"><svg><use href="#i-trend-down"/></svg><span>Loans</span></button>
-    <button data-tab="transfer"><svg><use href="#i-swap"/></svg><span>Transfer</span></button>
-    <button data-tab="settings"><svg><use href="#i-sliders"/></svg><span>Settings</span></button>
   </nav>
 </div>
 
@@ -826,6 +832,33 @@
     else if (currentTab === "recurring") openRecurringForm(null);
     else if (currentTab === "loans") openLoanForm(null);
     else if (currentTab === "transfer") openTransferForm();
+  });
+
+  var MORE_MENU_ITEMS = [
+    { tab: "forecast", icon: "grid", label: "Forecast" },
+    { tab: "transfer", icon: "swap", label: "Transfer" },
+    { tab: "settings", icon: "sliders", label: "Settings" }
+  ];
+
+  document.getElementById("appbar-menu").addEventListener("click", function () {
+    var html = '<div class="modal-head"><h3>More</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<div class="card" style="padding:4px 16px">';
+    MORE_MENU_ITEMS.forEach(function (item) {
+      html += '<div class="row" data-goto-tab="' + item.tab + '">';
+      html += '<div class="badge" style="background:var(--accent);width:34px;height:34px">' + icon(item.icon) + '</div>';
+      html += '<div class="main"><div class="title">' + item.label + '</div></div>';
+      html += icon("chevron", "chevron-sm");
+      html += '</div>';
+    });
+    html += '</div>';
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    document.querySelectorAll("[data-goto-tab]").forEach(function (el) {
+      el.addEventListener("click", function () {
+        closeModal();
+        setTab(el.getAttribute("data-goto-tab"));
+      });
+    });
   });
 
   function openModal(html) {
@@ -1419,6 +1452,13 @@
 
     var matrix = {};
     var catTotals = {};
+
+    function addToMatrix(catKey, monthKey, amount) {
+      if (!matrix[catKey]) matrix[catKey] = {};
+      matrix[catKey][monthKey] = (matrix[catKey][monthKey] || 0) + amount;
+      catTotals[catKey] = (catTotals[catKey] || 0) + amount;
+    }
+
     state.recurring.filter(function (r) { return r.isActive; }).forEach(function (r) {
       var catKey = r.categoryId || "__none";
       var d2 = r.nextDueDate;
@@ -1426,21 +1466,39 @@
       while (d2 < windowStart && guard < 500) { d2 = addInterval(d2, r.frequency); guard++; }
       guard = 0;
       while (d2 < windowEnd && guard < 500) {
-        var mk = d2.slice(0, 7);
-        if (!matrix[catKey]) matrix[catKey] = {};
-        matrix[catKey][mk] = (matrix[catKey][mk] || 0) + r.amount;
-        catTotals[catKey] = (catTotals[catKey] || 0) + r.amount;
+        addToMatrix(catKey, d2.slice(0, 7), r.amount);
         d2 = addInterval(d2, r.frequency);
+        guard++;
+      }
+    });
+
+    // Loans are finite: unlike recurring bills, projection stops once the
+    // loan would be paid off, instead of continuing indefinitely.
+    state.loans.filter(function (l) { return l.isActive; }).forEach(function (l) {
+      var catKey = l.categoryId || "__none";
+      var d2 = l.nextPaymentDate;
+      var paymentsSoFar = l.paymentsMade;
+      var guard = 0;
+      while (d2 < windowStart && paymentsSoFar * l.monthlyPayment < l.totalAmount && guard < 500) {
+        d2 = addInterval(d2, "monthly");
+        paymentsSoFar++;
+        guard++;
+      }
+      guard = 0;
+      while (d2 < windowEnd && paymentsSoFar * l.monthlyPayment < l.totalAmount && guard < 500) {
+        addToMatrix(catKey, d2.slice(0, 7), l.monthlyPayment);
+        d2 = addInterval(d2, "monthly");
+        paymentsSoFar++;
         guard++;
       }
     });
 
     var catKeys = Object.keys(matrix).sort(function (a, b) { return catTotals[b] - catTotals[a]; });
 
-    var html = '<div class="card"><p class="footnote" style="margin:0">Projected from your active recurring payments (fixed bills and subscriptions) over the next 12 months.</p></div>';
+    var html = '<div class="card"><p class="footnote" style="margin:0">Projected from your active recurring payments and loans over the next 12 months.</p></div>';
 
     if (!catKeys.length) {
-      html += emptyState("grid", "Nothing to forecast", "Add active recurring payments to see expected monthly totals here.");
+      html += emptyState("grid", "Nothing to forecast", "Add active recurring payments or loans to see expected monthly totals here.");
     } else {
       html += '<div class="card"><div class="forecast-scroll"><table class="forecast-table"><thead><tr><th>Category</th>';
       months.forEach(function (m) { html += '<th>' + m.label + '</th>'; });
