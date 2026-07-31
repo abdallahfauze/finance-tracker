@@ -479,8 +479,12 @@
   .lock-status { color: var(--ink-muted); font-size: 12.5px; margin: 8px 0 0; min-height: 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
   .lock-toggle { background: none; border: none; color: var(--accent); font-size: 12.5px; cursor: pointer; margin-top: 14px; padding: 4px; }
 
+  @keyframes spin-once { to { transform: rotate(360deg); } }
+  .spin-once { animation: spin-once .5s linear; }
+
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
+    .spin-once { animation: none; }
   }
 
   /* Wider viewports (laptop/desktop): the app no longer needs to stay
@@ -577,6 +581,9 @@
       <h1 id="appbar-title">Dashboard</h1>
     </div>
     <div style="display:flex;gap:8px">
+      <button class="icon-btn ghost" id="appbar-refresh" aria-label="Refresh">
+        <svg><use href="#i-refresh"/></svg>
+      </button>
       <button class="icon-btn ghost" id="appbar-menu" aria-label="More">
         <svg><use href="#i-menu"/></svg>
       </button>
@@ -1166,6 +1173,11 @@
 
   document.querySelectorAll("nav.tabbar button").forEach(function (btn) {
     btn.addEventListener("click", function () { setTab(btn.getAttribute("data-tab")); });
+  });
+
+  document.getElementById("appbar-refresh").addEventListener("click", function (e) {
+    e.currentTarget.querySelector("svg").classList.add("spin-once");
+    location.reload();
   });
 
   document.getElementById("appbar-action").addEventListener("click", function () {
