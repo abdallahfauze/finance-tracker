@@ -658,27 +658,37 @@
     { id: "other", name: "Other", slot: null, isSystem: true, keywords: [] }
   ];
 
-  /* Chart colors are earned, not pre-assigned: the first 8 categories that
-     actually have an expense transaction (in category list order) get a
-     real color slot, persisted permanently once assigned. Categories never
-     used for an expense (or created after all 8 slots are taken) stay
-     grey and fold into "Other / Uncategorized" on the donut - this way an
-     unused default category doesn't block a real custom category from
-     getting its own color. */
+  /* Chart colors are earned, not pre-assigned: the 8 categories with the
+     highest lifetime expense total get a real color slot; everything else
+     stays grey and folds into "Other / Uncategorized" on the donut. This is
+     recomputed (not just appended to) on every call, so a category that
+     used to be top-8 but has since been overtaken loses its slot to make
+     room - otherwise whichever categories happened to be used *first* would
+     permanently hog colors even after a heavier-spend category showed up. */
   function assignCategorySlots() {
-    var used = {};
-    state.categories.forEach(function (c) { if (typeof c.slot === "number") used[c.slot] = true; });
+    var totals = {};
+    state.transactions.forEach(function (t) {
+      if (t.type !== "expense" || !t.categoryId) return;
+      totals[t.categoryId] = (totals[t.categoryId] || 0) + t.amount;
+    });
+    var eligible = state.categories.filter(function (c) { return (totals[c.id] || 0) > 0; });
+    eligible.sort(function (a, b) {
+      var diff = (totals[b.id] || 0) - (totals[a.id] || 0);
+      return diff !== 0 ? diff : (a.id < b.id ? -1 : 1);
+    });
+    var top8Ids = {};
+    eligible.slice(0, 8).forEach(function (c) { top8Ids[c.id] = true; });
+
     var changed = false;
     state.categories.forEach(function (c) {
+      if (typeof c.slot === "number" && !top8Ids[c.id]) { c.slot = null; changed = true; }
+    });
+    eligible.slice(0, 8).forEach(function (c) {
       if (typeof c.slot === "number") return;
-      var freeSlot = -1;
-      for (var i = 0; i < 8; i++) { if (!used[i]) { freeSlot = i; break; } }
-      if (freeSlot === -1) return;
-      var hasExpense = state.transactions.some(function (t) { return t.categoryId === c.id && t.type === "expense"; });
-      if (hasExpense) {
-        c.slot = freeSlot;
-        used[freeSlot] = true;
-        changed = true;
+      var used = {};
+      state.categories.forEach(function (x) { if (typeof x.slot === "number") used[x.slot] = true; });
+      for (var i = 0; i < 8; i++) {
+        if (!used[i]) { c.slot = i; changed = true; break; }
       }
     });
     return changed;
@@ -763,6 +773,15 @@
       parsed.categories.forEach(function (c) { c.slot = null; });
       parsed.categorySlotsMigratedV2 = true;
     }
+    // One-time migration: slots used to be first-come-first-served and never
+    // released, so a category used early could permanently hog a color even
+    // after a heavier-spend category came along later with nowhere left to
+    // go. Clear slots once more so the new spend-ranked assignment can
+    // recompute them correctly for existing accounts.
+    if (!parsed.categorySlotsMigratedV3) {
+      parsed.categories.forEach(function (c) { c.slot = null; });
+      parsed.categorySlotsMigratedV3 = true;
+    }
     parsed.categories.forEach(function (c) { if (typeof c.budget !== "number") c.budget = 0; });
     if (!parsed.settings.notifyBills) parsed.settings.notifyBills = false;
     return parsed;
@@ -821,9 +840,14 @@
       if (!data) { pushToCloud(); return; } // brand-new account, seed the cloud doc
       isApplyingRemoteUpdate = true;
       state = normalizeState(data);
+      // A category-slot migration inside normalizeState only clears slots -
+      // it doesn't reassign them, so a synced device needs this to avoid
+      // showing every category as colorless "Other" until its next edit.
+      var slotsChanged = assignCategorySlots();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       renderAll();
       isApplyingRemoteUpdate = false;
+      if (slotsChanged) save();
     }, function (err) {
       console.error("Cloud sync listener error:", err);
     });
