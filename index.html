@@ -971,8 +971,13 @@
 
   /* ---------- dashboard period (month/year navigation) ---------- */
 
-  var today = new Date();
-  var viewPeriod = { type: "month", year: today.getFullYear(), month: today.getMonth() + 1 };
+  /* A function, not a cached Date - a value captured once at page load would
+     go stale in a long-running tab (or an iOS home-screen app, which the OS
+     suspends in the background rather than reloading), so every "current
+     date" read needs to reflect the real moment it's called, not whenever
+     the script first ran. */
+  function today() { return new Date(); }
+  var viewPeriod = { type: "month", year: today().getFullYear(), month: today().getMonth() + 1 };
 
   function periodRange(period) {
     if (period.type === "year") {
@@ -990,7 +995,7 @@
   }
 
   function isCurrentMonthPeriod(period) {
-    return period.type === "month" && period.year === today.getFullYear() && period.month === today.getMonth() + 1;
+    return period.type === "month" && period.year === today().getFullYear() && period.month === today().getMonth() + 1;
   }
 
   function shiftPeriod(delta) {
@@ -1036,7 +1041,7 @@
      used by the dashboard's trend charts, independent of the Month/Year
      period picker (which only affects the stat cards above). */
   function lastNMonths(n) {
-    var base = new Date(today.getFullYear(), today.getMonth(), 1);
+    var base = new Date(today().getFullYear(), today().getMonth(), 1);
     var months = [];
     for (var i = n - 1; i >= 0; i--) {
       var d = new Date(base.getFullYear(), base.getMonth() - i, 1);
@@ -1059,7 +1064,7 @@
     if (!state.transactions.length) return null;
     var earliest = state.transactions.reduce(function (a, t) { return t.date < a ? t.date : a; }, state.transactions[0].date);
     var earliestDate = new Date(earliest.slice(0, 7) + "-01T00:00:00");
-    var base = new Date(today.getFullYear(), today.getMonth(), 1);
+    var base = new Date(today().getFullYear(), today().getMonth(), 1);
     var monthsBack = (base.getFullYear() - earliestDate.getFullYear()) * 12 + (base.getMonth() - earliestDate.getMonth());
     var count = Math.min(maxN, Math.max(monthsBack + 1, 1));
     if (count < 2) return null;
@@ -1871,7 +1876,7 @@
   /* ---------- render: forecast ---------- */
 
   function renderForecast() {
-    var base = new Date(today.getFullYear(), today.getMonth(), 1);
+    var base = new Date(today().getFullYear(), today().getMonth(), 1);
     var months = [];
     for (var i = 0; i < 12; i++) {
       var d = new Date(base.getFullYear(), base.getMonth() + i, 1);
@@ -2575,6 +2580,25 @@
     renderSettings();
     try { checkBillReminders(); } catch (e) {}
   }
+
+  /* An iOS home-screen app (and long-lived browser tabs generally) gets
+     suspended in the background rather than reloaded, so it can resume
+     days later still holding the month it was on when backgrounded. If
+     the dashboard was tracking "the current month" (rather than some
+     month the user deliberately paged to), snap it forward to match
+     reality whenever the page becomes visible again. */
+  var trackedMonthKey = today().getFullYear() + "-" + today().getMonth();
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState !== "visible") return;
+    var now = today();
+    var nowKey = now.getFullYear() + "-" + now.getMonth();
+    if (nowKey !== trackedMonthKey) {
+      var wasOnTrackedMonth = viewPeriod.type === "month" && (viewPeriod.year + "-" + (viewPeriod.month - 1)) === trackedMonthKey;
+      if (wasOnTrackedMonth) viewPeriod = { type: "month", year: now.getFullYear(), month: now.getMonth() + 1 };
+      trackedMonthKey = nowKey;
+    }
+    renderAll();
+  });
 
   /* ---------- bill due-date reminders ----------
      Best-effort only: fires via the Notification API while this tab/app is
