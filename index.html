@@ -1050,6 +1050,22 @@
     return months;
   }
 
+  /* Trend charts shouldn't reach further back than the user's actual first
+     transaction - months before that have no real activity, so a schedule-
+     based estimate (loan balance, in particular) would draw a smooth trend
+     line for a period that was never actually tracked. Returns null if
+     there's no transaction history at all. */
+  function trendMonths(maxN) {
+    if (!state.transactions.length) return null;
+    var earliest = state.transactions.reduce(function (a, t) { return t.date < a ? t.date : a; }, state.transactions[0].date);
+    var earliestDate = new Date(earliest.slice(0, 7) + "-01T00:00:00");
+    var base = new Date(today.getFullYear(), today.getMonth(), 1);
+    var monthsBack = (base.getFullYear() - earliestDate.getFullYear()) * 12 + (base.getMonth() - earliestDate.getMonth());
+    var count = Math.min(maxN, Math.max(monthsBack + 1, 1));
+    if (count < 2) return null;
+    return lastNMonths(count);
+  }
+
   /* Compact number for tight chart labels (no currency symbol, k/m suffix) -
      fmtMoney's full formatting doesn't fit under a narrow bar. */
   function fmtCompact(n) {
@@ -1438,7 +1454,8 @@
   }
 
   function renderSpendingTrendCard() {
-    var months = lastNMonths(6);
+    var months = trendMonths(6);
+    if (!months) return "";
     var totals = months.map(function (m) {
       return state.transactions.filter(function (t) {
         return !t.isTransfer && t.type === "expense" && t.date >= m.start && t.date < m.end;
@@ -1461,7 +1478,8 @@
   }
 
   function renderNetWorthTrendCard() {
-    var months = lastNMonths(6);
+    var months = trendMonths(6);
+    if (!months) return "";
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
     var values = months.map(function (m) {
       var assets = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, m.end); }, 0);
