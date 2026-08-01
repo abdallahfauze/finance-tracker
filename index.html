@@ -714,7 +714,8 @@
   }
 
   function allBankCards() {
-    return BANK_CARDS.concat(state.customBankCards.map(function (c) { return c.label; }));
+    return BANK_CARDS.concat(state.customBankCards.map(function (c) { return c.label; }))
+      .filter(function (l) { return state.removedBankCards.indexOf(l) === -1; });
   }
 
   function defaultBankCardConfig() {
@@ -740,6 +741,7 @@
       loans: [],
       cards: [],
       customBankCards: [],
+      removedBankCards: [],
       bankCardConfig: defaultBankCardConfig(),
       settings: { currency: guessCurrency() }
     };
@@ -759,6 +761,7 @@
     if (!parsed.loans) parsed.loans = [];
     if (!parsed.cards) parsed.cards = [];
     if (!parsed.customBankCards) parsed.customBankCards = [];
+    if (!parsed.removedBankCards) parsed.removedBankCards = [];
     if (!parsed.bankCardConfig) parsed.bankCardConfig = defaultBankCardConfig();
     BANK_CARDS.concat(parsed.customBankCards.map(function (c) { return c.label; })).forEach(function (label) {
       if (!parsed.bankCardConfig[label]) parsed.bankCardConfig[label] = { value: 0 };
@@ -2266,13 +2269,13 @@
     html += '<div class="field"><label>Monthly Budget (optional)</label><input type="number" step="0.01" min="0" name="budget" placeholder="No limit" value="' + (existing && existing.budget ? existing.budget : "") + '" />';
     html += '<div class="footnote">Shows a progress bar on the Dashboard once you start spending in this category.</div></div>';
     html += '<button type="submit" class="btn primary" style="margin-top:8px">Save</button>';
-    if (existing && !existing.isSystem) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
+    if (existing) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
     html += '</form>';
 
     openModal(html);
     document.querySelector("[data-close]").addEventListener("click", closeModal);
 
-    if (existing && !existing.isSystem) document.querySelector("[data-delete]").addEventListener("click", function () {
+    if (existing) document.querySelector("[data-delete]").addEventListener("click", function () {
       confirmAction("Delete this category? Transactions using it will become uncategorized.", "Delete", function () {
         state.categories = state.categories.filter(function (c) { return c.id !== existing.id; });
         state.transactions.forEach(function (t) { if (t.categoryId === existing.id) t.categoryId = null; });
@@ -2303,10 +2306,9 @@
 
   function bankCardConfigField(label) {
     var value = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
-    var isCustom = state.customBankCards.some(function (c) { return c.label === label; });
     var html = '<div class="field" style="margin-bottom:10px">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center"><label style="margin-bottom:0">' + escapeHtml(label) + '</label>';
-    if (isCustom) html += '<button type="button" class="icon-btn ghost" data-remove-bank="' + escapeAttr(label) + '" aria-label="Remove account" style="width:24px;height:24px;flex-shrink:0">' + icon("trash") + '</button>';
+    html += '<button type="button" class="icon-btn ghost" data-remove-bank="' + escapeAttr(label) + '" aria-label="Remove account" style="width:24px;height:24px;flex-shrink:0">' + icon("trash") + '</button>';
     html += '</div>';
     html += '<input type="number" step="0.01" min="0" class="bank-card-config" data-label="' + escapeAttr(label) + '" value="' + value + '" />';
     html += '</div>';
@@ -2414,7 +2416,12 @@
       btn.addEventListener("click", function () {
         var label = btn.getAttribute("data-remove-bank");
         confirmAction("Remove " + label + "? Existing transactions tagged with it are kept but will show as an unrecognized account.", "Remove", function () {
-          state.customBankCards = state.customBankCards.filter(function (c) { return c.label !== label; });
+          var isCustom = state.customBankCards.some(function (c) { return c.label === label; });
+          if (isCustom) {
+            state.customBankCards = state.customBankCards.filter(function (c) { return c.label !== label; });
+          } else if (state.removedBankCards.indexOf(label) === -1) {
+            state.removedBankCards.push(label);
+          }
           save(); renderAll();
         });
       });
