@@ -735,13 +735,17 @@
 
   function defaultState() {
     return {
+      // Categories are generic enough to be useful out of the box, but bank
+      // cards are specific accounts - a brand-new account shouldn't start
+      // with 8 example cards that aren't real, so all of them start removed
+      // and the user adds their own via Settings.
       categories: DEFAULT_CATEGORIES.map(function (c) { return Object.assign({}, c); }),
       transactions: [],
       recurring: [],
       loans: [],
       cards: [],
       customBankCards: [],
-      removedBankCards: [],
+      removedBankCards: BANK_CARDS.slice(),
       bankCardConfig: defaultBankCardConfig(),
       settings: { currency: guessCurrency() }
     };
