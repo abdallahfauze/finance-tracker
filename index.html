@@ -84,11 +84,7 @@
   .sar-symbol { font-family: "SaudiRiyal", sans-serif; }
 
   * { box-sizing: border-box; }
-  /* Without this, iOS Safari's own rubber-band bounce on the whole page
-     fights with the custom pull-to-refresh gesture below - the page bounces
-     natively AND our JS drags `main`, producing a huge, disconnected-looking
-     gap instead of one clean controlled motion. */
-  html, body { height: 100%; overscroll-behavior-y: none; }
+  html, body { height: 100%; }
   body {
     margin: 0;
     background: var(--page);
@@ -175,28 +171,9 @@
     outline-offset: 2px;
   }
 
-  main { flex: 1; overflow-y: auto; overscroll-behavior-y: contain; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
+  main { flex: 1; overflow-y: auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
   section.tab { display: none; }
   section.tab.active { display: block; }
-
-  .pull-indicator {
-    position: fixed;
-    left: 50%; top: 0;
-    width: 36px; height: 36px;
-    border-radius: 999px;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow-1);
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink-muted);
-    opacity: 0;
-    transform: translate(-50%, -100%) rotate(0deg);
-    z-index: 15;
-    pointer-events: none;
-  }
-  .pull-indicator svg { width: 18px; height: 18px; }
-  .pull-indicator.armed { color: var(--accent); }
-  .pull-indicator.spinning { animation: spin-once .6s linear infinite; }
 
   nav.tabbar {
     position: fixed;
@@ -604,6 +581,9 @@
       <h1 id="appbar-title">Dashboard</h1>
     </div>
     <div style="display:flex;gap:8px">
+      <button class="icon-btn ghost" id="appbar-refresh" aria-label="Refresh">
+        <svg><use href="#i-refresh"/></svg>
+      </button>
       <button class="icon-btn ghost" id="appbar-menu" aria-label="More">
         <svg><use href="#i-menu"/></svg>
       </button>
@@ -612,8 +592,6 @@
       </button>
     </div>
   </header>
-
-  <div class="pull-indicator" id="pull-indicator"><svg><use href="#i-refresh"/></svg></div>
 
   <main>
     <section class="tab active" id="tab-dashboard"></section>
@@ -1262,80 +1240,10 @@
     });
   });
 
-  /* ---------- pull-to-refresh ----------
-     A real page reload (not just a re-render) is the most reliable way to
-     pick up the true current date and the latest deployed code - especially
-     for the iOS home-screen app, which the OS suspends rather than reloads.
-     Built on Pointer Events (not touch events) so touch and mouse share one
-     code path; gated to pointerType "touch" so a mouse drag on desktop
-     doesn't trigger it by accident. */
-  (function initPullToRefresh() {
-    var mainEl = document.querySelector("main");
-    var indicator = document.getElementById("pull-indicator");
-    var appbarEl = document.querySelector(".appbar");
-    var PULL_THRESHOLD = 70;
-    var PULL_MAX = 110;
-    var INDICATOR_SIZE = 36;
-    var startY = null;
-    var pulling = false;
-
-    function positionIndicator() {
-      indicator.style.top = appbarEl.getBoundingClientRect().bottom + "px";
-    }
-    positionIndicator();
-    window.addEventListener("resize", positionIndicator);
-
-    function setDragging(isDragging) {
-      mainEl.style.transition = isDragging ? "" : "transform .2s ease";
-      indicator.style.transition = isDragging ? "" : "transform .2s ease, opacity .2s ease";
-    }
-
-    function reset() {
-      setDragging(false);
-      mainEl.style.transform = "";
-      indicator.style.transform = "translate(-50%, -100%)";
-      indicator.style.opacity = "0";
-      indicator.classList.remove("armed");
-    }
-
-    mainEl.addEventListener("pointerdown", function (e) {
-      if (e.pointerType !== "touch") return;
-      if (mainEl.scrollTop > 0) return;
-      if (document.getElementById("modal-overlay").classList.contains("open")) return;
-      startY = e.clientY;
-      pulling = true;
-      setDragging(true);
-    });
-
-    mainEl.addEventListener("pointermove", function (e) {
-      if (!pulling || startY === null) return;
-      var delta = e.clientY - startY;
-      if (delta <= 0 || mainEl.scrollTop > 0) { pulling = false; startY = null; reset(); return; }
-      var damped = Math.min(delta * 0.5, PULL_MAX);
-      mainEl.style.transform = "translateY(" + damped + "px)";
-      indicator.style.transform = "translate(-50%, " + (damped - INDICATOR_SIZE) + "px)";
-      indicator.style.opacity = String(Math.min(damped / PULL_THRESHOLD, 1));
-      indicator.classList.toggle("armed", damped >= PULL_THRESHOLD);
-      e.preventDefault();
-    }, { passive: false });
-
-    function pullEnd() {
-      if (!pulling) return;
-      pulling = false;
-      startY = null;
-      if (indicator.classList.contains("armed")) {
-        setDragging(false);
-        mainEl.style.transform = "translateY(" + PULL_THRESHOLD + "px)";
-        indicator.style.transform = "translate(-50%, " + (PULL_THRESHOLD - INDICATOR_SIZE) + "px)";
-        indicator.classList.add("spinning");
-        location.reload();
-      } else {
-        reset();
-      }
-    }
-    mainEl.addEventListener("pointerup", pullEnd);
-    mainEl.addEventListener("pointercancel", pullEnd);
-  })();
+  document.getElementById("appbar-refresh").addEventListener("click", function (e) {
+    e.currentTarget.querySelector("svg").classList.add("spin-once");
+    location.reload();
+  });
 
   function openModal(html) {
     document.getElementById("modal-sheet").innerHTML = html;
