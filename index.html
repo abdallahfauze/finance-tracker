@@ -84,7 +84,11 @@
   .sar-symbol { font-family: "SaudiRiyal", sans-serif; }
 
   * { box-sizing: border-box; }
-  html, body { height: 100%; }
+  /* Without this, iOS Safari's own rubber-band bounce on the whole page
+     fights with the custom pull-to-refresh gesture below - the page bounces
+     natively AND our JS drags `main`, producing a huge, disconnected-looking
+     gap instead of one clean controlled motion. */
+  html, body { height: 100%; overscroll-behavior-y: none; }
   body {
     margin: 0;
     background: var(--page);
@@ -171,7 +175,7 @@
     outline-offset: 2px;
   }
 
-  main { flex: 1; overflow-y: auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
+  main { flex: 1; overflow-y: auto; overscroll-behavior-y: contain; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
   section.tab { display: none; }
   section.tab.active { display: block; }
 
