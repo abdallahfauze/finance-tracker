@@ -364,6 +364,27 @@
   .bar-fill.warning { background: var(--warning); }
   .bar-fill.critical { background: var(--critical); }
 
+  .month-progress { margin-top: 10px; }
+  .month-progress .bar-track { position: relative; overflow: visible; }
+  .today-marker {
+    position: absolute; top: 50%; width: 10px; height: 10px;
+    background: var(--accent);
+    border: 2px solid var(--surface);
+    border-radius: 999px;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 1px var(--accent);
+    animation: today-pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes today-pulse {
+    0%, 100% { box-shadow: 0 0 0 1px var(--accent); }
+    50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent); }
+  }
+  .month-progress-labels {
+    display: flex; justify-content: space-between; margin-top: 7px;
+    font-size: 10px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+
   .section-title {
     font-size: 12px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.07em; color: var(--ink-muted);
@@ -509,7 +530,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
-    .spin-once, section.tab.active, .modal-overlay.open, .modal-sheet { animation: none !important; }
+    .spin-once, section.tab.active, .modal-overlay.open, .modal-sheet, .today-marker { animation: none !important; }
   }
 
   /* Wider viewports (laptop/desktop): the app no longer needs to stay
@@ -1307,6 +1328,30 @@
 
   /* ---------- render: dashboard ---------- */
 
+  /* Only meaningful for the real current month - a past month is fully
+     elapsed and a future one hasn't started, so both would just show a
+     stuck 100%/0% bar with nothing useful to say. Reuses the same
+     .bar-track/.bar-fill gauge already used for budgets and card
+     utilization, so it reads as this app's instrument rather than a
+     bolted-on generic progress bar. */
+  function renderMonthProgress() {
+    if (!isCurrentMonthPeriod(viewPeriod)) return "";
+    var now = today();
+    var elapsed = now.getDate();
+    var total = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    var remaining = total - elapsed;
+    var pct = Math.min(elapsed / total, 1) * 100;
+
+    var html = '<div class="month-progress">';
+    html += '<div class="bar-track"><div class="bar-fill good" style="width:' + pct.toFixed(2) + '%"></div>';
+    html += '<div class="today-marker" style="left:' + pct.toFixed(2) + '%" title="Today"></div></div>';
+    html += '<div class="month-progress-labels">';
+    html += '<span>' + elapsed + (elapsed === 1 ? " day in" : " days in") + '</span>';
+    html += '<span>' + (remaining === 0 ? "last day" : remaining + (remaining === 1 ? " day left" : " days left")) + '</span>';
+    html += '</div></div>';
+    return html;
+  }
+
   function renderDashboard() {
     var range = periodRange(viewPeriod);
     var periodTx = transactionsInRange(range.start, range.end);
@@ -1333,6 +1378,7 @@
     html += '<h2 style="margin:0;font-size:15px">' + range.label + '</h2>';
     html += '<button class="icon-btn accent-ghost" id="period-next" aria-label="Next" style="width:32px;height:32px">' + icon("chevron") + '</button>';
     html += '</div>';
+    html += renderMonthProgress();
     html += '<div class="stat-row" style="margin-top:14px">';
     html += '<div class="stat spent"><div class="label">Spent</div><div class="value num" id="stat-spent"></div></div>';
     html += '<div class="stat income"><div class="label">Income</div><div class="value num" id="stat-income"></div></div>';
