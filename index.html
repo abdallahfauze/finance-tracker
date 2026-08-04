@@ -26,6 +26,8 @@
     --accent: #0A7A6C;
     --accent-soft: #DDF2EE;
     --accent-ink: #ffffff;
+    --accent-warm: #B4700F;
+    --accent-warm-soft: #F7E9D2;
     --good: #0ca30c;
     --warning: #b9791f;
     --serious: #ec835a;
@@ -44,6 +46,7 @@
       --page: #14171A; --surface: #1B1F23; --surface-2: #20242A;
       --ink: #EAEDEF; --ink-2: #A8B0B6; --ink-muted: #727B82; --line: #2A3034;
       --accent: #3DD9C4; --accent-soft: #16302C; --accent-ink: #0B1413;
+      --accent-warm: #F0B429; --accent-warm-soft: #3A2C10;
       --warning: #d99a3b;
       --cat0: #3987e5; --cat1: #d95926; --cat2: #199e70; --cat3: #c98500;
       --cat4: #d55181; --cat5: #1f9e1f; --cat6: #9085e9; --cat7: #e66767;
@@ -55,6 +58,7 @@
     --page: #14171A; --surface: #1B1F23; --surface-2: #20242A;
     --ink: #EAEDEF; --ink-2: #A8B0B6; --ink-muted: #727B82; --line: #2A3034;
     --accent: #3DD9C4; --accent-soft: #16302C; --accent-ink: #0B1413;
+    --accent-warm: #F0B429; --accent-warm-soft: #3A2C10;
     --warning: #d99a3b;
     --cat0: #3987e5; --cat1: #d95926; --cat2: #199e70; --cat3: #c98500;
     --cat4: #d55181; --cat5: #1f9e1f; --cat6: #9085e9; --cat7: #e66767;
@@ -65,6 +69,7 @@
     --page: #F3F5F6; --surface: #ffffff; --surface-2: #EAEDEF;
     --ink: #161B1E; --ink-2: #4B555C; --ink-muted: #838C93; --line: #DCE1E4;
     --accent: #0A7A6C; --accent-soft: #DDF2EE; --accent-ink: #ffffff;
+    --accent-warm: #B4700F; --accent-warm-soft: #F7E9D2;
     --warning: #b9791f;
     --cat0: #2a78d6; --cat1: #eb6834; --cat2: #1baf7a; --cat3: #eda100;
     --cat4: #e87ba4; --cat5: #008300; --cat6: #4a3aa7; --cat7: #e34948;
@@ -156,7 +161,18 @@
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
-  .icon-btn:active { opacity: 0.8; }
+  .icon-btn { transition: transform .1s ease, opacity .1s ease; }
+  .icon-btn:active { opacity: 0.8; transform: scale(0.93); }
+  /* A soft accent glow reads well against the dark theme's deep-ink surfaces
+     but looks muddy on light paper, so it's dark-mode only. */
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .icon-btn:not(.ghost) {
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 2px 14px color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+  }
+  :root[data-theme="dark"] .icon-btn:not(.ghost) {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 2px 14px color-mix(in srgb, var(--accent) 40%, transparent);
+  }
   .icon-btn.ghost {
     background: var(--surface-2);
     color: var(--ink);
@@ -173,7 +189,8 @@
 
   main { flex: 1; overflow-y: auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
   section.tab { display: none; }
-  section.tab.active { display: block; }
+  section.tab.active { display: block; animation: tab-in .25s ease; }
+  @keyframes tab-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
   nav.tabbar {
     position: fixed;
@@ -305,8 +322,10 @@
     padding: 11px 0;
     border-bottom: 1px solid var(--line);
     cursor: pointer;
+    transition: background-color .12s ease;
   }
   .row:last-child { border-bottom: none; }
+  .row:active { background: var(--surface-2); }
   .badge {
     width: 34px; height: 34px; border-radius: 999px;
     display: flex; align-items: center; justify-content: center;
@@ -331,6 +350,7 @@
   .chip.good { background: var(--accent-soft); color: var(--accent); }
   .chip.warning { background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning); }
   .chip.critical { background: color-mix(in srgb, var(--critical) 16%, transparent); color: var(--critical); }
+  .chip.milestone { background: var(--accent-warm-soft); color: var(--accent-warm); }
   .chip svg { width: 11px; height: 11px; }
 
   /* Gauge-tick track: graduation marks read through the untouched portion,
@@ -390,7 +410,9 @@
     font-size: 13.5px; font-weight: 700; cursor: pointer;
     text-transform: uppercase; letter-spacing: 0.04em;
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    transition: transform .1s ease;
   }
+  .btn:active { transform: scale(0.97); }
   .btn.primary { background: var(--accent); color: var(--accent-ink); }
   .btn.primary:disabled { opacity: 0.4; }
   .btn.danger { background: color-mix(in srgb, var(--critical) 14%, transparent); color: var(--critical); }
@@ -403,7 +425,8 @@
     display: none; align-items: flex-end; justify-content: center;
     z-index: 50;
   }
-  .modal-overlay.open { display: flex; }
+  .modal-overlay.open { display: flex; animation: overlay-in .18s ease; }
+  @keyframes overlay-in { from { background: rgba(0,0,0,0); } to { background: rgba(0,0,0,0.42); } }
   .modal-sheet {
     width: 100%; max-width: 480px;
     background: var(--page);
@@ -411,7 +434,9 @@
     max-height: 88vh; overflow-y: auto;
     padding: 18px 18px calc(28px + env(safe-area-inset-bottom));
     border-top: 1px solid var(--line);
+    animation: sheet-in .22s cubic-bezier(.2,.8,.3,1);
   }
+  @keyframes sheet-in { from { transform: translateY(28px); opacity: .5; } to { transform: translateY(0); opacity: 1; } }
   .modal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .modal-head h3 { margin: 0; font-size: 17px; }
 
@@ -484,7 +509,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }
-    .spin-once { animation: none; }
+    .spin-once, section.tab.active, .modal-overlay.open, .modal-sheet { animation: none !important; }
   }
 
   /* Wider viewports (laptop/desktop): the app no longer needs to stay
@@ -1309,9 +1334,9 @@
     html += '<button class="icon-btn accent-ghost" id="period-next" aria-label="Next" style="width:32px;height:32px">' + icon("chevron") + '</button>';
     html += '</div>';
     html += '<div class="stat-row" style="margin-top:14px">';
-    html += '<div class="stat spent"><div class="label">Spent</div><div class="value num">' + fmtMoney(spent) + '</div></div>';
-    html += '<div class="stat income"><div class="label">Income</div><div class="value num">' + fmtMoney(income) + '</div></div>';
-    html += '<div class="stat net"><div class="label">Net</div><div class="value num">' + fmtMoney(income - spent) + '</div></div>';
+    html += '<div class="stat spent"><div class="label">Spent</div><div class="value num" id="stat-spent"></div></div>';
+    html += '<div class="stat income"><div class="label">Income</div><div class="value num" id="stat-income"></div></div>';
+    html += '<div class="stat net"><div class="label">Net</div><div class="value num" id="stat-net"></div></div>';
     html += '</div></div>';
 
     html += renderBudgetsCard(byCat);
@@ -1351,6 +1376,37 @@
 
     document.getElementById("tab-dashboard").innerHTML = html;
     wireDashboardEvents();
+    animateDashboardStats(spent, income, income - spent);
+  }
+
+  /* Counts the three headline stats up/down from their last-rendered value
+     rather than just snapping to the new one - runs on every dashboard
+     render (data change, period navigation), so it doubles as a "this
+     number just changed" cue. Starts from 0 on first paint. Skipped
+     entirely under reduced-motion, where the final value is shown as-is. */
+  var lastStatValues = null;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function animateDashboardStats(spent, income, net) {
+    var targets = { spent: spent, income: income, net: net };
+    var from = lastStatValues || { spent: 0, income: 0, net: 0 };
+    lastStatValues = targets;
+
+    Object.keys(targets).forEach(function (key) {
+      var el = document.getElementById("stat-" + key);
+      if (!el) return;
+      if (reduceMotion || from[key] === targets[key]) { el.innerHTML = fmtMoney(targets[key]); return; }
+      var start = null;
+      var duration = 500;
+      function step(ts) {
+        if (start === null) start = ts;
+        var progress = Math.min((ts - start) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        el.innerHTML = fmtMoney(from[key] + (targets[key] - from[key]) * eased);
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
   }
 
   function dueChip(d) {
@@ -1805,7 +1861,7 @@
     var html = '<div data-open-loan="' + loan.id + '" style="margin-bottom:16px;opacity:' + (loan.isActive ? 1 : 0.5) + '">';
     html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">';
     html += '<span style="font-size:14.5px;font-weight:600">' + escapeHtml(loan.name) + '</span>';
-    if (p.isPaidOff) html += '<span class="chip good">' + icon("check") + 'Paid Off</span>';
+    if (p.isPaidOff) html += '<span class="chip milestone">' + icon("check") + 'Paid Off</span>';
     else if (d <= 3) html += dueChip(d);
     html += '</div>';
     html += '<div class="bar-track"><div class="bar-fill" style="background:var(--accent);width:' + (p.pct * 100) + '%"></div></div>';
