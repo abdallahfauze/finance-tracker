@@ -401,7 +401,6 @@
 
   .search-wrap { position: relative; margin-bottom: 14px; }
   .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--ink-muted); }
-  .search-wrap input { padding-left: 36px; }
 
   input[type="text"], input[type="number"], input[type="date"], select, textarea {
     width: 100%;
@@ -413,6 +412,11 @@
     font-size: 15px;
   }
   input:focus, select:focus { border-color: var(--accent); }
+  /* Same specificity as the generic input rule above (one attribute/class +
+     one element each), so this only wins because it comes later in the
+     source - it was previously placed before that rule and got its
+     padding-left silently clobbered by the generic padding shorthand. */
+  .search-wrap input { padding-left: 36px; }
 
   .field { margin-bottom: 14px; }
   .field label { display: block; font-size: 11px; font-weight: 600; color: var(--ink-2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
@@ -1688,6 +1692,16 @@
   var txFilterBank = "";
 
   function renderTransactions() {
+    // renderTransactions() rebuilds this whole tab's HTML on every keystroke
+    // in the search box (see the "input" listener below), which destroys
+    // and recreates #tx-search as a new DOM node each time - the browser
+    // can't keep focus (or the on-screen keyboard) on an element that no
+    // longer exists, so typing would drop focus after every character.
+    // Capturing focus/cursor position here and restoring it after the
+    // rebuild keeps the keyboard open across keystrokes.
+    var searchHadFocus = document.activeElement && document.activeElement.id === "tx-search";
+    var searchCaret = searchHadFocus ? document.getElementById("tx-search").selectionStart : null;
+
     var list = state.transactions.slice().sort(function (a, b) { return a.date < b.date ? 1 : (a.date > b.date ? -1 : 0); });
     if (txSearch) {
       var q = txSearch.toLowerCase();
@@ -1746,6 +1760,12 @@
     }
 
     document.getElementById("tab-transactions").innerHTML = html;
+
+    if (searchHadFocus) {
+      var searchEl = document.getElementById("tx-search");
+      searchEl.focus();
+      if (searchCaret !== null) searchEl.setSelectionRange(searchCaret, searchCaret);
+    }
 
     document.getElementById("tx-search").addEventListener("input", function (e) { txSearch = e.target.value; renderTransactions(); });
     document.getElementById("tx-filter-cat").addEventListener("change", function (e) { txFilterCat = e.target.value; renderTransactions(); });
