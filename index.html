@@ -421,6 +421,26 @@
   }
   .segmented button.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-1); }
 
+  .month-picker {
+    display: flex; gap: 6px; margin-top: 14px; padding-bottom: 2px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .month-picker::-webkit-scrollbar { display: none; }
+  .month-picker-btn {
+    flex-shrink: 0;
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink-2);
+    font-size: 12.5px; font-weight: 600;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    cursor: pointer;
+    transition: transform .1s ease;
+  }
+  .month-picker-btn:active { transform: scale(0.95); }
+  .month-picker-btn.active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
   .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 6px;
     width: 100%;
@@ -1375,7 +1395,7 @@
     html += '</div></div>';
 
     html += renderBudgetsCard(byCat);
-    html += renderTotalFundsCard(range);
+    html += renderTotalFundsCard();
     html += renderBankCardSummary(range);
 
     if (spent > 0) {
@@ -1616,25 +1636,52 @@
     return html;
   }
 
-  /* Sum of every debit card's opening balance at the start of whatever
-     period is currently being viewed - reuses the same openingBalanceAt
-     each card's own "Opening" line already computes, just totaled across
-     all of them. Credit cards aren't included: a credit limit isn't money
-     you actually have, it's money you can borrow. */
-  function renderTotalFundsCard(range) {
+  /* This card has its own month, independent of the dashboard's main
+     Month/Year period selector above - it's just for quickly comparing
+     opening balances across months without changing what the rest of the
+     dashboard (Spent/Income/Net, budgets, etc.) is showing. null means
+     "the real current month"; resets to that on every fresh page load
+     since it's not persisted. */
+  var totalFundsMonthKey = null;
+
+  /* Sum of every debit card's opening balance at the start of the picked
+     month - reuses the same openingBalanceAt each card's own "Opening"
+     line already computes, just totaled across all of them. Credit cards
+     aren't included: a credit limit isn't money you actually have, it's
+     money you can borrow. */
+  function renderTotalFundsCard() {
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
     if (!debitCards.length) return "";
-    var total = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, range.start); }, 0);
+
+    var now = today();
+    var year = now.getFullYear();
+    var activeKey = totalFundsMonthKey || (year + "-" + pad(now.getMonth() + 1));
+    var monthStart = activeKey + "-01";
+    var total = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, monthStart); }, 0);
+    var monthLabel = new Date(monthStart + "T00:00:00").toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
     var html = '<div class="card"><h2>Total Available Funds</h2>';
-    html += '<div class="footnote" style="margin:0 0 6px">At the start of ' + range.label + '</div>';
+    html += '<div class="footnote" style="margin:0 0 6px">At the start of ' + monthLabel + '</div>';
     html += '<div class="num" style="font-size:26px;font-weight:700">' + fmtMoney(total) + '</div>';
-    html += '</div>';
+    html += '<div class="month-picker">';
+    for (var m = 1; m <= 12; m++) {
+      var key = year + "-" + pad(m);
+      var mLabel = new Date(key + "-01T00:00:00").toLocaleDateString(undefined, { month: "short" });
+      html += '<button type="button" class="month-picker-btn' + (key === activeKey ? " active" : "") + '" data-month="' + key + '">' + mLabel + '</button>';
+    }
+    html += '</div></div>';
     return html;
   }
 
   function wireDashboardEvents() {
     document.querySelectorAll("#tab-dashboard [data-open-recurring]").forEach(function (el) {
       el.addEventListener("click", function () { openRecurringForm(el.getAttribute("data-open-recurring")); });
+    });
+    document.querySelectorAll("#tab-dashboard [data-month]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        totalFundsMonthKey = btn.getAttribute("data-month");
+        renderDashboard();
+      });
     });
     document.querySelectorAll("#period-type-seg button").forEach(function (b) {
       b.addEventListener("click", function () { setPeriodType(b.getAttribute("data-val")); });
