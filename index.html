@@ -1690,6 +1690,7 @@
   var txSearch = "";
   var txFilterCat = "";
   var txFilterBank = "";
+  var txFilterMonth = "";
 
   function renderTransactions() {
     // renderTransactions() rebuilds this whole tab's HTML on every keystroke
@@ -1709,6 +1710,7 @@
     }
     if (txFilterCat) list = list.filter(function (t) { return t.categoryId === txFilterCat; });
     if (txFilterBank) list = list.filter(function (t) { return t.bankCard === txFilterBank; });
+    if (txFilterMonth) list = list.filter(function (t) { return monthKeyOf(t.date) === txFilterMonth; });
 
     var html = '<div class="search-wrap">' + icon("search") + '<input type="text" id="tx-search" placeholder="Search merchant or note" value="' + escapeAttr(txSearch) + '" /></div>';
 
@@ -1719,10 +1721,24 @@
     });
     html += '</select>';
 
-    html += '<select id="tx-filter-bank" style="margin-bottom:16px">';
+    html += '<select id="tx-filter-bank" style="margin-bottom:10px">';
     html += '<option value="">All banks / cards</option>';
     allBankCards().forEach(function (bc) {
       html += '<option value="' + escapeAttr(bc) + '"' + (txFilterBank === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
+    });
+    html += '</select>';
+
+    var monthKeys = [];
+    state.transactions.forEach(function (t) {
+      var k = monthKeyOf(t.date);
+      if (monthKeys.indexOf(k) === -1) monthKeys.push(k);
+    });
+    monthKeys.sort(function (a, b) { return a < b ? 1 : -1; });
+    html += '<select id="tx-filter-month" style="margin-bottom:16px">';
+    html += '<option value="">All months</option>';
+    monthKeys.forEach(function (k) {
+      var label = new Date(k + "-01T00:00:00").toLocaleDateString(undefined, { month: "long", year: "numeric" });
+      html += '<option value="' + k + '"' + (txFilterMonth === k ? " selected" : "") + '>' + label + '</option>';
     });
     html += '</select>';
 
@@ -1757,6 +1773,19 @@
         });
         html += '</div>';
       });
+
+      // Totals for whatever's currently filtered - transfers are excluded
+      // from Spent/Income here too, same as the Dashboard, since moving
+      // money between your own accounts isn't real spending or income.
+      var realList = list.filter(function (t) { return !t.isTransfer; });
+      var filteredSpent = realList.filter(function (t) { return t.type === "expense"; }).reduce(function (s, t) { return s + t.amount; }, 0);
+      var filteredIncome = realList.filter(function (t) { return t.type === "income"; }).reduce(function (s, t) { return s + t.amount; }, 0);
+      html += '<div class="card"><div class="footnote" style="margin:0 0 10px">' + list.length + (list.length === 1 ? " transaction" : " transactions") + '</div>';
+      html += '<div class="stat-row">';
+      html += '<div class="stat spent"><div class="label">Spent</div><div class="value num">' + fmtMoney(filteredSpent) + '</div></div>';
+      html += '<div class="stat income"><div class="label">Income</div><div class="value num">' + fmtMoney(filteredIncome) + '</div></div>';
+      html += '<div class="stat net"><div class="label">Net</div><div class="value num">' + fmtMoney(filteredIncome - filteredSpent) + '</div></div>';
+      html += '</div></div>';
     }
 
     document.getElementById("tab-transactions").innerHTML = html;
@@ -1770,6 +1799,7 @@
     document.getElementById("tx-search").addEventListener("input", function (e) { txSearch = e.target.value; renderTransactions(); });
     document.getElementById("tx-filter-cat").addEventListener("change", function (e) { txFilterCat = e.target.value; renderTransactions(); });
     document.getElementById("tx-filter-bank").addEventListener("change", function (e) { txFilterBank = e.target.value; renderTransactions(); });
+    document.getElementById("tx-filter-month").addEventListener("change", function (e) { txFilterMonth = e.target.value; renderTransactions(); });
     document.querySelectorAll("#tab-transactions [data-open-tx]").forEach(function (el) {
       el.addEventListener("click", function () { openTransactionForm(el.getAttribute("data-open-tx")); });
     });
