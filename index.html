@@ -684,6 +684,7 @@
     <h1 id="lock-title">Enter PIN</h1>
     <p class="lock-sub" id="lock-sub">Unlock to sync across your devices.</p>
     <form id="lock-form">
+      <input type="email" inputmode="email" autocomplete="email" id="lock-email" placeholder="Email" required />
       <input type="password" inputmode="text" autocomplete="off" id="lock-pin" placeholder="PIN" required />
       <input type="password" inputmode="text" autocomplete="off" id="lock-pin-confirm" placeholder="Confirm PIN" style="display:none" />
       <button type="submit" class="btn primary" id="lock-submit">Unlock</button>
@@ -691,6 +692,7 @@
     <p class="lock-error" id="lock-error"></p>
     <p class="lock-status" id="lock-status"></p>
     <button type="button" class="lock-toggle" id="lock-toggle">First time here? Set up your PIN</button>
+    <button type="button" class="lock-toggle" id="lock-forgot">Forgot your PIN?</button>
   </div>
 </div>
 
@@ -871,12 +873,14 @@
   }
 
   /* ---------- cloud sync (Firebase Auth + Firestore) ----------
-     Single-user app: sign-in is just a PIN, backed by a real Firebase
-     Auth account under a fixed email so the PIN is genuinely verified
-     server-side rather than a fake local lock screen. First entry with
-     no existing account creates it; after that the PIN must match. */
+     Multi-tenant: each person signs up with their own email + PIN, backed
+     by a real Firebase Auth account so the PIN is genuinely verified
+     server-side rather than a fake local lock screen. Firestore documents
+     are already keyed by auth UID and the security rules already scope
+     each one to its owner, so per-user data isolation needed no changes -
+     only the sign-in screen itself was hardcoded to a single email. */
 
-  var ACCOUNT_EMAIL = "abdallahfauze@gmail.com";
+  var LAST_EMAIL_KEY = "ledger.financeTracker.lastEmail";
   var firebaseConfig = {
     apiKey: "AIzaSyA-YbIZYUxgc-4lPR1XJIc30WzuKIjuAeM",
     authDomain: "finance-tracker-32c9e.firebaseapp.com",
@@ -969,11 +973,14 @@
 
     auth.onAuthStateChanged(function (user) {
       if (user) {
+        localStorage.setItem(LAST_EMAIL_KEY, user.email);
         hideLockScreen();
         startSync(user.uid);
         renderAll();
       } else {
         stopSync();
+        var rememberedEmail = localStorage.getItem(LAST_EMAIL_KEY);
+        if (rememberedEmail) document.getElementById("lock-email").value = rememberedEmail;
         showLockScreen("check");
       }
     });
@@ -982,21 +989,36 @@
       showLockScreen(pendingFirstAccount ? "check" : "setup");
     });
 
+    document.getElementById("lock-forgot").addEventListener("click", function () {
+      var email = document.getElementById("lock-email").value.trim();
+      if (!email) { lockError("Enter your email above first, then tap this again."); return; }
+      lockError("");
+      lockStatus("Sending reset link…");
+      auth.sendPasswordResetEmail(email).then(function () {
+        lockStatus("Reset link sent — check your email.");
+      }).catch(function (err) {
+        lockStatus("");
+        lockError(err.message);
+      });
+    });
+
     document.getElementById("lock-form").addEventListener("submit", function (e) {
       e.preventDefault();
+      var email = document.getElementById("lock-email").value.trim();
       var pin = document.getElementById("lock-pin").value;
       lockError("");
+      if (!email) { lockError("Enter your email."); return; }
 
       if (pendingFirstAccount) {
         var confirmPin = document.getElementById("lock-pin-confirm").value;
         if (pin !== confirmPin) { lockError("PINs don't match — try again."); return; }
         if (pin.length < 6) { lockError("PIN must be at least 6 characters."); return; }
         lockStatus("Setting up…");
-        auth.createUserWithEmailAndPassword(ACCOUNT_EMAIL, pin).catch(function (err) {
+        auth.createUserWithEmailAndPassword(email, pin).catch(function (err) {
           lockStatus("");
           if (err.code === "auth/email-already-in-use") {
             showLockScreen("check");
-            lockError("An account already exists — enter your existing PIN to sign in.");
+            lockError("An account already exists for that email — enter your PIN to sign in.");
           } else {
             lockError(err.message);
           }
@@ -1005,12 +1027,12 @@
       }
 
       lockStatus("Checking…");
-      auth.signInWithEmailAndPassword(ACCOUNT_EMAIL, pin).catch(function (err) {
+      auth.signInWithEmailAndPassword(email, pin).catch(function (err) {
         lockStatus("");
         if (err.code === "auth/user-not-found") {
           showLockScreen("setup");
         } else if (err.code === "auth/wrong-password" || err.code === "auth/invalid-credential") {
-          lockError("Incorrect PIN.");
+          lockError("Incorrect email or PIN.");
         } else {
           lockError(err.message);
         }
@@ -2532,7 +2554,7 @@
     html += '</div>';
 
     html += '<div class="card"><h2>Account</h2>';
-    html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
+    html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in as " + escapeHtml(auth.currentUser.email) + " — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
     if (cloudEnabled && auth && auth.currentUser) html += '<button class="btn plain" id="change-pin" style="margin-bottom:10px">Change PIN</button>';
     if (cloudEnabled) html += '<button class="btn plain" id="sign-out">Sign Out</button>';
     html += '</div>';
@@ -2658,7 +2680,7 @@
       if (next !== confirmNext) { errorEl.textContent = "New PINs don't match — try again."; return; }
       if (next.length < 6) { errorEl.textContent = "New PIN must be at least 6 characters."; return; }
 
-      var credential = firebase.auth.EmailAuthProvider.credential(ACCOUNT_EMAIL, current);
+      var credential = firebase.auth.EmailAuthProvider.credential(auth.currentUser.email, current);
       auth.currentUser.reauthenticateWithCredential(credential)
         .then(function () { return auth.currentUser.updatePassword(next); })
         .then(function () {
