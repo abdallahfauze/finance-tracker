@@ -974,7 +974,12 @@
         lockStatus("Setting up…");
         auth.createUserWithEmailAndPassword(ACCOUNT_EMAIL, pin).catch(function (err) {
           lockStatus("");
-          lockError(err.message);
+          if (err.code === "auth/email-already-in-use") {
+            showLockScreen("check");
+            lockError("An account already exists — enter your existing PIN to sign in.");
+          } else {
+            lockError(err.message);
+          }
         });
         return;
       }
