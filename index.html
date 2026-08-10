@@ -1384,6 +1384,14 @@
   }
 
   function renderDashboard() {
+    // renderDashboard() rebuilds the whole tab on every change, including
+    // clicking a month in the Total Available Funds picker - that destroys
+    // and recreates the scrollable strip as a new DOM node each time, which
+    // resets its scroll position to 0. Capture/restore it the same way the
+    // transactions search box's focus is preserved across its own rebuilds.
+    var monthPickerEl = document.querySelector("#tab-dashboard .month-picker");
+    var monthPickerScroll = monthPickerEl ? monthPickerEl.scrollLeft : null;
+
     var range = periodRange(viewPeriod);
     var periodTx = transactionsInRange(range.start, range.end);
     // Transfers move money between the user's own accounts - they aren't
@@ -1454,6 +1462,11 @@
     document.getElementById("tab-dashboard").innerHTML = html;
     wireDashboardEvents();
     animateDashboardStats(spent, income, income - spent);
+
+    if (monthPickerScroll !== null) {
+      var newMonthPicker = document.querySelector("#tab-dashboard .month-picker");
+      if (newMonthPicker) newMonthPicker.scrollLeft = monthPickerScroll;
+    }
   }
 
   /* Counts the three headline stats up/down from their last-rendered value
