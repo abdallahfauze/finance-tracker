@@ -309,13 +309,6 @@
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
   }
 
-  .trend-line-wrap { margin-top: 4px; }
-  .trend-line-svg { width: 100%; height: auto; display: block; }
-  .trend-line-labels {
-    display: flex; justify-content: space-between; margin-top: 4px;
-    font-size: 10.5px; color: var(--ink-muted); text-transform: uppercase;
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  }
 
   .row {
     display: flex; align-items: center; gap: 12px;
@@ -1168,19 +1161,6 @@
     return Math.round(n).toString();
   }
 
-  /* A loan has no per-payment date log, just a running paymentsMade counter,
-     so its balance at a past point in time can't be read back exactly. This
-     estimates it from the payment schedule (start date + monthly cadence),
-     which is what the Forecast tab's forward projection already assumes. */
-  function loanBalanceAt(loan, dateISO) {
-    var start = new Date(loan.startDate + "T00:00:00");
-    var at = new Date(dateISO + "T00:00:00");
-    var elapsed = (at.getFullYear() - start.getFullYear()) * 12 + (at.getMonth() - start.getMonth());
-    if (elapsed < 0) elapsed = 0;
-    var paid = Math.min(elapsed * loan.monthlyPayment, loan.totalAmount);
-    return Math.max(loan.totalAmount - paid, 0);
-  }
-
   var FREQUENCY_LABELS = {
     weekly: "Weekly",
     monthly: "Monthly",
@@ -1390,6 +1370,7 @@
     html += '</div></div>';
 
     html += renderBudgetsCard(byCat);
+    html += renderTotalFundsCard(range);
     html += renderBankCardSummary(range);
 
     if (spent > 0) {
@@ -1399,7 +1380,6 @@
     }
 
     html += renderSpendingTrendCard();
-    html += renderNetWorthTrendCard();
 
     if (isCurrentMonthPeriod(viewPeriod)) {
       var upcoming = state.recurring.filter(function (r) { return r.isActive && daysUntil(r.nextDueDate) <= 30; })
@@ -1631,45 +1611,18 @@
     return html;
   }
 
-  function renderNetWorthTrendCard() {
-    var months = trendMonths(6);
-    if (!months) return "";
+  /* Sum of every debit card's opening balance at the start of whatever
+     period is currently being viewed - reuses the same openingBalanceAt
+     each card's own "Opening" line already computes, just totaled across
+     all of them. Credit cards aren't included: a credit limit isn't money
+     you actually have, it's money you can borrow. */
+  function renderTotalFundsCard(range) {
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
-    var values = months.map(function (m) {
-      var assets = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, m.end); }, 0);
-      var liabilities = state.loans.filter(function (l) { return l.isActive; })
-        .reduce(function (s, l) { return s + loanBalanceAt(l, m.end); }, 0);
-      return assets - liabilities;
-    });
-    if (!values.some(function (v) { return v !== 0; })) return "";
-
-    var w = 320, h = 100, padX = 8, padY = 14;
-    var min = Math.min.apply(null, values), max = Math.max.apply(null, values);
-    if (min === max) { min -= 1; max += 1; }
-    var n = values.length;
-    var points = values.map(function (v, i) {
-      return {
-        x: padX + (i / (n - 1)) * (w - padX * 2),
-        y: padY + (1 - (v - min) / (max - min)) * (h - padY * 2)
-      };
-    });
-    var path = points.map(function (p, i) { return (i === 0 ? "M" : "L") + p.x.toFixed(1) + "," + p.y.toFixed(1); }).join(" ");
-    var areaPath = path + " L" + points[n - 1].x.toFixed(1) + "," + (h - padY) + " L" + points[0].x.toFixed(1) + "," + (h - padY) + " Z";
-
-    var svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" class="trend-line-svg">';
-    svg += '<path d="' + areaPath + '" fill="var(--accent-soft)" stroke="none" />';
-    svg += '<path d="' + path + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />';
-    points.forEach(function (p) {
-      svg += '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3" fill="var(--accent)" stroke="var(--surface)" stroke-width="1.5" />';
-    });
-    svg += '</svg>';
-
-    var html = '<div class="card"><h2>Net Worth Trend</h2><div class="trend-line-wrap">' + svg + '</div>';
-    html += '<div class="trend-line-labels">';
-    months.forEach(function (m) { html += '<span>' + m.label + '</span>'; });
-    html += '</div>';
-    html += '<div class="footnote" style="margin-top:8px">Now: ' + fmtMoney(values[n - 1]) +
-      ' · Debit balances minus active loan balances. Credit cards aren\'t included since usage resets each period.</div>';
+    if (!debitCards.length) return "";
+    var total = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, range.start); }, 0);
+    var html = '<div class="card"><h2>Total Available Funds</h2>';
+    html += '<div class="footnote" style="margin:0 0 6px">At the start of ' + range.label + '</div>';
+    html += '<div class="num" style="font-size:26px;font-weight:700">' + fmtMoney(total) + '</div>';
     html += '</div>';
     return html;
   }
