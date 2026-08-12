@@ -1705,12 +1705,17 @@
     var expenses = debitCards.reduce(function (s, label) { return s + expensedInRange(label, monthStart, monthEnd); }, 0);
     var income = debitCards.reduce(function (s, label) { return s + incomeInRange(label, monthStart, monthEnd); }, 0);
     var available = opening + income - expenses;
+    // Only the real current month is still "in progress" - a past month's
+    // figure is final, and the label should say so rather than implying
+    // it could still change.
+    var isCurrentMonth = activeKey === (now.getFullYear() + "-" + pad(now.getMonth() + 1));
+    var balanceLabel = isCurrentMonth ? "Current Balance" : "Available Balance at End of Month";
 
     var html = '<div class="card"><h2>Total Available Funds</h2>';
     html += '<div class="footnote" style="margin:0 0 10px">' + monthLabel + '</div>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Total available funds <span class="footnote" style="display:inline">(at start of month)</span></span><span class="num">' + fmtMoney(opening) + '</span></div>';
     html += '<div class="disclosure" style="margin-bottom:10px"><span>Expenses <span class="footnote" style="display:inline">(during month)</span></span><span class="num">' + fmtMoney(expenses) + '</span></div>';
-    html += '<div class="disclosure" style="padding-top:10px;border-top:1px solid var(--line)"><span style="font-weight:600">Available funds</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(available) + '</span></div>';
+    html += '<div class="disclosure" style="padding-top:10px;border-top:1px solid var(--line)"><span style="font-weight:600">' + balanceLabel + '</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(available) + '</span></div>';
     html += '<div class="month-picker">';
     for (var m = 1; m <= 12; m++) {
       var key = year + "-" + pad(m);
