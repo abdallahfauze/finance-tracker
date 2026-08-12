@@ -1679,11 +1679,15 @@
      since it's not persisted. */
   var totalFundsMonthKey = null;
 
-  /* Sum of every debit card's opening balance at the start of the picked
-     month - reuses the same openingBalanceAt each card's own "Opening"
-     line already computes, just totaled across all of them. Credit cards
-     aren't included: a credit limit isn't money you actually have, it's
-     money you can borrow. */
+  /* Opening balance, expenses, and what's left - all summed across every
+     debit card for the picked month. Opening and Expensed reuse the exact
+     same openingBalanceAt/expensedInRange each card's own row already
+     computes. Available also nets in that month's income (same formula
+     each card's own "left" figure uses) even though income isn't shown as
+     its own line here, so the bottom figure stays accurate rather than
+     just being Opening minus Expenses. Credit cards aren't included: a
+     credit limit isn't money you actually have, it's money you can
+     borrow. */
   function renderTotalFundsCard() {
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
     if (!debitCards.length) return "";
@@ -1692,12 +1696,21 @@
     var year = now.getFullYear();
     var activeKey = totalFundsMonthKey || (year + "-" + pad(now.getMonth() + 1));
     var monthStart = activeKey + "-01";
-    var total = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, monthStart); }, 0);
-    var monthLabel = new Date(monthStart + "T00:00:00").toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    var monthStartDate = new Date(monthStart + "T00:00:00");
+    var nextMonthDate = new Date(monthStartDate.getFullYear(), monthStartDate.getMonth() + 1, 1);
+    var monthEnd = nextMonthDate.getFullYear() + "-" + pad(nextMonthDate.getMonth() + 1) + "-01";
+    var monthLabel = monthStartDate.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+
+    var opening = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, monthStart); }, 0);
+    var expenses = debitCards.reduce(function (s, label) { return s + expensedInRange(label, monthStart, monthEnd); }, 0);
+    var income = debitCards.reduce(function (s, label) { return s + incomeInRange(label, monthStart, monthEnd); }, 0);
+    var available = opening + income - expenses;
 
     var html = '<div class="card"><h2>Total Available Funds</h2>';
-    html += '<div class="footnote" style="margin:0 0 6px">At the start of ' + monthLabel + '</div>';
-    html += '<div class="num" style="font-size:26px;font-weight:700">' + fmtMoney(total) + '</div>';
+    html += '<div class="footnote" style="margin:0 0 10px">' + monthLabel + '</div>';
+    html += '<div class="disclosure" style="margin-bottom:8px"><span>Total available funds <span class="footnote" style="display:inline">(at start of month)</span></span><span class="num">' + fmtMoney(opening) + '</span></div>';
+    html += '<div class="disclosure" style="margin-bottom:10px"><span>Expenses <span class="footnote" style="display:inline">(during month)</span></span><span class="num">' + fmtMoney(expenses) + '</span></div>';
+    html += '<div class="disclosure" style="padding-top:10px;border-top:1px solid var(--line)"><span style="font-weight:600">Available funds</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(available) + '</span></div>';
     html += '<div class="month-picker">';
     for (var m = 1; m <= 12; m++) {
       var key = year + "-" + pad(m);
