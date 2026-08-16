@@ -1964,6 +1964,8 @@
   /* ---------- render: recurring ---------- */
 
   var recurringSortMode = "date";
+  var recurringFilterCat = "";
+  var recurringFilterBank = "";
 
   function sortRecurring(list) {
     var sorted = list.slice();
@@ -1976,21 +1978,43 @@
   }
 
   function renderRecurring() {
-    var fixed = sortRecurring(state.recurring.filter(function (r) { return r.kind === "fixed"; }));
-    var subs = sortRecurring(state.recurring.filter(function (r) { return r.kind === "subscription"; }));
-    var monthlyTotal = state.recurring.filter(function (r) { return r.isActive; }).reduce(function (s, r) { return s + monthlyEquivalent(r); }, 0);
+    var filtered = state.recurring.slice();
+    if (recurringFilterCat) filtered = filtered.filter(function (r) { return r.categoryId === recurringFilterCat; });
+    if (recurringFilterBank) filtered = filtered.filter(function (r) { return r.bankCard === recurringFilterBank; });
+
+    var fixed = sortRecurring(filtered.filter(function (r) { return r.kind === "fixed"; }));
+    var subs = sortRecurring(filtered.filter(function (r) { return r.kind === "subscription"; }));
+    // Reflects whatever's currently filtered, same as the Transactions tab's
+    // filtered total - not every recurring item regardless of the filters.
+    var monthlyTotal = filtered.filter(function (r) { return r.isActive; }).reduce(function (s, r) { return s + monthlyEquivalent(r); }, 0);
 
     var html = '<div class="card"><div class="disclosure"><span style="font-weight:600">Monthly total</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(monthlyTotal) + '</span></div></div>';
 
     if (state.recurring.length) {
+      html += '<select id="recurring-filter-cat" style="margin-bottom:10px">';
+      html += '<option value="">All categories</option>';
+      state.categories.forEach(function (c) {
+        html += '<option value="' + c.id + '"' + (recurringFilterCat === c.id ? " selected" : "") + '>' + escapeHtml(c.name) + '</option>';
+      });
+      html += '</select>';
+
+      html += '<select id="recurring-filter-bank" style="margin-bottom:14px">';
+      html += '<option value="">All banks / cards</option>';
+      allBankCards().forEach(function (bc) {
+        html += '<option value="' + escapeAttr(bc) + '"' + (recurringFilterBank === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
+      });
+      html += '</select>';
+
       html += '<div class="segmented" id="recurring-sort-seg" style="margin-bottom:14px">';
       html += '<button type="button" data-val="date" class="' + (recurringSortMode === "date" ? "active" : "") + '">Date: Nearest first</button>';
       html += '<button type="button" data-val="amount" class="' + (recurringSortMode === "amount" ? "active" : "") + '">Amount: Low to high</button>';
       html += '</div>';
     }
 
-    if (!state.recurring.length) {
-      html += emptyState("refresh", "No recurring payments", "Add fixed bills or subscriptions to track them here.");
+    if (!filtered.length) {
+      html += state.recurring.length
+        ? emptyState("refresh", "No matches", "Try a different category or bank/card filter.")
+        : emptyState("refresh", "No recurring payments", "Add fixed bills or subscriptions to track them here.");
     } else {
       if (fixed.length) html += '<div class="section-title">Fixed Payments</div>' + recurringList(fixed);
       if (subs.length) html += '<div class="section-title">Subscriptions</div>' + recurringList(subs);
@@ -2013,6 +2037,10 @@
     document.querySelectorAll("#recurring-sort-seg button").forEach(function (b) {
       b.addEventListener("click", function () { recurringSortMode = b.getAttribute("data-val"); renderRecurring(); });
     });
+    var filterCatEl = document.getElementById("recurring-filter-cat");
+    if (filterCatEl) filterCatEl.addEventListener("change", function (e) { recurringFilterCat = e.target.value; renderRecurring(); });
+    var filterBankEl = document.getElementById("recurring-filter-bank");
+    if (filterBankEl) filterBankEl.addEventListener("change", function (e) { recurringFilterBank = e.target.value; renderRecurring(); });
   }
 
   function openMarkPaidConfirm(id) {
