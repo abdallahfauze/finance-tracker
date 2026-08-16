@@ -1237,6 +1237,18 @@
     return Math.round(n).toString();
   }
 
+  /* Whole number with thousands separators, no currency symbol and no k/m
+     abbreviation - for the Forecast table, which needs to stay compact
+     enough to fit three columns per month but where round-tripping real
+     figures through "1.2k" made it harder to read at a glance. */
+  function fmtWhole(n) {
+    try {
+      return new Intl.NumberFormat(navigator.language || "en-US", { maximumFractionDigits: 0 }).format(Math.round(n));
+    } catch (e) {
+      return Math.round(n).toString();
+    }
+  }
+
   var FREQUENCY_LABELS = {
     weekly: "Weekly",
     monthly: "Monthly",
@@ -2310,9 +2322,9 @@
           var act = (actualMatrix[catKey] && actualMatrix[catKey][m.key]) || 0;
           var variance = act - fc;
           var varClass = variance > 0 ? "variance-over" : (variance < 0 ? "variance-under" : "zero");
-          html += '<td class="num fc-group-start' + (fc === 0 ? ' zero' : '') + '">' + (fc === 0 ? '–' : fmtCompact(fc)) + '</td>';
-          html += '<td class="num' + (act === 0 ? ' zero' : '') + '">' + (act === 0 ? '–' : fmtCompact(act)) + '</td>';
-          html += '<td class="num ' + varClass + '">' + (variance === 0 ? '–' : (variance > 0 ? '+' : '') + fmtCompact(variance)) + '</td>';
+          html += '<td class="num fc-group-start' + (fc === 0 ? ' zero' : '') + '">' + (fc === 0 ? '–' : fmtWhole(fc)) + '</td>';
+          html += '<td class="num' + (act === 0 ? ' zero' : '') + '">' + (act === 0 ? '–' : fmtWhole(act)) + '</td>';
+          html += '<td class="num ' + varClass + '">' + (variance === 0 ? '–' : (variance > 0 ? '+' : '') + fmtWhole(variance)) + '</td>';
         });
         html += '</tr>';
       });
@@ -2325,9 +2337,9 @@
         });
         var varTotal = actTotal - fcTotal;
         var varClass = varTotal > 0 ? "variance-over" : (varTotal < 0 ? "variance-under" : "");
-        html += '<td class="num fc-group-start">' + fmtCompact(fcTotal) + '</td>';
-        html += '<td class="num">' + fmtCompact(actTotal) + '</td>';
-        html += '<td class="num ' + varClass + '">' + (varTotal > 0 ? '+' : '') + fmtCompact(varTotal) + '</td>';
+        html += '<td class="num fc-group-start">' + fmtWhole(fcTotal) + '</td>';
+        html += '<td class="num">' + fmtWhole(actTotal) + '</td>';
+        html += '<td class="num ' + varClass + '">' + (varTotal > 0 ? '+' : '') + fmtWhole(varTotal) + '</td>';
       });
       html += '</tr></tfoot></table></div></div>';
     }
