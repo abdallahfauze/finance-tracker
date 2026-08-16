@@ -2303,7 +2303,7 @@
       return ((catTotals[b] || 0) + (actualTotals[b] || 0)) - ((catTotals[a] || 0) + (actualTotals[a] || 0));
     });
 
-    var html = '<div class="card"><p class="footnote" style="margin:0">Forecast is projected from your active recurring payments and loans. Actual is what\'s really been logged as transactions. Variance is Actual minus Forecast - positive means you spent more than planned.</p></div>';
+    var html = '<div class="card"><p class="footnote" style="margin:0">Forecast is projected from your active recurring payments and loans. Actual is what\'s really been logged as transactions. Variance is Forecast minus Actual - positive means you spent less than planned, negative means you spent more.</p></div>';
 
     if (!catKeys.length) {
       html += emptyState("grid", "Nothing to forecast", "Add active recurring payments or loans, or log some transactions, to see forecast vs. actual here.");
@@ -2320,8 +2320,13 @@
         months.forEach(function (m) {
           var fc = (matrix[catKey] && matrix[catKey][m.key]) || 0;
           var act = (actualMatrix[catKey] && actualMatrix[catKey][m.key]) || 0;
-          var variance = act - fc;
-          var varClass = variance > 0 ? "variance-over" : (variance < 0 ? "variance-under" : "zero");
+          var overspent = act - fc;
+          // Displayed sign is flipped from the over/under check above:
+          // negative shown = spent more than planned, positive shown =
+          // spent less. Color still follows the original overspent/under
+          // determination, not the displayed number's own sign.
+          var variance = fc - act;
+          var varClass = overspent > 0 ? "variance-over" : (overspent < 0 ? "variance-under" : "zero");
           html += '<td class="num fc-group-start' + (fc === 0 ? ' zero' : '') + '">' + (fc === 0 ? '–' : fmtWhole(fc)) + '</td>';
           html += '<td class="num' + (act === 0 ? ' zero' : '') + '">' + (act === 0 ? '–' : fmtWhole(act)) + '</td>';
           html += '<td class="num ' + varClass + '">' + (variance === 0 ? '–' : (variance > 0 ? '+' : '') + fmtWhole(variance)) + '</td>';
@@ -2335,8 +2340,9 @@
           fcTotal += (matrix[catKey] && matrix[catKey][m.key]) || 0;
           actTotal += (actualMatrix[catKey] && actualMatrix[catKey][m.key]) || 0;
         });
-        var varTotal = actTotal - fcTotal;
-        var varClass = varTotal > 0 ? "variance-over" : (varTotal < 0 ? "variance-under" : "");
+        var overspentTotal = actTotal - fcTotal;
+        var varTotal = fcTotal - actTotal;
+        var varClass = overspentTotal > 0 ? "variance-over" : (overspentTotal < 0 ? "variance-under" : "");
         html += '<td class="num fc-group-start">' + fmtWhole(fcTotal) + '</td>';
         html += '<td class="num">' + fmtWhole(actTotal) + '</td>';
         html += '<td class="num ' + varClass + '">' + (varTotal > 0 ? '+' : '') + fmtWhole(varTotal) + '</td>';
