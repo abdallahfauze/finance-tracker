@@ -501,15 +501,23 @@
   .chevron-sm { width: 16px; height: 16px; color: var(--ink-muted); flex-shrink: 0; }
 
   .forecast-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: -4px -16px 0; padding: 4px 16px 4px; }
-  .forecast-table { border-collapse: collapse; font-size: 12.5px; white-space: nowrap; }
-  .forecast-table th, .forecast-table td { padding: 8px 10px; text-align: right; border-bottom: 1px solid var(--line); }
-  .forecast-table th:first-child, .forecast-table td:first-child {
+  .forecast-table { border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+  .forecast-table th, .forecast-table td { padding: 7px 6px; text-align: right; border-bottom: 1px solid var(--line); }
+  /* A dedicated class rather than :first-child - the Category header uses
+     rowspan across both header rows, so the second header row's actual
+     first DOM child is a month's "Fc" sub-header, not the category
+     column; :first-child would (wrongly) make that one sticky instead. */
+  .forecast-table .fc-sticky {
     text-align: left; position: sticky; left: 0; background: var(--surface);
     box-shadow: 1px 0 0 var(--line);
   }
-  .forecast-table thead th { color: var(--ink-muted); font-weight: 700; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .forecast-table thead th { color: var(--ink-muted); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .forecast-table thead tr:first-child th { text-align: center; }
   .forecast-table tfoot td { font-weight: 700; border-bottom: none; border-top: 2px solid var(--line); }
   .forecast-table td.zero { color: var(--ink-muted); }
+  .forecast-table .fc-group-start { border-left: 1px solid var(--line); }
+  .forecast-table .variance-over { color: var(--critical); }
+  .forecast-table .variance-under { color: var(--good); }
 
   .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; }
   .switch { position: relative; width: 46px; height: 27px; }
@@ -1255,6 +1263,28 @@
       }
     }
     return null;
+  }
+
+  /* Learns from the user's own past categorization, not just the fixed
+     keyword lists: if a merchant name typed now overlaps with one entered
+     before (either is a substring of the other, same bidirectional check
+     style as the keyword matcher above), reuse whatever category was
+     assigned to the most recent matching transaction. Checked first since
+     your own past choice for this exact merchant beats a generic keyword
+     guess; falls back to suggestCategory() when nothing matches. Requires
+     3+ typed characters so early keystrokes don't produce noisy matches. */
+  function suggestCategoryFromHistory(merchant) {
+    var q = (merchant || "").toLowerCase().trim();
+    if (q.length < 3) return null;
+    var candidates = state.transactions.filter(function (t) {
+      if (t.type !== "expense" || t.isTransfer || !t.categoryId) return false;
+      var m = (t.merchant || "").toLowerCase().trim();
+      if (!m) return false;
+      return m.indexOf(q) !== -1 || q.indexOf(m) !== -1;
+    });
+    if (!candidates.length) return null;
+    candidates.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    return candidates[0].categoryId;
   }
 
   function icon(name, extraClass) {
@@ -2238,30 +2268,66 @@
       }
     });
 
-    var catKeys = Object.keys(matrix).sort(function (a, b) { return catTotals[b] - catTotals[a]; });
+    // Actual: what's really been logged as transactions in this window,
+    // regardless of whether that category has any forecast entry at all
+    // (e.g. Dining has no recurring bill or loan, but still belongs in
+    // this comparison if money was actually spent there).
+    var actualMatrix = {};
+    var actualTotals = {};
+    state.transactions.forEach(function (t) {
+      if (t.type !== "expense" || t.isTransfer) return;
+      if (t.date < windowStart || t.date >= windowEnd) return;
+      var catKey = t.categoryId || "__none";
+      var mk = monthKeyOf(t.date);
+      if (!actualMatrix[catKey]) actualMatrix[catKey] = {};
+      actualMatrix[catKey][mk] = (actualMatrix[catKey][mk] || 0) + t.amount;
+      actualTotals[catKey] = (actualTotals[catKey] || 0) + t.amount;
+    });
 
-    var html = '<div class="card"><p class="footnote" style="margin:0">Projected from your active recurring payments and loans over the next 12 months.</p></div>';
+    var catKeySet = {};
+    Object.keys(matrix).forEach(function (k) { catKeySet[k] = true; });
+    Object.keys(actualMatrix).forEach(function (k) { catKeySet[k] = true; });
+    var catKeys = Object.keys(catKeySet).sort(function (a, b) {
+      return ((catTotals[b] || 0) + (actualTotals[b] || 0)) - ((catTotals[a] || 0) + (actualTotals[a] || 0));
+    });
+
+    var html = '<div class="card"><p class="footnote" style="margin:0">Forecast is projected from your active recurring payments and loans. Actual is what\'s really been logged as transactions. Variance is Actual minus Forecast - positive means you spent more than planned.</p></div>';
 
     if (!catKeys.length) {
-      html += emptyState("grid", "Nothing to forecast", "Add active recurring payments or loans to see expected monthly totals here.");
+      html += emptyState("grid", "Nothing to forecast", "Add active recurring payments or loans, or log some transactions, to see forecast vs. actual here.");
     } else {
-      html += '<div class="card"><div class="forecast-scroll"><table class="forecast-table"><thead><tr><th>Category</th>';
-      months.forEach(function (m) { html += '<th>' + m.label + '</th>'; });
+      html += '<div class="card"><div class="forecast-scroll"><table class="forecast-table"><thead>';
+      html += '<tr><th class="fc-sticky" rowspan="2">Category</th>';
+      months.forEach(function (m) { html += '<th colspan="3">' + m.label + '</th>'; });
+      html += '</tr><tr>';
+      months.forEach(function () { html += '<th class="fc-group-start">Fc</th><th>Act</th><th>Var</th>'; });
       html += '</tr></thead><tbody>';
       catKeys.forEach(function (catKey) {
         var cat = catKey === "__none" ? null : byId(state.categories, catKey);
-        html += '<tr><td>' + escapeHtml(cat ? cat.name : "Uncategorized") + '</td>';
+        html += '<tr><td class="fc-sticky">' + escapeHtml(cat ? cat.name : "Uncategorized") + '</td>';
         months.forEach(function (m) {
-          var amt = (matrix[catKey] && matrix[catKey][m.key]) || 0;
-          html += '<td class="num' + (amt === 0 ? ' zero' : '') + '">' + (amt === 0 ? '–' : fmtMoney(amt)) + '</td>';
+          var fc = (matrix[catKey] && matrix[catKey][m.key]) || 0;
+          var act = (actualMatrix[catKey] && actualMatrix[catKey][m.key]) || 0;
+          var variance = act - fc;
+          var varClass = variance > 0 ? "variance-over" : (variance < 0 ? "variance-under" : "zero");
+          html += '<td class="num fc-group-start' + (fc === 0 ? ' zero' : '') + '">' + (fc === 0 ? '–' : fmtCompact(fc)) + '</td>';
+          html += '<td class="num' + (act === 0 ? ' zero' : '') + '">' + (act === 0 ? '–' : fmtCompact(act)) + '</td>';
+          html += '<td class="num ' + varClass + '">' + (variance === 0 ? '–' : (variance > 0 ? '+' : '') + fmtCompact(variance)) + '</td>';
         });
         html += '</tr>';
       });
-      html += '</tbody><tfoot><tr><td>Total</td>';
+      html += '</tbody><tfoot><tr><td class="fc-sticky">Total</td>';
       months.forEach(function (m) {
-        var colTotal = 0;
-        catKeys.forEach(function (catKey) { colTotal += (matrix[catKey] && matrix[catKey][m.key]) || 0; });
-        html += '<td class="num">' + fmtMoney(colTotal) + '</td>';
+        var fcTotal = 0, actTotal = 0;
+        catKeys.forEach(function (catKey) {
+          fcTotal += (matrix[catKey] && matrix[catKey][m.key]) || 0;
+          actTotal += (actualMatrix[catKey] && actualMatrix[catKey][m.key]) || 0;
+        });
+        var varTotal = actTotal - fcTotal;
+        var varClass = varTotal > 0 ? "variance-over" : (varTotal < 0 ? "variance-under" : "");
+        html += '<td class="num fc-group-start">' + fmtCompact(fcTotal) + '</td>';
+        html += '<td class="num">' + fmtCompact(actTotal) + '</td>';
+        html += '<td class="num ' + varClass + '">' + (varTotal > 0 ? '+' : '') + fmtCompact(varTotal) + '</td>';
       });
       html += '</tr></tfoot></table></div></div>';
     }
@@ -2409,7 +2475,7 @@
     });
     document.querySelector('input[name="merchant"]').addEventListener("input", function (e) {
       if (catManuallyPicked) return;
-      var suggestion = suggestCategory(e.target.value);
+      var suggestion = suggestCategoryFromHistory(e.target.value) || suggestCategory(e.target.value);
       if (suggestion) document.getElementById("tx-cat-select").value = suggestion;
     });
     document.getElementById("tx-cat-select").addEventListener("change", function () { catManuallyPicked = true; });
