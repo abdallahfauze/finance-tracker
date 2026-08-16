@@ -2486,14 +2486,20 @@
     if (existing) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
     html += '</form>';
 
+    // This form is only ever opened from the categories list below, and
+    // the app has one shared modal sheet rather than a real navigation
+    // stack - opening a new modal just replaces this one's content, so
+    // closeModal() here closed the whole thing and dropped back out to
+    // Settings instead of back to that list. Every exit path re-opens the
+    // list in the same modal instead.
     openModal(html);
-    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    document.querySelector("[data-close]").addEventListener("click", openCategoriesManager);
 
     if (existing) document.querySelector("[data-delete]").addEventListener("click", function () {
       confirmAction("Delete this category? Transactions using it will become uncategorized.", "Delete", function () {
         state.categories = state.categories.filter(function (c) { return c.id !== existing.id; });
         state.transactions.forEach(function (t) { if (t.categoryId === existing.id) t.categoryId = null; });
-        save(); renderAll();
+        save(); renderAll(); openCategoriesManager();
       });
     });
 
@@ -2512,7 +2518,7 @@
       } else {
         state.categories.push({ id: uid(), name: name, slot: null, isSystem: false, keywords: keywords, budget: budget });
       }
-      save(); closeModal(); renderAll();
+      save(); renderAll(); openCategoriesManager();
     });
   }
 
