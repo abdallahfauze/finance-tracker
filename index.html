@@ -294,13 +294,9 @@
 
   .donut-wrap { position: relative; width: 188px; height: 188px; margin: 20px auto 4px; }
   .donut-wrap svg { width: 100%; height: 100%; overflow: visible; }
-  .donut-center {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    pointer-events: none;
-  }
-  .donut-center .amt { font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
-  .donut-center .lbl { font-size: 10.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .donut-total { text-align: center; margin: 6px 0 4px; }
+  .donut-total .amt { font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
+  .donut-total .lbl { font-size: 10.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 
   /* Each wedge is a separate path, pre-offset outward along its own mid-
      angle via --tx/--ty (the "exploded pie" look) - the resting rule below
@@ -380,7 +376,7 @@
   }
   .trend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; box-sizing: border-box; }
   .trend-swatch.actual { background: var(--accent); }
-  .trend-swatch.forecast { background: transparent; border: 1.5px dashed var(--ink-muted); }
+  .trend-swatch.forecast { background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
 
   .trend-bars { display: flex; align-items: flex-end; gap: 8px; margin-top: 4px; }
   .trend-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
@@ -389,16 +385,20 @@
   .trend-bar-values .forecast { font-size: 8.5px; color: var(--ink-muted); white-space: nowrap; }
   .trend-bar-values .actual.over { color: var(--critical); }
   .trend-bar-values .actual.under { color: var(--good); }
-  .trend-bar-pair { display: flex; align-items: flex-end; justify-content: center; gap: 3px; width: 100%; }
-  .trend-bar-fill {
-    width: 13px; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px;
+  /* Forecast is the wide backdrop bar, actual sits centered on top of it,
+     both anchored to the same baseline - a visible (not just faint) tint
+     so the forecast reads as real data, not a placeholder. */
+  .trend-bar-overlay { position: relative; width: 30px; display: flex; align-items: flex-end; justify-content: center; }
+  .trend-bar-fill.forecast {
+    position: absolute; bottom: 0; width: 26px;
+    background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-bottom: none;
+    border-radius: 5px 5px 0 0; box-sizing: border-box; min-height: 2px;
+  }
+  .trend-bar-fill.actual {
+    position: relative; width: 14px; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px;
     transition: opacity .12s ease;
   }
-  .trend-bar-fill.forecast {
-    background: transparent; border: 1.5px dashed var(--ink-muted); border-bottom: none;
-    box-sizing: border-box;
-  }
-  .trend-bar-col:active .trend-bar-fill { opacity: .75; }
+  .trend-bar-col:active .trend-bar-fill.actual { opacity: .75; }
   .trend-bar-label {
     font-size: 10.5px; color: var(--ink-muted); margin-top: 6px; text-transform: uppercase;
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
@@ -1877,7 +1877,7 @@
      labeled "Uncategorized" - a category without a color slot is never
      mistaken for one. */
   function renderDonut(byCat, total) {
-    var cx = 88, cy = 88, rOuter = 74, rInner = 40, rLabel = (rOuter + rInner) / 2;
+    var cx = 88, cy = 88, rOuter = 74, rInner = 0, rLabel = rOuter * 0.6;
     var gapRad = 0.045, explodeDist = 6;
 
     var ordered = state.categories.filter(function (c) { return c.slot !== null && c.slot !== undefined; })
@@ -1938,8 +1938,8 @@
 
     var svg = '<svg viewBox="0 0 176 176" class="donut-svg">' + wedgesSvg + labelsSvg + '</svg>';
 
-    var html = '<div class="donut-wrap">' + svg +
-      '<div class="donut-center"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div></div>';
+    var html = '<div class="donut-wrap">' + svg + '</div>' +
+      '<div class="donut-total"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div>';
 
     var sortedLegend = legendRows.slice().sort(function (a, b) { return b.amt - a.amt; });
     html += '<div class="legend">';
@@ -2052,9 +2052,9 @@
       html += '<div class="actual num ' + varianceCls + '">' + fmtCompact(totals[i]) + '</div>';
       if (forecasts[i] > 0) html += '<div class="forecast num">' + fmtCompact(forecasts[i]) + '</div>';
       html += '</div>';
-      html += '<div class="trend-bar-pair">';
-      html += '<div class="trend-bar-fill actual" style="height:' + actualH.toFixed(0) + 'px"></div>';
+      html += '<div class="trend-bar-overlay" style="height:' + Math.max(actualH, forecastH).toFixed(0) + 'px">';
       if (forecastH > 0) html += '<div class="trend-bar-fill forecast" style="height:' + forecastH.toFixed(0) + 'px"></div>';
+      html += '<div class="trend-bar-fill actual" style="height:' + actualH.toFixed(0) + 'px"></div>';
       html += '</div>';
       html += '<div class="trend-bar-label">' + m.label + '</div>';
       html += '</div>';
