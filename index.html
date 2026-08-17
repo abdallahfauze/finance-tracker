@@ -292,21 +292,39 @@
   .stat.income .value { color: var(--good); }
   .stat.net .value { color: var(--accent); }
 
-  .donut-wrap { position: relative; width: 176px; height: 176px; margin: 18px auto 4px; }
-  .donut-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+  .donut-wrap { position: relative; width: 188px; height: 188px; margin: 20px auto 4px; }
+  .donut-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; overflow: visible; }
   .donut-center {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
-  .donut-center .amt { font-size: 22px; }
-  .donut-center .lbl { font-size: 10.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .donut-center .amt { font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
+  .donut-center .lbl { font-size: 10.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 
-  .legend { display: flex; flex-direction: column; gap: 9px; margin-top: 14px; }
-  .legend-row { display: flex; align-items: center; gap: 10px; font-size: 13.5px; }
-  .dot { width: 10px; height: 10px; border-radius: 999px; flex-shrink: 0; }
-  .legend-row .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .legend-row .amt { color: var(--ink-2); }
-  .legend-row .pct { color: var(--ink-muted); width: 34px; text-align: right; font-size: 12px; }
+  .donut-seg {
+    transition: stroke-width .16s cubic-bezier(.2,.7,.3,1), opacity .16s ease;
+    animation: donut-seg-in .55s cubic-bezier(.16,1,.3,1) both;
+  }
+  @keyframes donut-seg-in { from { opacity: 0; } to { opacity: 1; } }
+  .donut-wrap.hovering .donut-seg { opacity: .3; }
+  .donut-wrap.hovering .donut-seg.active { opacity: 1; stroke-width: 18; }
+
+  .legend { display: flex; flex-direction: column; gap: 2px; margin-top: 16px; }
+  .legend-row {
+    display: flex; align-items: center; gap: 10px; font-size: 13.5px;
+    padding: 7px 6px; margin: 0 -6px; border-radius: var(--radius-sm);
+    transition: background-color .12s ease, opacity .12s ease;
+  }
+  .legend-row:hover, .legend-row:active { background: var(--surface-2); }
+  .legend-row.dim { opacity: .38; }
+  .dot { width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0; }
+  .legend-main { flex: 1; min-width: 0; }
+  .legend-top { display: flex; align-items: baseline; gap: 8px; }
+  .legend-top .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-top .amt { color: var(--ink-2); font-size: 12.5px; }
+  .legend-bar-track { height: 3px; border-radius: 999px; background: var(--surface-2); margin-top: 5px; overflow: hidden; }
+  .legend-bar-fill { height: 100%; border-radius: 999px; transition: width .4s cubic-bezier(.16,1,.3,1); }
+  .legend-row .pct { color: var(--ink-muted); width: 32px; text-align: right; font-size: 12px; flex-shrink: 0; }
 
   .trend-bars { display: flex; align-items: flex-end; gap: 8px; margin-top: 4px; }
   .trend-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
@@ -1700,28 +1718,58 @@
     return html;
   }
 
+  /* The ring itself is capped at the validated 8-hue categorical palette
+     (see assignCategorySlots) - a 9th distinct category folds its arc into
+     one shared grey "Other" slice rather than generating an unvalidated
+     9th hue. But that's purely a ring-color limitation, not a categorization
+     one: every category the user actually assigned still gets its own named
+     row in the legend below, each keeping its real name and exact amount.
+     Only genuinely uncategorized spend (no categoryId at all) is ever
+     labeled "Uncategorized" - a category without a color slot is never
+     mistaken for one. */
   function renderDonut(byCat, total) {
     var r = 70, cx = 88, cy = 88, circ = 2 * Math.PI * r;
+    var strokeWidth = 15, gapPx = 3;
+
     var ordered = state.categories.filter(function (c) { return c.slot !== null && c.slot !== undefined; })
       .sort(function (a, b) { return a.slot - b.slot; });
-    var otherTotal = 0;
-    var segments = [];
+
+    var ringSegments = [];
+    var legendRows = [];
     ordered.forEach(function (c) {
       var amt = byCat[c.id] || 0;
-      if (amt > 0) segments.push({ cat: c, amt: amt, color: categoryColor(c) });
+      if (amt <= 0) return;
+      var segIndex = ringSegments.length;
+      var color = categoryColor(c);
+      ringSegments.push({ amt: amt, color: color });
+      legendRows.push({ name: c.name, amt: amt, color: color, segIndex: segIndex });
     });
-    state.categories.filter(function (c) { return c.slot === null || c.slot === undefined; }).forEach(function (c) {
-      otherTotal += byCat[c.id] || 0;
-    });
-    otherTotal += byCat["__none"] || 0;
-    if (otherTotal > 0) segments.push({ cat: { name: "Other / Uncategorized" }, amt: otherTotal, color: OTHER_COLOR });
 
-    var svg = '<svg viewBox="0 0 176 176"><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="18" />';
+    var otherSegIndex = -1, otherAmt = 0;
+    function foldIntoOther(name, amt) {
+      if (otherSegIndex === -1) {
+        otherSegIndex = ringSegments.length;
+        ringSegments.push({ amt: 0, color: OTHER_COLOR });
+      }
+      otherAmt += amt;
+      legendRows.push({ name: name, amt: amt, color: OTHER_COLOR, segIndex: otherSegIndex });
+    }
+    state.categories.filter(function (c) { return c.slot === null || c.slot === undefined; }).forEach(function (c) {
+      var amt = byCat[c.id] || 0;
+      if (amt > 0) foldIntoOther(c.name, amt);
+    });
+    if (byCat["__none"]) foldIntoOther("Uncategorized", byCat["__none"]);
+    if (otherSegIndex !== -1) ringSegments[otherSegIndex].amt = otherAmt;
+
+    var svg = '<svg viewBox="0 0 176 176" class="donut-svg"><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="' + strokeWidth + '" />';
     var offset = 0;
-    segments.forEach(function (seg) {
+    var n = ringSegments.length;
+    ringSegments.forEach(function (seg, i) {
       var len = (seg.amt / total) * circ;
-      svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + seg.color + '" stroke-width="18" ' +
-        'stroke-dasharray="' + len.toFixed(2) + ' ' + (circ - len).toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '" />';
+      var on = n > 1 ? Math.max(len - gapPx, 0) : len;
+      svg += '<circle class="donut-seg" data-seg="' + i + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + seg.color + '" stroke-width="' + strokeWidth + '" ' +
+        'stroke-dasharray="' + on.toFixed(2) + ' ' + (circ - on).toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '" ' +
+        'style="animation-delay:' + (i * 45) + 'ms" />';
       offset += len;
     });
     svg += '</svg>';
@@ -1729,17 +1777,40 @@
     var html = '<div class="donut-wrap">' + svg +
       '<div class="donut-center"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div></div>';
 
-    var legendItems = segments.slice().sort(function (a, b) { return b.amt - a.amt; });
+    var sortedLegend = legendRows.slice().sort(function (a, b) { return b.amt - a.amt; });
     html += '<div class="legend">';
-    legendItems.forEach(function (seg) {
-      var pct = Math.round((seg.amt / total) * 100);
-      html += '<div class="legend-row"><span class="dot" style="background:' + seg.color + '"></span>' +
-        '<span class="name">' + escapeHtml(seg.cat.name) + '</span>' +
-        '<span class="amt num">' + fmtMoney(seg.amt) + '</span>' +
+    sortedLegend.forEach(function (row) {
+      var pct = Math.round((row.amt / total) * 100);
+      html += '<div class="legend-row" data-seg="' + row.segIndex + '">' +
+        '<span class="dot" style="background:' + row.color + '"></span>' +
+        '<div class="legend-main">' +
+        '<div class="legend-top"><span class="name">' + escapeHtml(row.name) + '</span><span class="amt num">' + fmtMoney(row.amt) + '</span></div>' +
+        '<div class="legend-bar-track"><div class="legend-bar-fill" style="width:' + pct + '%;background:' + row.color + '"></div></div>' +
+        '</div>' +
         '<span class="pct num">' + pct + '%</span></div>';
     });
     html += '</div>';
     return html;
+  }
+
+  function wireDonutHover() {
+    var wrap = document.querySelector("#tab-dashboard .donut-wrap");
+    if (!wrap) return;
+    var segs = document.querySelectorAll("#tab-dashboard .donut-seg");
+    var rows = document.querySelectorAll("#tab-dashboard .legend-row");
+    function setActive(idx) {
+      wrap.classList.toggle("hovering", idx !== null);
+      segs.forEach(function (s) { s.classList.toggle("active", s.getAttribute("data-seg") === idx); });
+      rows.forEach(function (r) { r.classList.toggle("dim", idx !== null && r.getAttribute("data-seg") !== idx); });
+    }
+    segs.forEach(function (s) {
+      s.addEventListener("mouseenter", function () { setActive(s.getAttribute("data-seg")); });
+      s.addEventListener("mouseleave", function () { setActive(null); });
+    });
+    rows.forEach(function (r) {
+      r.addEventListener("mouseenter", function () { setActive(r.getAttribute("data-seg")); });
+      r.addEventListener("mouseleave", function () { setActive(null); });
+    });
   }
 
   function renderSpendingTrendCard() {
@@ -1836,6 +1907,7 @@
     });
     document.getElementById("period-prev").addEventListener("click", function () { shiftPeriod(-1); });
     document.getElementById("period-next").addEventListener("click", function () { shiftPeriod(1); });
+    wireDonutHover();
   }
 
   /* ---------- render: transactions ---------- */
