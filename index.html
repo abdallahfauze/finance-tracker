@@ -684,6 +684,88 @@
     }
     #tab-dashboard.active .card { break-inside: avoid; margin-top: 0; margin-bottom: 14px; }
   }
+
+  .hidden { display: none !important; }
+
+  /* ---------- quick calculator: floating bubble + popup ---------- */
+  /* Anchored the same way nav.tabbar centers itself under the app column
+     (left:50% + translateX(-50%) + matching max-width, including the
+     900px desktop breakpoint above) rather than the viewport edge, so it
+     sits at the app's own right edge instead of drifting toward the
+     browser window's corner on wide screens. */
+  .fab-anchor {
+    position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 100%; max-width: 480px; height: 0;
+    pointer-events: none; z-index: 21;
+  }
+  /* Must come after the base rule above (same specificity) so it actually
+     wins at this breakpoint instead of being shadowed by source order. */
+  @media (min-width: 760px) {
+    .fab-anchor { max-width: 900px; }
+  }
+  .calc-fab {
+    position: absolute; right: 16px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    width: 56px; height: 56px; border-radius: 999px;
+    background: var(--accent); color: var(--accent-ink);
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 38%, transparent), 0 2px 6px rgba(0,0,0,.16);
+    pointer-events: auto;
+    transition: transform .18s cubic-bezier(.34,1.5,.4,1), box-shadow .15s ease;
+  }
+  .calc-fab:active { transform: scale(.88); }
+  .calc-fab svg { width: 26px; height: 26px; }
+
+  .calc-display {
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
+    /* Extra right padding reserves the copy button's own column so the
+       right-aligned expression/result text wraps before it instead of
+       running underneath it. */
+    padding: 18px 48px 14px 16px; text-align: right; position: relative; overflow: hidden;
+  }
+  .calc-display::before {
+    content: ""; position: absolute; top: 1px; left: 14px; right: 14px; height: 3px;
+    background-image: repeating-linear-gradient(to right, var(--accent) 0 2px, transparent 2px 7px);
+    opacity: 0.85;
+  }
+  .calc-expr { font-size: 13px; color: var(--ink-muted); min-height: 18px; word-break: break-all; }
+  .calc-result { font-size: 34px; font-weight: 700; letter-spacing: -0.01em; margin-top: 2px; word-break: break-all; }
+  .calc-copy {
+    position: absolute; top: 12px; right: 12px;
+    width: 30px; height: 30px; border-radius: 999px; border: none;
+    background: var(--surface-2); color: var(--ink-2);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: transform .12s ease, background .15s ease, color .15s ease;
+  }
+  .calc-copy svg { width: 15px; height: 15px; }
+  .calc-copy:active { transform: scale(.9); }
+  .calc-copy.copied { background: var(--accent-soft); color: var(--accent); }
+
+  .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+  .calc-btn {
+    height: 58px; border-radius: var(--radius-md); border: none;
+    background: var(--surface-2); color: var(--ink);
+    font-size: 19px; font-weight: 600; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    cursor: pointer; transition: transform .08s ease, filter .1s ease;
+  }
+  .calc-btn:active { transform: scale(.94); filter: brightness(0.94); }
+  .calc-btn.calc-fn { color: var(--ink-2); font-size: 16px; }
+  .calc-btn.calc-op { background: var(--accent-soft); color: var(--accent); }
+  .calc-btn.calc-eq { background: var(--accent); color: var(--accent-ink); }
+  .calc-btn.calc-zero { grid-column: span 2; }
+
+  .calc-history-list { display: flex; flex-direction: column; }
+  .calc-history-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    padding: 12px 2px; border-bottom: 1px solid var(--line); cursor: pointer;
+    transition: background-color .12s ease;
+  }
+  .calc-history-row:last-child { border-bottom: none; }
+  .calc-history-row:active { background: var(--surface-2); }
+  .calc-history-row .calc-history-expr { font-size: 12.5px; color: var(--ink-muted); }
+  .calc-history-row .calc-history-result { font-size: 17px; font-weight: 700; }
+  .calc-history-empty { text-align: center; color: var(--ink-muted); font-size: 13px; padding: 30px 0; }
 </style>
 
 <svg width="0" height="0" style="position:absolute">
@@ -762,6 +844,19 @@
     <polyline points="22 12 16 12 14 15 10 15 8 12 2 12" />
     <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
   </symbol>
+  <symbol id="i-calculator" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="5" y="3" width="14" height="18" rx="2.2"/>
+    <line x1="8" y1="7.3" x2="16" y2="7.3"/>
+    <line x1="8" y1="12" x2="8.01" y2="12"/><line x1="12" y1="12" x2="12.01" y2="12"/><line x1="16" y1="12" x2="16.01" y2="12"/>
+    <line x1="8" y1="16" x2="8.01" y2="16"/><line x1="12" y1="16" x2="12.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/>
+  </symbol>
+  <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
+  </symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="8" y="8" width="12" height="12" rx="1.5"/>
+    <path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4H5.5A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/>
+  </symbol>
 </svg>
 
 <div class="app">
@@ -802,6 +897,12 @@
     <button data-tab="recurring"><svg><use href="#i-refresh"/></svg><span>Recurring</span></button>
     <button data-tab="loans"><svg><use href="#i-trend-down"/></svg><span>Loans</span></button>
   </nav>
+
+  <div class="fab-anchor">
+    <button class="calc-fab" id="calc-fab" aria-label="Quick calculator">
+      <svg><use href="#i-calculator"/></svg>
+    </button>
+  </div>
 </div>
 
 <div class="modal-overlay" id="modal-overlay">
@@ -1616,6 +1717,244 @@
     openModal(html);
     document.querySelector("[data-ok]").addEventListener("click", closeModal);
   }
+
+  /* ---------- quick calculator ---------- */
+
+  var CALC_HISTORY_KEY = "ledger.financeTracker.calcHistory";
+
+  function openCalculator() {
+    var html = '<div class="modal-head"><h3 id="calc-title">Quick Calculator</h3>' +
+      '<div style="display:flex;gap:8px">' +
+      '<button class="icon-btn ghost" id="calc-history-toggle" aria-label="Calculation history" style="width:30px;height:30px">' + icon("history") + '</button>' +
+      '<button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button>' +
+      '</div></div>';
+    html += '<div id="calc-view">';
+    html += '<div class="calc-display">';
+    html += '<button class="calc-copy" id="calc-copy" aria-label="Copy result">' + icon("copy") + '</button>';
+    html += '<div class="calc-expr num" id="calc-expr">&nbsp;</div>';
+    html += '<div class="calc-result num" id="calc-result">0</div>';
+    html += '</div>';
+    html += '<div class="calc-grid">';
+    html += '<button class="calc-btn calc-fn" data-fn="clear">C</button>';
+    html += '<button class="calc-btn calc-fn" data-fn="back">⌫</button>';
+    html += '<button class="calc-btn calc-fn" data-fn="percent">%</button>';
+    html += '<button class="calc-btn calc-op" data-op="÷">÷</button>';
+    ["7", "8", "9"].forEach(function (d) { html += '<button class="calc-btn" data-digit="' + d + '">' + d + '</button>'; });
+    html += '<button class="calc-btn calc-op" data-op="×">×</button>';
+    ["4", "5", "6"].forEach(function (d) { html += '<button class="calc-btn" data-digit="' + d + '">' + d + '</button>'; });
+    html += '<button class="calc-btn calc-op" data-op="−">−</button>';
+    ["1", "2", "3"].forEach(function (d) { html += '<button class="calc-btn" data-digit="' + d + '">' + d + '</button>'; });
+    html += '<button class="calc-btn calc-op" data-op="+">+</button>';
+    html += '<button class="calc-btn calc-zero" data-digit="0">0</button>';
+    html += '<button class="calc-btn" data-digit=".">.</button>';
+    html += '<button class="calc-btn calc-eq" data-fn="equals">=</button>';
+    html += '</div></div>';
+    html += '<div id="calc-history-view" class="hidden">';
+    html += '<div class="calc-history-list" id="calc-history-list"></div>';
+    html += '<div class="calc-history-empty" id="calc-history-empty">No calculations yet</div>';
+    html += '<button class="btn plain" id="calc-history-clear" style="margin-top:12px">Clear history</button>';
+    html += '</div>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+
+    // Fresh state every time the calculator is opened - it's a floating
+    // utility, not a tab, so there's no reason a stale in-progress sum
+    // from earlier should still be sitting there next time.
+    var current = "0";
+    var stored = null;
+    var pendingOp = null;
+    // True right after "=" or an operator is pressed - the next digit
+    // should start a brand new number instead of appending onto the
+    // operand/result that's only sitting in `current` for display.
+    var startFresh = false;
+    // The small line above the result. While an operator is pending it's
+    // derived live from stored/pendingOp/current; once "=" fires that
+    // state clears for computation, so the completed equation is
+    // captured here first and just persists on screen (mirroring how
+    // Apple's Calculator keeps "10,000÷15" visible above the answer)
+    // until the next operator starts a genuinely new one.
+    var lastExpr = "";
+
+    var exprEl = document.getElementById("calc-expr");
+    var resultEl = document.getElementById("calc-result");
+
+    function fmtDisplay(n) {
+      if (n === "Error") return n;
+      var num = parseFloat(n);
+      if (isNaN(num)) return "0";
+      if (Math.abs(num) >= 1e12) return num.toExponential(4);
+      var str = num.toString();
+      if (str.length > 12) str = parseFloat(num.toPrecision(10)).toString();
+      return str;
+    }
+
+    function applyOp(a, op, b) {
+      a = parseFloat(a); b = parseFloat(b);
+      if (op === "+") return a + b;
+      if (op === "−") return a - b;
+      if (op === "×") return a * b;
+      if (op === "÷") return b === 0 ? NaN : a / b;
+      return b;
+    }
+
+    function liveExpr() {
+      if (stored === null || !pendingOp) return null;
+      if (startFresh) return fmtDisplay(stored) + " " + pendingOp;
+      return fmtDisplay(stored) + " " + pendingOp + " " + fmtDisplay(current);
+    }
+
+    function render() {
+      resultEl.textContent = fmtDisplay(current);
+      var live = liveExpr();
+      exprEl.textContent = live !== null ? live : (lastExpr || " ");
+    }
+
+    function pressDigit(d) {
+      if (current === "Error" || startFresh) { current = ""; startFresh = false; }
+      if (d === "." && current.indexOf(".") !== -1) return;
+      if (current === "0" && d !== ".") current = "";
+      current = (current || "") + d;
+      if (current === "") current = "0";
+      render();
+    }
+
+    function pressOp(op) {
+      if (current === "Error") return;
+      if (stored !== null && pendingOp && !startFresh) {
+        // A full operand was typed since the last operator - chain-evaluate
+        // immediately (simple pocket-calculator behavior, no precedence).
+        var r = applyOp(stored, pendingOp, current);
+        stored = isNaN(r) ? "Error" : r;
+      } else if (stored === null) {
+        stored = current;
+      }
+      // else: operator pressed again with no new digits typed in between -
+      // just swap which operator is pending, without recomputing anything.
+      current = String(stored);
+      pendingOp = op;
+      startFresh = true;
+      render();
+    }
+
+    function pressEquals() {
+      if (current === "Error" || stored === null || !pendingOp) return;
+      var r = applyOp(stored, pendingOp, current);
+      var exprForHistory = fmtDisplay(stored) + " " + pendingOp + " " + fmtDisplay(current);
+      current = isNaN(r) ? "Error" : String(r);
+      lastExpr = exprForHistory;
+      stored = null;
+      pendingOp = null;
+      startFresh = true;
+      if (current !== "Error") addHistoryEntry(exprForHistory, current);
+      render();
+    }
+
+    function pressClear() {
+      current = "0"; stored = null; pendingOp = null; startFresh = false; lastExpr = "";
+      render();
+    }
+
+    function pressBack() {
+      if (current === "Error" || startFresh) { pressClear(); return; }
+      current = current.length > 1 ? current.slice(0, -1) : "0";
+      render();
+    }
+
+    function pressPercent() {
+      if (current === "Error") return;
+      current = String(parseFloat(current) / 100);
+      render();
+    }
+
+    document.querySelectorAll(".calc-btn[data-digit]").forEach(function (b) {
+      b.addEventListener("click", function () { pressDigit(b.getAttribute("data-digit")); });
+    });
+    document.querySelectorAll(".calc-btn[data-op]").forEach(function (b) {
+      b.addEventListener("click", function () { pressOp(b.getAttribute("data-op")); });
+    });
+    document.querySelector('[data-fn="equals"]').addEventListener("click", pressEquals);
+    document.querySelector('[data-fn="clear"]').addEventListener("click", pressClear);
+    document.querySelector('[data-fn="back"]').addEventListener("click", pressBack);
+    document.querySelector('[data-fn="percent"]').addEventListener("click", pressPercent);
+
+    document.getElementById("calc-copy").addEventListener("click", function () {
+      var btn = this;
+      var text = fmtDisplay(current);
+      (navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject())
+        .catch(function () {})
+        .then(function () {
+          btn.classList.add("copied");
+          setTimeout(function () { btn.classList.remove("copied"); }, 900);
+        });
+    });
+
+    // ---------- history ----------
+    var calcHistory = [];
+    try { calcHistory = JSON.parse(localStorage.getItem(CALC_HISTORY_KEY) || "[]"); } catch (e) { calcHistory = []; }
+
+    function saveHistory() { localStorage.setItem(CALC_HISTORY_KEY, JSON.stringify(calcHistory)); }
+
+    function addHistoryEntry(expr, result) {
+      calcHistory.unshift({ expr: expr, result: result });
+      if (calcHistory.length > 20) calcHistory = calcHistory.slice(0, 20);
+      saveHistory();
+      renderHistory();
+    }
+
+    var historyListEl = document.getElementById("calc-history-list");
+    var historyEmptyEl = document.getElementById("calc-history-empty");
+
+    function renderHistory() {
+      historyEmptyEl.classList.toggle("hidden", calcHistory.length > 0);
+      historyListEl.innerHTML = calcHistory.map(function (h, i) {
+        return '<div class="calc-history-row" data-idx="' + i + '">' +
+          '<div class="calc-history-expr num">' + escapeHtml(h.expr) + ' =</div>' +
+          '<div class="calc-history-result num">' + escapeHtml(fmtDisplay(h.result)) + '</div>' +
+          '</div>';
+      }).join("");
+      historyListEl.querySelectorAll(".calc-history-row").forEach(function (row) {
+        row.addEventListener("click", function () {
+          var entry = calcHistory[parseInt(row.getAttribute("data-idx"), 10)];
+          current = entry.result;
+          stored = null; pendingOp = null; startFresh = true; lastExpr = entry.expr;
+          render();
+          showCalcView();
+        });
+      });
+    }
+    renderHistory();
+
+    var calcViewEl = document.getElementById("calc-view");
+    var historyViewEl = document.getElementById("calc-history-view");
+    var calcTitleEl = document.getElementById("calc-title");
+    var showingHistory = false;
+
+    function showCalcView() {
+      showingHistory = false;
+      calcViewEl.classList.remove("hidden");
+      historyViewEl.classList.add("hidden");
+      calcTitleEl.textContent = "Quick Calculator";
+    }
+    function showHistoryView() {
+      showingHistory = true;
+      calcViewEl.classList.add("hidden");
+      historyViewEl.classList.remove("hidden");
+      calcTitleEl.textContent = "History";
+    }
+    document.getElementById("calc-history-toggle").addEventListener("click", function () {
+      if (showingHistory) showCalcView(); else showHistoryView();
+    });
+    document.getElementById("calc-history-clear").addEventListener("click", function () {
+      calcHistory = [];
+      saveHistory();
+      renderHistory();
+    });
+
+    render();
+  }
+
+  document.getElementById("calc-fab").addEventListener("click", openCalculator);
 
   /* ---------- render: dashboard ---------- */
 
