@@ -986,6 +986,14 @@
     }
     parsed.categories.forEach(function (c) { if (typeof c.budget !== "number") c.budget = 0; });
     if (!parsed.settings.notifyBills) parsed.settings.notifyBills = false;
+    // Recurring items didn't used to have a start/end window - backfill
+    // existing ones as having always been open-ended, so this migration
+    // can't retroactively clip a forecast or trend that already worked.
+    parsed.recurring.forEach(function (r) {
+      if (!r.startDate) r.startDate = "1970-01-01";
+      if (r.endDate === undefined) r.endDate = null;
+      if (!r.kind) r.kind = "subscription";
+    });
     return parsed;
   }
 
@@ -1303,7 +1311,12 @@
      already past rangeStart, so this works equally well for a future month
      (the common case) and a past one (Spending Trend's actual-vs-forecast
      needs the same schedule projected backward across recent history). */
-  function occurrencesInRange(anchorISO, frequency, rangeStart, rangeEnd) {
+  /* itemStart/itemEnd are the recurring item's (or loan's) own active
+     window - a promotional subscription that ends in March shouldn't keep
+     projecting into April just because its weekly/monthly schedule would
+     otherwise carry on forever. Both are optional; omit either to leave
+     that side unbounded. */
+  function occurrencesInRange(anchorISO, frequency, rangeStart, rangeEnd, itemStart, itemEnd) {
     var d = anchorISO;
     var guard = 0;
     if (d < rangeStart) {
@@ -1316,7 +1329,7 @@
     var count = 0;
     guard = 0;
     while (d < rangeEnd && guard < 600) {
-      count++;
+      if ((!itemEnd || d <= itemEnd) && (!itemStart || d >= itemStart)) count++;
       d = addInterval(d, frequency);
       guard++;
     }
@@ -1325,14 +1338,16 @@
 
   /* Same projection the Forecast tab uses (active recurring + loans), just
      generalized to any date range instead of a matrix keyed by category -
-     Spending Trend needs one flat total per month, past or present. */
+     Spending Trend needs one flat total per month, past or present.
+     Recurring income (salary etc.) is deliberately excluded - this feeds
+     an expense-only forecast, same as the Forecast tab's own matrix. */
   function forecastTotalForRange(rangeStart, rangeEnd) {
     var total = 0;
-    state.recurring.filter(function (r) { return r.isActive; }).forEach(function (r) {
-      total += occurrencesInRange(r.nextDueDate, r.frequency, rangeStart, rangeEnd) * r.amount;
+    state.recurring.filter(function (r) { return r.isActive && r.kind !== "income"; }).forEach(function (r) {
+      total += occurrencesInRange(r.nextDueDate, r.frequency, rangeStart, rangeEnd, r.startDate, r.endDate) * r.amount;
     });
     state.loans.filter(function (l) { return l.isActive; }).forEach(function (l) {
-      total += occurrencesInRange(l.nextPaymentDate, "monthly", rangeStart, rangeEnd) * l.monthlyPayment;
+      total += occurrencesInRange(l.nextPaymentDate, "monthly", rangeStart, rangeEnd, l.startDate, l.endDate) * l.monthlyPayment;
     });
     return total;
   }
@@ -1682,7 +1697,7 @@
     html += renderSpendingTrendCard();
 
     if (isCurrentMonthPeriod(viewPeriod)) {
-      var upcoming = state.recurring.filter(function (r) { return r.isActive && daysUntil(r.nextDueDate) <= 30; })
+      var upcoming = state.recurring.filter(function (r) { return r.isActive && r.kind !== "income" && daysUntil(r.nextDueDate) <= 30; })
         .sort(function (a, b) { return a.nextDueDate < b.nextDueDate ? -1 : 1; });
       if (upcoming.length) {
         html += '<div class="card"><h2>Upcoming Bills</h2>';
@@ -2307,11 +2322,18 @@
 
     var fixed = sortRecurring(filtered.filter(function (r) { return r.kind === "fixed"; }));
     var subs = sortRecurring(filtered.filter(function (r) { return r.kind === "subscription"; }));
+    var income = sortRecurring(filtered.filter(function (r) { return r.kind === "income"; }));
     // Reflects whatever's currently filtered, same as the Transactions tab's
     // filtered total - not every recurring item regardless of the filters.
-    var monthlyTotal = filtered.filter(function (r) { return r.isActive; }).reduce(function (s, r) { return s + monthlyEquivalent(r); }, 0);
+    // Outgoing and income are kept as two separate figures rather than one
+    // net number, so this reads the same way as the rest of the app (Spent
+    // vs Income on the dashboard) instead of inventing a new convention.
+    var monthlyOut = filtered.filter(function (r) { return r.isActive && r.kind !== "income"; }).reduce(function (s, r) { return s + monthlyEquivalent(r); }, 0);
+    var monthlyIn = filtered.filter(function (r) { return r.isActive && r.kind === "income"; }).reduce(function (s, r) { return s + monthlyEquivalent(r); }, 0);
 
-    var html = '<div class="card"><div class="disclosure"><span style="font-weight:600">Monthly total</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(monthlyTotal) + '</span></div></div>';
+    var html = '<div class="card"><div class="disclosure"' + (income.length ? ' style="margin-bottom:8px"' : '') + '><span style="font-weight:600">Monthly total</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(monthlyOut) + '</span></div>';
+    if (income.length) html += '<div class="disclosure"><span style="font-weight:600">Monthly income</span><span class="num" style="font-size:18px;font-weight:700;color:var(--good)">+' + fmtMoney(monthlyIn) + '</span></div>';
+    html += '</div>';
 
     if (state.recurring.length) {
       html += '<select id="recurring-filter-cat" style="margin-bottom:10px">';
@@ -2337,10 +2359,11 @@
     if (!filtered.length) {
       html += state.recurring.length
         ? emptyState("refresh", "No matches", "Try a different category or bank/card filter.")
-        : emptyState("refresh", "No recurring payments", "Add fixed bills or subscriptions to track them here.");
+        : emptyState("refresh", "No recurring payments", "Add fixed bills, subscriptions, or recurring income like a salary to track them here.");
     } else {
       if (fixed.length) html += '<div class="section-title">Fixed Payments</div>' + recurringList(fixed);
       if (subs.length) html += '<div class="section-title">Subscriptions</div>' + recurringList(subs);
+      if (income.length) html += '<div class="section-title">Income</div>' + recurringList(income);
     }
 
     document.getElementById("tab-recurring").innerHTML = html;
@@ -2369,15 +2392,16 @@
   function openMarkPaidConfirm(id) {
     var r = byId(state.recurring, id);
     if (!r) return;
+    var isIncome = r.kind === "income";
 
-    var html = '<div class="modal-head"><h3>Mark as Paid</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    var html = '<div class="modal-head"><h3>' + (isIncome ? "Mark as Received" : "Mark as Paid") + '</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
     html += '<p style="font-size:14.5px;color:var(--ink-2);margin:0 0 16px">' + escapeHtml(r.name) + ' · ' + fmtMoney(r.amount) + '</p>';
-    html += '<div class="field"><label>Paid with</label><select name="bankCard" id="mark-paid-bank"><option value="">None</option>';
+    html += '<div class="field"><label>' + (isIncome ? "Received into" : "Paid with") + '</label><select name="bankCard" id="mark-paid-bank"><option value="">None</option>';
     allBankCards().forEach(function (bc) {
       html += '<option value="' + escapeAttr(bc) + '"' + (r.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
     });
     html += '</select></div>';
-    html += '<button type="button" class="btn primary" data-confirm-paid>Confirm Payment</button>';
+    html += '<button type="button" class="btn primary" data-confirm-paid>' + (isIncome ? "Confirm Receipt" : "Confirm Payment") + '</button>';
 
     openModal(html);
     document.querySelector("[data-close]").addEventListener("click", closeModal);
@@ -2392,11 +2416,14 @@
     var html = '<div class="card" style="padding:4px 16px;margin-bottom:14px">';
     list.forEach(function (r) {
       var cat = byId(state.categories, r.categoryId);
+      var isIncome = r.kind === "income";
       html += '<div class="row" data-open-recurring="' + r.id + '" style="opacity:' + (r.isActive ? 1 : 0.45) + '">';
       html += badgeHtml(cat, 34);
-      html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + (FREQUENCY_LABELS[r.frequency] || capitalize(r.frequency)) + ' · due ' + fmtDateShort(r.nextDueDate) + (r.bankCard ? ' · ' + escapeHtml(r.bankCard) : '') + '</div></div>';
-      html += '<div class="amount num">' + fmtMoney(r.amount) + '</div>';
-      html += '<button class="icon-btn ghost" data-mark-paid="' + r.id + '" aria-label="Mark as paid" style="width:30px;height:30px">' + icon("check") + '</button>';
+      html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + (FREQUENCY_LABELS[r.frequency] || capitalize(r.frequency)) + ' · due ' + fmtDateShort(r.nextDueDate) +
+        (r.endDate ? ' · ends ' + fmtDateShort(r.endDate) : '') +
+        (r.bankCard ? ' · ' + escapeHtml(r.bankCard) : '') + '</div></div>';
+      html += '<div class="amount num' + (isIncome ? " income" : "") + '">' + (isIncome ? "+" : "") + fmtMoney(r.amount) + '</div>';
+      html += '<button class="icon-btn ghost" data-mark-paid="' + r.id + '" aria-label="' + (isIncome ? "Mark as received" : "Mark as paid") + '" style="width:30px;height:30px">' + icon("check") + '</button>';
       html += '</div>';
     });
     html += '</div>';
@@ -2408,7 +2435,13 @@
   function markPaid(id, bankCard) {
     var r = byId(state.recurring, id);
     if (!r) return;
-    state.transactions.push({ id: uid(), amount: r.amount, merchant: r.name, note: "Recurring payment", date: todayISO(), type: "expense", categoryId: r.categoryId, bankCard: bankCard || null });
+    var isIncome = r.kind === "income";
+    state.transactions.push({
+      id: uid(), amount: r.amount, merchant: r.name,
+      note: isIncome ? "Recurring income" : "Recurring payment",
+      date: todayISO(), type: isIncome ? "income" : "expense",
+      categoryId: r.categoryId, bankCard: bankCard || null
+    });
     r.bankCard = bankCard || null;
     r.nextDueDate = addInterval(r.nextDueDate, r.frequency);
     assignCategorySlots();
@@ -2597,14 +2630,17 @@
       catTotals[catKey] = (catTotals[catKey] || 0) + amount;
     }
 
-    state.recurring.filter(function (r) { return r.isActive; }).forEach(function (r) {
+    // Recurring income (salary etc.) sits outside this expense forecast,
+    // same as Spending Trend's forecastTotalForRange.
+    state.recurring.filter(function (r) { return r.isActive && r.kind !== "income"; }).forEach(function (r) {
       var catKey = r.categoryId || "__none";
       var d2 = r.nextDueDate;
       var guard = 0;
       while (d2 < windowStart && guard < 500) { d2 = addInterval(d2, r.frequency); guard++; }
       guard = 0;
       while (d2 < windowEnd && guard < 500) {
-        addToMatrix(catKey, d2.slice(0, 7), r.amount);
+        if (r.endDate && d2 > r.endDate) break;
+        if (!r.startDate || d2 >= r.startDate) addToMatrix(catKey, d2.slice(0, 7), r.amount);
         d2 = addInterval(d2, r.frequency);
         guard++;
       }
@@ -2891,7 +2927,8 @@
     html += '<div class="field"><label>Amount</label><input type="number" step="0.01" min="0" inputmode="decimal" name="amount" value="' + (existing ? existing.amount : "") + '" required /></div>';
     html += '<div class="field"><label>Type</label><div class="segmented" id="rec-kind-seg">';
     html += '<button type="button" data-val="subscription" class="' + (!existing || existing.kind === "subscription" ? "active" : "") + '">Subscription</button>';
-    html += '<button type="button" data-val="fixed" class="' + (existing && existing.kind === "fixed" ? "active" : "") + '">Fixed Payment</button>';
+    html += '<button type="button" data-val="fixed" class="' + (existing && existing.kind === "fixed" ? "active" : "") + '">Fixed</button>';
+    html += '<button type="button" data-val="income" class="' + (existing && existing.kind === "income" ? "active" : "") + '">Income</button>';
     html += '</div><input type="hidden" name="kind" value="' + (existing ? existing.kind : "subscription") + '" /></div>';
     html += '<div class="field"><label>Frequency</label><select name="frequency">';
     ["weekly","monthly","quarterly","biannual","yearly"].forEach(function (f) {
@@ -2900,6 +2937,9 @@
     });
     html += '</select></div>';
     html += '<div class="field"><label>Next due date</label><input type="date" name="nextDueDate" value="' + (existing ? existing.nextDueDate : todayISO()) + '" required /></div>';
+    html += '<div class="field"><label>Start date</label><input type="date" name="startDate" value="' + (existing ? existing.startDate : todayISO()) + '" required /></div>';
+    html += '<div class="toggle-row"><span>Open ended</span><label class="switch"><input type="checkbox" id="rec-open-ended" ' + (!existing || !existing.endDate ? "checked" : "") + ' /><span class="track"></span><span class="thumb"></span></label></div>';
+    html += '<div class="field" id="rec-enddate-field" style="display:' + (existing && existing.endDate ? "block" : "none") + '"><label>End date</label><input type="date" name="endDate" value="' + (existing && existing.endDate ? existing.endDate : "") + '" /></div>';
     html += '<div class="field"><label>Category</label><select name="categoryId"><option value="">None</option>';
     state.categories.forEach(function (c) {
       html += '<option value="' + c.id + '"' + (existing && existing.categoryId === c.id ? " selected" : "") + '>' + escapeHtml(c.name) + '</option>';
@@ -2927,6 +2967,16 @@
       });
     });
 
+    var openEndedInput = document.getElementById("rec-open-ended");
+    var endDateField = document.getElementById("rec-enddate-field");
+    var endDateInput = document.querySelector('input[name="endDate"]');
+    function syncEndDateField() {
+      endDateField.style.display = openEndedInput.checked ? "none" : "block";
+      endDateInput.required = !openEndedInput.checked;
+    }
+    syncEndDateField();
+    openEndedInput.addEventListener("change", syncEndDateField);
+
     if (existing) document.querySelector("[data-delete]").addEventListener("click", function () {
       confirmAction("Delete this recurring payment?", "Delete", function () {
         state.recurring = state.recurring.filter(function (r) { return r.id !== existing.id; });
@@ -2944,6 +2994,8 @@
         kind: f.get("kind"),
         frequency: f.get("frequency"),
         nextDueDate: f.get("nextDueDate"),
+        startDate: f.get("startDate"),
+        endDate: openEndedInput.checked ? null : (f.get("endDate") || null),
         categoryId: f.get("categoryId") || null,
         bankCard: f.get("bankCard") || null,
         isActive: f.get("isActive") === "on"
@@ -3381,7 +3433,8 @@
       if (d < 0 || d > 2) return;
       if (notified[r.id] === r.nextDueDate) return;
       try {
-        new Notification("Bill due soon", { body: r.name + " · " + fmtMoneyPlain(r.amount) + " · " + fmtDateShort(r.nextDueDate) });
+        var title = r.kind === "income" ? "Income expected soon" : "Bill due soon";
+        new Notification(title, { body: r.name + " · " + fmtMoneyPlain(r.amount) + " · " + fmtDateShort(r.nextDueDate) });
       } catch (e) {}
       notified[r.id] = r.nextDueDate;
       changed = true;
