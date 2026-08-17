@@ -293,21 +293,68 @@
   .stat.net .value { color: var(--accent); }
 
   .donut-wrap { position: relative; width: 188px; height: 188px; margin: 20px auto 4px; }
-  .donut-wrap svg { transform: rotate(-90deg); width: 100%; height: 100%; overflow: visible; }
+  .donut-wrap svg { width: 100%; height: 100%; overflow: visible; }
   .donut-center {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
+    pointer-events: none;
   }
   .donut-center .amt { font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
   .donut-center .lbl { font-size: 10.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 
-  .donut-seg {
-    transition: stroke-width .16s cubic-bezier(.2,.7,.3,1), opacity .16s ease;
-    animation: donut-seg-in .55s cubic-bezier(.16,1,.3,1) both;
+  /* Each wedge is a separate path, pre-offset outward along its own mid-
+     angle via --tx/--ty (the "exploded pie" look) - the resting rule below
+     is what's shown if scroll-in JS/IntersectionObserver never runs (no
+     support, or reduced motion). The pending/animating classes on
+     .donut-wrap are what turn that resting render into a scroll-triggered
+     wiggle-into-place entrance instead. */
+  .donut-seg, .donut-seg-label {
+    transform-box: fill-box; transform-origin: center;
+    transform: translate(var(--tx), var(--ty)) scale(1);
+    opacity: 1;
+    transition: transform .15s ease, opacity .15s ease;
   }
-  @keyframes donut-seg-in { from { opacity: 0; } to { opacity: 1; } }
-  .donut-wrap.hovering .donut-seg { opacity: .3; }
-  .donut-wrap.hovering .donut-seg.active { opacity: 1; stroke-width: 18; }
+  .donut-seg-label {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px; font-weight: 700;
+    text-anchor: middle; dominant-baseline: central;
+    pointer-events: none;
+  }
+  .donut-wrap.pending .donut-seg,
+  .donut-wrap.pending .donut-seg-label {
+    opacity: 0; transform: translate(0, 0) scale(.4); transition: none;
+  }
+  .donut-wrap.animating .donut-seg {
+    animation: wedge-in .68s cubic-bezier(.34,1.4,.4,1) both;
+    animation-delay: calc(var(--i) * 55ms);
+  }
+  .donut-wrap.animating .donut-seg-label {
+    animation: wedge-label-in .4s ease both;
+    animation-delay: calc(var(--i) * 55ms + 280ms);
+  }
+  @keyframes wedge-in {
+    0%   { opacity: 0; transform: translate(0, 0) scale(.4) rotate(-10deg); }
+    45%  { opacity: 1; transform: translate(calc(var(--tx) * 1.3), calc(var(--ty) * 1.3)) scale(1.08) rotate(5deg); }
+    68%  { transform: translate(calc(var(--tx) * .85), calc(var(--ty) * .85)) scale(.96) rotate(-2deg); }
+    85%  { transform: translate(calc(var(--tx) * 1.06), calc(var(--ty) * 1.06)) scale(1.02) rotate(1deg); }
+    100% { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1) rotate(0deg); }
+  }
+  @keyframes wedge-label-in {
+    from { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(.6); }
+    to   { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1); }
+  }
+  .donut-wrap.hovering .donut-seg { opacity: .32; }
+  .donut-wrap.hovering .donut-seg-label { opacity: .32; }
+  .donut-wrap.hovering .donut-seg.active {
+    opacity: 1; transform: translate(calc(var(--tx) * 1.35), calc(var(--ty) * 1.35)) scale(1.05);
+  }
+  .donut-wrap.hovering .donut-seg-label.active {
+    opacity: 1; transform: translate(calc(var(--tx) * 1.35), calc(var(--ty) * 1.35)) scale(1.05);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .donut-wrap.pending .donut-seg, .donut-wrap.pending .donut-seg-label { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1); }
+    .donut-wrap.animating .donut-seg, .donut-wrap.animating .donut-seg-label { animation: none; }
+  }
 
   .legend { display: flex; flex-direction: column; gap: 2px; margin-top: 16px; }
   .legend-row {
@@ -326,10 +373,32 @@
   .legend-bar-fill { height: 100%; border-radius: 999px; transition: width .4s cubic-bezier(.16,1,.3,1); }
   .legend-row .pct { color: var(--ink-muted); width: 32px; text-align: right; font-size: 12px; flex-shrink: 0; }
 
+  .trend-legend { display: flex; gap: 16px; margin: 2px 0 12px; }
+  .trend-legend-item {
+    display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--ink-muted);
+    text-transform: uppercase; letter-spacing: 0.05em; font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  .trend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; box-sizing: border-box; }
+  .trend-swatch.actual { background: var(--accent); }
+  .trend-swatch.forecast { background: transparent; border: 1.5px dashed var(--ink-muted); }
+
   .trend-bars { display: flex; align-items: flex-end; gap: 8px; margin-top: 4px; }
   .trend-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
-  .trend-bar-value { font-size: 9.5px; color: var(--ink-muted); margin-bottom: 4px; white-space: nowrap; }
-  .trend-bar-fill { width: 100%; max-width: 32px; background: var(--accent); border-radius: 4px 4px 0 0; min-height: 2px; }
+  .trend-bar-values { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-bottom: 4px; }
+  .trend-bar-values .actual { font-size: 9.5px; font-weight: 700; white-space: nowrap; }
+  .trend-bar-values .forecast { font-size: 8.5px; color: var(--ink-muted); white-space: nowrap; }
+  .trend-bar-values .actual.over { color: var(--critical); }
+  .trend-bar-values .actual.under { color: var(--good); }
+  .trend-bar-pair { display: flex; align-items: flex-end; justify-content: center; gap: 3px; width: 100%; }
+  .trend-bar-fill {
+    width: 13px; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px;
+    transition: opacity .12s ease;
+  }
+  .trend-bar-fill.forecast {
+    background: transparent; border: 1.5px dashed var(--ink-muted); border-bottom: none;
+    box-sizing: border-box;
+  }
+  .trend-bar-col:active .trend-bar-fill { opacity: .75; }
   .trend-bar-label {
     font-size: 10.5px; color: var(--ink-muted); margin-top: 6px; text-transform: uppercase;
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
@@ -1205,6 +1274,55 @@
     return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
   }
 
+  function subtractInterval(iso, frequency) {
+    var d = new Date(iso + "T00:00:00");
+    if (frequency === "weekly") d.setDate(d.getDate() - 7);
+    else if (frequency === "quarterly") d.setMonth(d.getMonth() - 3);
+    else if (frequency === "biannual") d.setMonth(d.getMonth() - 6);
+    else if (frequency === "yearly") d.setFullYear(d.getFullYear() - 1);
+    else d.setMonth(d.getMonth() - 1);
+    return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+  }
+
+  /* How many times a recurring schedule anchored at anchorISO lands inside
+     [rangeStart, rangeEnd) - walking backward first when the anchor is
+     already past rangeStart, so this works equally well for a future month
+     (the common case) and a past one (Spending Trend's actual-vs-forecast
+     needs the same schedule projected backward across recent history). */
+  function occurrencesInRange(anchorISO, frequency, rangeStart, rangeEnd) {
+    var d = anchorISO;
+    var guard = 0;
+    if (d < rangeStart) {
+      while (d < rangeStart && guard < 600) { d = addInterval(d, frequency); guard++; }
+    } else {
+      while (d >= rangeStart && guard < 600) { d = subtractInterval(d, frequency); guard++; }
+      guard = 0;
+      while (d < rangeStart && guard < 600) { d = addInterval(d, frequency); guard++; }
+    }
+    var count = 0;
+    guard = 0;
+    while (d < rangeEnd && guard < 600) {
+      count++;
+      d = addInterval(d, frequency);
+      guard++;
+    }
+    return count;
+  }
+
+  /* Same projection the Forecast tab uses (active recurring + loans), just
+     generalized to any date range instead of a matrix keyed by category -
+     Spending Trend needs one flat total per month, past or present. */
+  function forecastTotalForRange(rangeStart, rangeEnd) {
+    var total = 0;
+    state.recurring.filter(function (r) { return r.isActive; }).forEach(function (r) {
+      total += occurrencesInRange(r.nextDueDate, r.frequency, rangeStart, rangeEnd) * r.amount;
+    });
+    state.loans.filter(function (l) { return l.isActive; }).forEach(function (l) {
+      total += occurrencesInRange(l.nextPaymentDate, "monthly", rangeStart, rangeEnd) * l.monthlyPayment;
+    });
+    return total;
+  }
+
   function daysUntil(iso) {
     var target = new Date(iso + "T00:00:00");
     var now = new Date();
@@ -1718,6 +1836,37 @@
     return html;
   }
 
+  function donutWedgePath(cx, cy, rInner, rOuter, a0, a1) {
+    var largeArc = (a1 - a0) > Math.PI ? 1 : 0;
+    var p0x = cx + rOuter * Math.cos(a0), p0y = cy + rOuter * Math.sin(a0);
+    var p1x = cx + rOuter * Math.cos(a1), p1y = cy + rOuter * Math.sin(a1);
+    var p2x = cx + rInner * Math.cos(a1), p2y = cy + rInner * Math.sin(a1);
+    var p3x = cx + rInner * Math.cos(a0), p3y = cy + rInner * Math.sin(a0);
+    return "M" + p0x.toFixed(2) + "," + p0y.toFixed(2) +
+      " A" + rOuter + "," + rOuter + " 0 " + largeArc + " 1 " + p1x.toFixed(2) + "," + p1y.toFixed(2) +
+      " L" + p2x.toFixed(2) + "," + p2y.toFixed(2) +
+      " A" + rInner + "," + rInner + " 0 " + largeArc + " 0 " + p3x.toFixed(2) + "," + p3y.toFixed(2) +
+      " Z";
+  }
+
+  /* Picks readable text ink for a wedge's own fill rather than a fixed
+     white - resolves the CSS color (a var(--catN) reference) to its actual
+     rendered RGB via a throwaway probe element, since the categorical
+     palette's lighter hues (yellow, aqua) don't clear contrast with white. */
+  function donutLabelColor(cssColor) {
+    var probe = document.createElement("span");
+    probe.style.color = cssColor;
+    probe.style.display = "none";
+    document.body.appendChild(probe);
+    var resolved = getComputedStyle(probe).color;
+    document.body.removeChild(probe);
+    var m = resolved.match(/[\d.]+/g);
+    if (!m) return "#ffffff";
+    var r = m[0] / 255, g = m[1] / 255, b = m[2] / 255;
+    var lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    return lum > 0.6 ? "#171717" : "#ffffff";
+  }
+
   /* The ring itself is capped at the validated 8-hue categorical palette
      (see assignCategorySlots) - a 9th distinct category folds its arc into
      one shared grey "Other" slice rather than generating an unvalidated
@@ -1728,8 +1877,8 @@
      labeled "Uncategorized" - a category without a color slot is never
      mistaken for one. */
   function renderDonut(byCat, total) {
-    var r = 70, cx = 88, cy = 88, circ = 2 * Math.PI * r;
-    var strokeWidth = 15, gapPx = 3;
+    var cx = 88, cy = 88, rOuter = 74, rInner = 40, rLabel = (rOuter + rInner) / 2;
+    var gapRad = 0.045, explodeDist = 6;
 
     var ordered = state.categories.filter(function (c) { return c.slot !== null && c.slot !== undefined; })
       .sort(function (a, b) { return a.slot - b.slot; });
@@ -1761,18 +1910,33 @@
     if (byCat["__none"]) foldIntoOther("Uncategorized", byCat["__none"]);
     if (otherSegIndex !== -1) ringSegments[otherSegIndex].amt = otherAmt;
 
-    var svg = '<svg viewBox="0 0 176 176" class="donut-svg"><circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--surface-2)" stroke-width="' + strokeWidth + '" />';
-    var offset = 0;
     var n = ringSegments.length;
+    var startAngle = -Math.PI / 2;
+    var cum = 0;
+    var wedgesSvg = "", labelsSvg = "";
     ringSegments.forEach(function (seg, i) {
-      var len = (seg.amt / total) * circ;
-      var on = n > 1 ? Math.max(len - gapPx, 0) : len;
-      svg += '<circle class="donut-seg" data-seg="' + i + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + seg.color + '" stroke-width="' + strokeWidth + '" ' +
-        'stroke-dasharray="' + on.toFixed(2) + ' ' + (circ - on).toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '" ' +
-        'style="animation-delay:' + (i * 45) + 'ms" />';
-      offset += len;
+      var frac = seg.amt / total;
+      var a0 = startAngle + cum * 2 * Math.PI;
+      var a1 = startAngle + (cum + frac) * 2 * Math.PI;
+      cum += frac;
+      var pad = n > 1 ? Math.min(gapRad / 2, ((a1 - a0) / 2) * 0.9) : 0;
+      var pa0 = a0 + pad, pa1 = a1 - pad;
+      var mid = (pa0 + pa1) / 2;
+      var tx = (Math.cos(mid) * explodeDist).toFixed(2);
+      var ty = (Math.sin(mid) * explodeDist).toFixed(2);
+      var d = donutWedgePath(cx, cy, rInner, rOuter, pa0, pa1);
+      var styleVars = "--tx:" + tx + "px;--ty:" + ty + "px;--i:" + i;
+      wedgesSvg += '<path class="donut-seg" data-seg="' + i + '" d="' + d + '" fill="' + seg.color + '" style="' + styleVars + '"></path>';
+
+      var pct = Math.round(frac * 100);
+      if (pct >= 6) {
+        var lx = (cx + Math.cos(mid) * rLabel).toFixed(2);
+        var ly = (cy + Math.sin(mid) * rLabel).toFixed(2);
+        labelsSvg += '<text class="donut-seg-label" data-seg="' + i + '" x="' + lx + '" y="' + ly + '" fill="' + donutLabelColor(seg.color) + '" style="' + styleVars + '">' + pct + '%</text>';
+      }
     });
-    svg += '</svg>';
+
+    var svg = '<svg viewBox="0 0 176 176" class="donut-svg">' + wedgesSvg + labelsSvg + '</svg>';
 
     var html = '<div class="donut-wrap">' + svg +
       '<div class="donut-center"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div></div>';
@@ -1797,10 +1961,12 @@
     var wrap = document.querySelector("#tab-dashboard .donut-wrap");
     if (!wrap) return;
     var segs = document.querySelectorAll("#tab-dashboard .donut-seg");
+    var labels = document.querySelectorAll("#tab-dashboard .donut-seg-label");
     var rows = document.querySelectorAll("#tab-dashboard .legend-row");
     function setActive(idx) {
       wrap.classList.toggle("hovering", idx !== null);
       segs.forEach(function (s) { s.classList.toggle("active", s.getAttribute("data-seg") === idx); });
+      labels.forEach(function (l) { l.classList.toggle("active", l.getAttribute("data-seg") === idx); });
       rows.forEach(function (r) { r.classList.toggle("dim", idx !== null && r.getAttribute("data-seg") !== idx); });
     }
     segs.forEach(function (s) {
@@ -1813,6 +1979,47 @@
     });
   }
 
+  /* Wedges render already in their resting (exploded) position by default,
+     so the chart is correct even without this. What this adds is the
+     scroll-triggered flourish: each time the donut card enters the
+     viewport, it briefly resets to collapsed-at-center and replays the
+     wiggle-into-place entrance - not just once ever, but every time the
+     user scrolls back to it. */
+  // Every dashboard render calls this, and each one replaces #tab-dashboard's
+  // whole innerHTML - without disconnecting, the previous observer would go
+  // on holding a strong reference to the now-detached old .donut-wrap
+  // forever, one leaked observer per render.
+  var donutScrollObserver = null;
+
+  function wireDonutScrollAnim() {
+    if (donutScrollObserver) { donutScrollObserver.disconnect(); donutScrollObserver = null; }
+    var wrap = document.querySelector("#tab-dashboard .donut-wrap");
+    if (!wrap || !window.IntersectionObserver || reduceMotion) return;
+    var segCount = wrap.querySelectorAll(".donut-seg").length;
+    var totalMs = segCount * 55 + 700;
+    var settleTimer = null;
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          clearTimeout(settleTimer);
+          wrap.classList.remove("animating");
+          wrap.classList.add("pending");
+          void wrap.offsetWidth; // force reflow so the reset is visible before replaying
+          wrap.classList.remove("pending");
+          wrap.classList.add("animating");
+          settleTimer = setTimeout(function () { wrap.classList.remove("animating"); }, totalMs);
+        } else {
+          clearTimeout(settleTimer);
+          wrap.classList.remove("animating");
+          wrap.classList.add("pending");
+        }
+      });
+    }, { threshold: 0.4 });
+    donutScrollObserver = observer;
+    observer.observe(wrap);
+  }
+
   function renderSpendingTrendCard() {
     var months = trendMonths(6);
     if (!months) return "";
@@ -1823,13 +2030,32 @@
     });
     if (!totals.some(function (v) { return v > 0; })) return "";
 
-    var max = Math.max.apply(null, totals.concat([1]));
-    var html = '<div class="card"><h2>Spending Trend</h2><div class="trend-bars">';
+    // Same projection the Forecast tab runs, just flattened per month
+    // instead of split by category - active recurring bills and loans,
+    // walked backward across recent history the same way they're walked
+    // forward there.
+    var forecasts = months.map(function (m) { return forecastTotalForRange(m.start, m.end); });
+
+    var max = Math.max.apply(null, totals.concat(forecasts).concat([1]));
+    var html = '<div class="card"><h2>Spending Trend</h2>';
+    html += '<div class="trend-legend">' +
+      '<span class="trend-legend-item"><span class="trend-swatch actual"></span>Actual</span>' +
+      '<span class="trend-legend-item"><span class="trend-swatch forecast"></span>Forecast</span>' +
+      '</div>';
+    html += '<div class="trend-bars">';
     months.forEach(function (m, i) {
-      var h = max > 0 ? Math.max((totals[i] / max) * 100, 2) : 2;
+      var actualH = max > 0 ? Math.max((totals[i] / max) * 100, 2) : 2;
+      var forecastH = max > 0 && forecasts[i] > 0 ? Math.max((forecasts[i] / max) * 100, 2) : 0;
+      var varianceCls = forecasts[i] > 0 ? (totals[i] > forecasts[i] ? "over" : (totals[i] < forecasts[i] ? "under" : "")) : "";
       html += '<div class="trend-bar-col">';
-      html += '<div class="trend-bar-value num">' + fmtCompact(totals[i]) + '</div>';
-      html += '<div class="trend-bar-fill" style="height:' + h.toFixed(0) + 'px"></div>';
+      html += '<div class="trend-bar-values">';
+      html += '<div class="actual num ' + varianceCls + '">' + fmtCompact(totals[i]) + '</div>';
+      if (forecasts[i] > 0) html += '<div class="forecast num">' + fmtCompact(forecasts[i]) + '</div>';
+      html += '</div>';
+      html += '<div class="trend-bar-pair">';
+      html += '<div class="trend-bar-fill actual" style="height:' + actualH.toFixed(0) + 'px"></div>';
+      if (forecastH > 0) html += '<div class="trend-bar-fill forecast" style="height:' + forecastH.toFixed(0) + 'px"></div>';
+      html += '</div>';
       html += '<div class="trend-bar-label">' + m.label + '</div>';
       html += '</div>';
     });
@@ -1908,6 +2134,7 @@
     document.getElementById("period-prev").addEventListener("click", function () { shiftPeriod(-1); });
     document.getElementById("period-next").addEventListener("click", function () { shiftPeriod(1); });
     wireDonutHover();
+    wireDonutScrollAnim();
   }
 
   /* ---------- render: transactions ---------- */
