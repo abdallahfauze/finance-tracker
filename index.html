@@ -110,6 +110,12 @@
     -webkit-font-smoothing: antialiased;
     display: flex;
     justify-content: center;
+    /* Kills double-tap-to-zoom specifically (the app's own tap targets are
+       already sized for touch, so the gesture only ever mis-fires between
+       quick taps) - pinch-zoom stays available for anyone who needs it,
+       unlike the more common but accessibility-hostile fix of disabling
+       zoom entirely via the viewport meta tag. */
+    touch-action: manipulation;
   }
   button, input, select { font-family: inherit; }
 
