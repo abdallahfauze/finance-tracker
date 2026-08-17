@@ -303,13 +303,23 @@
      is what's shown if scroll-in JS/IntersectionObserver never runs (no
      support, or reduced motion). The pending/animating classes on
      .donut-wrap are what turn that resting render into a scroll-triggered
-     wiggle-into-place entrance instead. */
-  .donut-seg, .donut-seg-label {
+     wiggle-into-place entrance instead.
+
+     The 3D read comes from .donut-seg-shadow: a darker copy of the exact
+     same wedge shape, sitting directly beneath the real (gradient-filled)
+     wedge and offset a fixed 6px down via the standalone `translate`
+     property - deliberately NOT part of the `transform` shorthand, so it
+     composes with whatever `transform` (explode offset, wiggle-in, hover
+     pop) is active on that wedge at any moment instead of needing its own
+     duplicate keyframes. The result reads as the wedge's own extruded
+     underside, like a thick slice of cake. */
+  .donut-seg, .donut-seg-shadow, .donut-seg-label {
     transform-box: fill-box; transform-origin: center;
     transform: translate(var(--tx), var(--ty)) scale(1);
     opacity: 1;
-    transition: transform .15s ease, opacity .15s ease;
+    transition: transform .15s ease, opacity .15s ease, translate .15s ease;
   }
+  .donut-seg-shadow { translate: 0 6px; pointer-events: none; }
   .donut-seg-label {
     font-family: ui-monospace, "SF Mono", Menlo, monospace;
     font-size: 11px; font-weight: 700;
@@ -317,10 +327,12 @@
     pointer-events: none;
   }
   .donut-wrap.pending .donut-seg,
+  .donut-wrap.pending .donut-seg-shadow,
   .donut-wrap.pending .donut-seg-label {
     opacity: 0; transform: translate(0, 0) scale(.4); transition: none;
   }
-  .donut-wrap.animating .donut-seg {
+  .donut-wrap.animating .donut-seg,
+  .donut-wrap.animating .donut-seg-shadow {
     animation: wedge-in .68s cubic-bezier(.34,1.4,.4,1) both;
     animation-delay: calc(var(--i) * 55ms);
   }
@@ -340,16 +352,18 @@
     to   { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1); }
   }
   .donut-wrap.hovering .donut-seg { opacity: .32; }
+  .donut-wrap.hovering .donut-seg-shadow { opacity: .32; }
   .donut-wrap.hovering .donut-seg-label { opacity: .32; }
-  .donut-wrap.hovering .donut-seg.active {
+  .donut-wrap.hovering .donut-seg.active,
+  .donut-wrap.hovering .donut-seg-shadow.active {
     opacity: 1; transform: translate(calc(var(--tx) * 1.35), calc(var(--ty) * 1.35)) scale(1.05);
   }
   .donut-wrap.hovering .donut-seg-label.active {
     opacity: 1; transform: translate(calc(var(--tx) * 1.35), calc(var(--ty) * 1.35)) scale(1.05);
   }
   @media (prefers-reduced-motion: reduce) {
-    .donut-wrap.pending .donut-seg, .donut-wrap.pending .donut-seg-label { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1); }
-    .donut-wrap.animating .donut-seg, .donut-wrap.animating .donut-seg-label { animation: none; }
+    .donut-wrap.pending .donut-seg, .donut-wrap.pending .donut-seg-shadow, .donut-wrap.pending .donut-seg-label { opacity: 1; transform: translate(var(--tx), var(--ty)) scale(1); }
+    .donut-wrap.animating .donut-seg, .donut-wrap.animating .donut-seg-shadow, .donut-wrap.animating .donut-seg-label { animation: none; }
   }
 
   .legend { display: flex; flex-direction: column; gap: 2px; margin-top: 16px; }
@@ -376,22 +390,22 @@
   }
   .trend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; box-sizing: border-box; }
   .trend-swatch.actual { background: var(--accent); }
-  .trend-swatch.forecast { background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); }
+  .trend-swatch.forecast { background: var(--accent-warm-soft); border: 1px solid color-mix(in srgb, var(--accent-warm) 55%, transparent); }
 
   .trend-bars { display: flex; align-items: flex-end; gap: 8px; margin-top: 4px; }
   .trend-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
   .trend-bar-values { display: flex; flex-direction: column; align-items: center; gap: 1px; margin-bottom: 4px; }
-  .trend-bar-values .actual { font-size: 9.5px; font-weight: 700; white-space: nowrap; }
-  .trend-bar-values .forecast { font-size: 8.5px; color: var(--ink-muted); white-space: nowrap; }
-  .trend-bar-values .actual.over { color: var(--critical); }
-  .trend-bar-values .actual.under { color: var(--good); }
-  /* Forecast is the wide backdrop bar, actual sits centered on top of it,
-     both anchored to the same baseline - a visible (not just faint) tint
-     so the forecast reads as real data, not a placeholder. */
+  .trend-bar-values .actual { font-size: 9.5px; font-weight: 700; white-space: nowrap; color: var(--accent); }
+  .trend-bar-values .forecast { font-size: 8.5px; font-weight: 600; white-space: nowrap; color: var(--accent-warm); }
+  /* Forecast gets its own dedicated hue (the app's secondary "warm" accent,
+     already used for milestone chips) rather than a soft version of the
+     actual bar's color, so the two series are never mistaken for one
+     another even at a glance. Both value labels above match their own
+     bar's color one-to-one - no separate over/under signal here. */
   .trend-bar-overlay { position: relative; width: 30px; display: flex; align-items: flex-end; justify-content: center; }
   .trend-bar-fill.forecast {
     position: absolute; bottom: 0; width: 26px;
-    background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); border-bottom: none;
+    background: var(--accent-warm-soft); border: 1px solid color-mix(in srgb, var(--accent-warm) 55%, transparent); border-bottom: none;
     border-radius: 5px 5px 0 0; box-sizing: border-box; min-height: 2px;
   }
   .trend-bar-fill.actual {
@@ -1913,7 +1927,7 @@
     var n = ringSegments.length;
     var startAngle = -Math.PI / 2;
     var cum = 0;
-    var wedgesSvg = "", labelsSvg = "";
+    var defsSvg = "", shadowsSvg = "", wedgesSvg = "", labelsSvg = "";
     ringSegments.forEach(function (seg, i) {
       var frac = seg.amt / total;
       var a0 = startAngle + cum * 2 * Math.PI;
@@ -1926,7 +1940,18 @@
       var ty = (Math.sin(mid) * explodeDist).toFixed(2);
       var d = donutWedgePath(cx, cy, rInner, rOuter, pa0, pa1);
       var styleVars = "--tx:" + tx + "px;--ty:" + ty + "px;--i:" + i;
-      wedgesSvg += '<path class="donut-seg" data-seg="' + i + '" d="' + d + '" fill="' + seg.color + '" style="' + styleVars + '"></path>';
+
+      // A radial highlight (light near the center, true color at the rim)
+      // plus a darker twin sitting underneath is what sells the slice as
+      // having thickness rather than being a flat tinted shape.
+      var gradId = "donut-grad-" + i;
+      defsSvg += '<radialGradient id="' + gradId + '" cx="35%" cy="30%" r="75%">' +
+        '<stop offset="0%" stop-color="color-mix(in srgb, ' + seg.color + ' 55%, white)" />' +
+        '<stop offset="100%" stop-color="' + seg.color + '" />' +
+        '</radialGradient>';
+      var shadowColor = "color-mix(in srgb, " + seg.color + " 72%, black)";
+      shadowsSvg += '<path class="donut-seg-shadow" data-seg="' + i + '" d="' + d + '" fill="' + shadowColor + '" style="' + styleVars + '"></path>';
+      wedgesSvg += '<path class="donut-seg" data-seg="' + i + '" d="' + d + '" fill="url(#' + gradId + ')" style="' + styleVars + '"></path>';
 
       var pct = Math.round(frac * 100);
       if (pct >= 6) {
@@ -1936,7 +1961,7 @@
       }
     });
 
-    var svg = '<svg viewBox="0 0 176 176" class="donut-svg">' + wedgesSvg + labelsSvg + '</svg>';
+    var svg = '<svg viewBox="0 0 176 176" class="donut-svg"><defs>' + defsSvg + '</defs>' + shadowsSvg + wedgesSvg + labelsSvg + '</svg>';
 
     var html = '<div class="donut-wrap">' + svg + '</div>' +
       '<div class="donut-total"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div>';
@@ -1960,7 +1985,7 @@
   function wireDonutHover() {
     var wrap = document.querySelector("#tab-dashboard .donut-wrap");
     if (!wrap) return;
-    var segs = document.querySelectorAll("#tab-dashboard .donut-seg");
+    var segs = document.querySelectorAll("#tab-dashboard .donut-seg, #tab-dashboard .donut-seg-shadow");
     var labels = document.querySelectorAll("#tab-dashboard .donut-seg-label");
     var rows = document.querySelectorAll("#tab-dashboard .legend-row");
     function setActive(idx) {
@@ -2046,10 +2071,9 @@
     months.forEach(function (m, i) {
       var actualH = max > 0 ? Math.max((totals[i] / max) * 100, 2) : 2;
       var forecastH = max > 0 && forecasts[i] > 0 ? Math.max((forecasts[i] / max) * 100, 2) : 0;
-      var varianceCls = forecasts[i] > 0 ? (totals[i] > forecasts[i] ? "over" : (totals[i] < forecasts[i] ? "under" : "")) : "";
       html += '<div class="trend-bar-col">';
       html += '<div class="trend-bar-values">';
-      html += '<div class="actual num ' + varianceCls + '">' + fmtCompact(totals[i]) + '</div>';
+      html += '<div class="actual num">' + fmtCompact(totals[i]) + '</div>';
       if (forecasts[i] > 0) html += '<div class="forecast num">' + fmtCompact(forecasts[i]) + '</div>';
       html += '</div>';
       html += '<div class="trend-bar-overlay" style="height:' + Math.max(actualH, forecastH).toFixed(0) + 'px">';
