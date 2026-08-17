@@ -3066,18 +3066,73 @@
         html += '</tr>';
       });
       html += '</tbody><tfoot><tr><td class="fc-sticky">Total</td>';
-      months.forEach(function (m) {
-        var fcTotal = 0, actTotal = 0;
-        catKeys.forEach(function (catKey) {
-          fcTotal += (matrix[catKey] && matrix[catKey][m.key]) || 0;
-          actTotal += (actualMatrix[catKey] && actualMatrix[catKey][m.key]) || 0;
-        });
+      var actualExpenseByMonth = months.map(function (m) {
+        var actTotal = 0;
+        catKeys.forEach(function (catKey) { actTotal += (actualMatrix[catKey] && actualMatrix[catKey][m.key]) || 0; });
+        return actTotal;
+      });
+      months.forEach(function (m, i) {
+        var fcTotal = 0;
+        catKeys.forEach(function (catKey) { fcTotal += (matrix[catKey] && matrix[catKey][m.key]) || 0; });
+        var actTotal = actualExpenseByMonth[i];
         var overspentTotal = actTotal - fcTotal;
         var varTotal = fcTotal - actTotal;
         var varClass = overspentTotal > 0 ? "variance-over" : (overspentTotal < 0 ? "variance-under" : "");
         html += '<td class="num fc-group-start">' + fmtWhole(fcTotal) + '</td>';
         html += '<td class="num">' + fmtWhole(actTotal) + '</td>';
         html += '<td class="num ' + varClass + '">' + (varTotal > 0 ? '+' : '') + fmtWhole(varTotal) + '</td>';
+      });
+      html += '</tr></tfoot></table></div></div>';
+
+      // Income vs. Actual Expenses: income is projected the same way the
+      // table above forecasts bills - active recurring income (salary
+      // etc.), respecting each item's own start/end window - while
+      // expenses reuse the exact actual totals already computed for the
+      // Total row, so the two tables can never silently disagree.
+      var incomeByMonth = {};
+      state.recurring.filter(function (r) { return r.isActive && r.kind === "income"; }).forEach(function (r) {
+        var d2 = r.nextDueDate;
+        var guard = 0;
+        while (d2 < windowStart && guard < 500) { d2 = addInterval(d2, r.frequency); guard++; }
+        guard = 0;
+        while (d2 < windowEnd && guard < 500) {
+          if (r.endDate && d2 > r.endDate) break;
+          if (!r.startDate || d2 >= r.startDate) {
+            var mk = d2.slice(0, 7);
+            incomeByMonth[mk] = (incomeByMonth[mk] || 0) + r.amount;
+          }
+          d2 = addInterval(d2, r.frequency);
+          guard++;
+        }
+      });
+
+      html += '<div class="card"><h2>Income vs. Actual Expenses</h2>';
+      html += '<p class="footnote" style="margin:0 0 12px">Income is projected from your active recurring income (salary etc.). Expenses are what\'s really been logged as transactions. Variance is Income minus Expenses.</p>';
+      html += '<div class="forecast-scroll"><table class="forecast-table"><thead><tr><th class="fc-sticky">&nbsp;</th>';
+      months.forEach(function (m) { html += '<th>' + m.label + '</th>'; });
+      html += '</tr></thead><tbody>';
+
+      html += '<tr><td class="fc-sticky">Income</td>';
+      months.forEach(function (m) {
+        var inc = incomeByMonth[m.key] || 0;
+        html += '<td class="num' + (inc === 0 ? ' zero' : '') + '">' + (inc === 0 ? '–' : fmtWhole(inc)) + '</td>';
+      });
+      html += '</tr>';
+
+      html += '<tr><td class="fc-sticky">Actual Expenses</td>';
+      months.forEach(function (m, i) {
+        var act = actualExpenseByMonth[i];
+        html += '<td class="num' + (act === 0 ? ' zero' : '') + '">' + (act === 0 ? '–' : fmtWhole(act)) + '</td>';
+      });
+      html += '</tr>';
+
+      html += '</tbody><tfoot><tr><td class="fc-sticky">Variance</td>';
+      months.forEach(function (m, i) {
+        var inc = incomeByMonth[m.key] || 0;
+        var act = actualExpenseByMonth[i];
+        var variance = inc - act;
+        var varClass = variance < 0 ? "variance-over" : (variance > 0 ? "variance-under" : "");
+        html += '<td class="num ' + varClass + '">' + (variance === 0 ? '–' : (variance > 0 ? '+' : '') + fmtWhole(variance)) + '</td>';
       });
       html += '</tr></tfoot></table></div></div>';
     }
