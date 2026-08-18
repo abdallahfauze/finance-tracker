@@ -693,6 +693,18 @@
 
   .hidden { display: none !important; }
 
+  /* ---------- loan card detail rows ---------- */
+  .loan-details {
+    margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line);
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .loan-detail-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .loan-detail-row .label { color: var(--ink-muted); flex-shrink: 0; }
+  .loan-detail-row .value-wrap { display: flex; align-items: center; margin-left: auto; }
+  .loan-detail-row .value { display: flex; flex-direction: column; align-items: flex-end; }
+  .loan-detail-row .value .num { font-weight: 600; }
+  .loan-detail-row .value .sub { font-size: 11px; color: var(--ink-muted); margin-top: 1px; }
+
   /* ---------- quick calculator: floating bubble + popup ---------- */
   /* Anchored the same way nav.tabbar centers itself under the app column
      (left:50% + translateX(-50%) + matching max-width, including the
@@ -2837,9 +2849,21 @@
     });
   }
 
+  function loanDetailRow(label, amount, sub, extra) {
+    var html = '<div class="loan-detail-row"><span class="label">' + escapeHtml(label) + '</span>';
+    html += '<div class="value-wrap">';
+    html += '<span class="value"><span class="num">' + fmtMoney(amount) + '</span>';
+    if (sub) html += '<span class="sub">' + escapeHtml(sub) + '</span>';
+    html += '</span>';
+    if (extra) html += extra;
+    html += '</div></div>';
+    return html;
+  }
+
   function loanCard(loan) {
     var p = loanProgress(loan);
     var d = daysUntil(loan.nextPaymentDate);
+    var remainingInstallments = Math.max(p.estTotalPayments - loan.paymentsMade, 0);
 
     var html = '<div data-open-loan="' + loan.id + '" style="margin-bottom:16px;opacity:' + (loan.isActive ? 1 : 0.5) + '">';
     html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">';
@@ -2848,10 +2872,15 @@
     else if (d <= 3) html += dueChip(d);
     html += '</div>';
     html += '<div class="bar-track"><div class="bar-fill" style="background:var(--accent);width:' + (p.pct * 100) + '%"></div></div>';
-    html += '<div class="footnote num">Paid ' + fmtMoney(p.amountPaid) + ' of ' + fmtMoney(loan.totalAmount) + ' · ' + loan.paymentsMade + ' of ~' + p.estTotalPayments + ' payments</div>';
-    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">';
-    html += '<span class="footnote num" style="margin:0">' + (p.isPaidOff ? '' : fmtMoney(loan.monthlyPayment) + '/mo · ') + 'Balance ' + fmtMoney(p.balance) + (p.isPaidOff ? '' : ' · Next ' + fmtDateShort(loan.nextPaymentDate)) + '</span>';
-    if (!p.isPaidOff) html += '<button class="icon-btn ghost" data-mark-loan-paid="' + loan.id + '" aria-label="Mark payment paid" style="width:28px;height:28px;flex-shrink:0">' + icon("check") + '</button>';
+
+    html += '<div class="loan-details">';
+    html += loanDetailRow("Loan amount", loan.totalAmount);
+    html += loanDetailRow("Paid", p.amountPaid, loan.paymentsMade + (loan.paymentsMade === 1 ? " installment" : " installments"));
+    html += loanDetailRow("Balance", p.balance, remainingInstallments + (remainingInstallments === 1 ? " installment left" : " installments left"));
+    if (!p.isPaidOff) {
+      var markPaidBtn = '<button class="icon-btn ghost" data-mark-loan-paid="' + loan.id + '" aria-label="Mark payment paid" style="width:28px;height:28px;flex-shrink:0;margin-left:10px">' + icon("check") + '</button>';
+      html += loanDetailRow("Next installment", loan.monthlyPayment, fmtDateLong(loan.nextPaymentDate), markPaidBtn);
+    }
     html += '</div>';
     html += '</div>';
     return html;
