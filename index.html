@@ -2161,23 +2161,19 @@
       .reduce(function (s, t) { return s + t.amount; }, 0);
   }
 
-  /* Real-income/real-expense variants of the two functions above, used
-     where "Income"/"Expenses" needs to mean the same thing it means
-     everywhere else in the app (dashboard headline stats, forecast) -
-     money actually earned or spent, not a transfer between the user's
-     own accounts. incomeInRange/expensedInRange still include transfers
-     because a single card's own balance genuinely moves when money is
-     transferred into or out of it. */
-  function realIncomeInRange(label, start, end) {
-    return state.transactions
-      .filter(function (t) { return t.bankCard === label && t.type === "income" && !t.isTransfer && t.date >= start && t.date < end; })
-      .reduce(function (s, t) { return s + t.amount; }, 0);
-  }
-
-  function realExpensedInRange(label, start, end) {
-    return state.transactions
-      .filter(function (t) { return t.bankCard === label && t.type === "expense" && !t.isTransfer && t.date >= start && t.date < end; })
-      .reduce(function (s, t) { return s + t.amount; }, 0);
+  /* A transfer only nets to zero - and so should be excluded from
+     Income/Expenses - when BOTH legs land inside the same aggregate being
+     summed (e.g. moving money between two of the user's own debit cards:
+     it's an expense on one and income on the other, canceling out). A
+     transfer whose other leg falls outside that aggregate is real money
+     crossing the boundary and should count like any ordinary transaction
+     - most commonly, paying a credit card bill from a debit account is a
+     genuine outgoing payment (expense) on the debit side, not a wash,
+     even though it's stored as a transfer. */
+  function isInternalTransfer(t, cardSet) {
+    if (!t.isTransfer) return false;
+    var other = state.transactions.filter(function (o) { return o.transferId === t.transferId && o.id !== t.id; })[0];
+    return !!(other && cardSet.indexOf(other.bankCard) !== -1);
   }
 
   /* A debit card's opening balance for any period is derived, not stored:
@@ -2489,16 +2485,17 @@
   /* Opening balance, income, expenses, and what's left - all summed
      across every debit card for the picked month. Opening reuses the
      exact same openingBalanceAt each card's own row already computes.
-     Income and Expenses use the real-only variants (transfers between
-     the user's own accounts excluded) so they mean the same thing the
-     "Income"/"Spent" figures mean everywhere else in the app - a
-     transfer from a credit card, say, would otherwise inflate this
-     Income line with money that isn't actually new income. Any such
-     transfer still needs to be visible for the bottom figure to
-     reconcile, so it's broken out into its own Transfers line instead of
-     being folded into Income. Credit cards aren't included in the debit
-     total itself: a credit limit isn't money you actually have, it's
-     money you can borrow. */
+     Income and Expenses walk every debit-card transaction directly
+     (rather than reusing incomeInRange/expensedInRange) so a transfer can
+     be classified by where its other leg lands: a transfer between two of
+     the user's own debit cards is excluded from both (an internal wash),
+     while a transfer to/from a credit card - most commonly paying a
+     credit card bill from a debit account - counts as an ordinary expense
+     or income, since it's real money crossing in or out of the debit
+     total. That keeps the bottom figure reconciling with just Income and
+     Expenses, no separate Transfers line needed. Credit cards aren't
+     included in the debit total itself: a credit limit isn't money you
+     actually have, it's money you can borrow. */
   function renderTotalFundsCard() {
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
     if (!debitCards.length) return "";
@@ -2513,12 +2510,15 @@
     var monthLabel = monthStartDate.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
     var opening = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, monthStart); }, 0);
-    var expensesAll = debitCards.reduce(function (s, label) { return s + expensedInRange(label, monthStart, monthEnd); }, 0);
-    var incomeAll = debitCards.reduce(function (s, label) { return s + incomeInRange(label, monthStart, monthEnd); }, 0);
-    var income = debitCards.reduce(function (s, label) { return s + realIncomeInRange(label, monthStart, monthEnd); }, 0);
-    var expenses = debitCards.reduce(function (s, label) { return s + realExpensedInRange(label, monthStart, monthEnd); }, 0);
-    var transfersNet = (incomeAll - income) - (expensesAll - expenses);
-    var available = opening + incomeAll - expensesAll;
+    var income = 0, expenses = 0;
+    state.transactions.forEach(function (t) {
+      if (debitCards.indexOf(t.bankCard) === -1) return;
+      if (t.date < monthStart || t.date >= monthEnd) return;
+      if (isInternalTransfer(t, debitCards)) return;
+      if (t.type === "income") income += t.amount;
+      else if (t.type === "expense") expenses += t.amount;
+    });
+    var available = opening + income - expenses;
     // Only the real current month is still "in progress" - a past month's
     // figure is final, and the label should say so rather than implying
     // it could still change.
@@ -2529,9 +2529,6 @@
     html += '<div class="footnote" style="margin:0 0 10px">' + monthLabel + '</div>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Total available funds <span class="footnote" style="display:inline">(at start of month)</span></span><span class="num">' + fmtMoney(opening) + '</span></div>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Income <span class="footnote" style="display:inline">(during month)</span></span><span class="num">+' + fmtMoney(income) + '</span></div>';
-    if (transfersNet !== 0) {
-      html += '<div class="disclosure" style="margin-bottom:8px"><span>Transfers <span class="footnote" style="display:inline">(during month)</span></span><span class="num">' + (transfersNet > 0 ? '+' : '-') + fmtMoney(Math.abs(transfersNet)) + '</span></div>';
-    }
     html += '<div class="disclosure" style="margin-bottom:10px"><span>Expenses <span class="footnote" style="display:inline">(during month)</span></span><span class="num">-' + fmtMoney(expenses) + '</span></div>';
     html += '<div class="disclosure" style="padding-top:10px;border-top:1px solid var(--line)"><span style="font-weight:600">' + balanceLabel + '</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(available) + '</span></div>';
     html += '<div class="month-picker">';
