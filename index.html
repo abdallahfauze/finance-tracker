@@ -2161,6 +2161,25 @@
       .reduce(function (s, t) { return s + t.amount; }, 0);
   }
 
+  /* Real-income/real-expense variants of the two functions above, used
+     where "Income"/"Expenses" needs to mean the same thing it means
+     everywhere else in the app (dashboard headline stats, forecast) -
+     money actually earned or spent, not a transfer between the user's
+     own accounts. incomeInRange/expensedInRange still include transfers
+     because a single card's own balance genuinely moves when money is
+     transferred into or out of it. */
+  function realIncomeInRange(label, start, end) {
+    return state.transactions
+      .filter(function (t) { return t.bankCard === label && t.type === "income" && !t.isTransfer && t.date >= start && t.date < end; })
+      .reduce(function (s, t) { return s + t.amount; }, 0);
+  }
+
+  function realExpensedInRange(label, start, end) {
+    return state.transactions
+      .filter(function (t) { return t.bankCard === label && t.type === "expense" && !t.isTransfer && t.date >= start && t.date < end; })
+      .reduce(function (s, t) { return s + t.amount; }, 0);
+  }
+
   /* A debit card's opening balance for any period is derived, not stored:
      the one-time starting balance (set in Settings), net of every expense
      (subtracted) and income/deposit (added) dated before the period began.
@@ -2468,13 +2487,18 @@
   var totalFundsMonthKey = null;
 
   /* Opening balance, income, expenses, and what's left - all summed
-     across every debit card for the picked month. Opening, Income, and
-     Expensed reuse the exact same openingBalanceAt/incomeInRange/
-     expensedInRange each card's own row already computes, and all three
-     are shown so the bottom figure visibly reconciles instead of looking
-     like Opening minus Expenses when it isn't. Credit cards aren't
-     included: a credit limit isn't money you actually have, it's money
-     you can borrow. */
+     across every debit card for the picked month. Opening reuses the
+     exact same openingBalanceAt each card's own row already computes.
+     Income and Expenses use the real-only variants (transfers between
+     the user's own accounts excluded) so they mean the same thing the
+     "Income"/"Spent" figures mean everywhere else in the app - a
+     transfer from a credit card, say, would otherwise inflate this
+     Income line with money that isn't actually new income. Any such
+     transfer still needs to be visible for the bottom figure to
+     reconcile, so it's broken out into its own Transfers line instead of
+     being folded into Income. Credit cards aren't included in the debit
+     total itself: a credit limit isn't money you actually have, it's
+     money you can borrow. */
   function renderTotalFundsCard() {
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
     if (!debitCards.length) return "";
@@ -2489,9 +2513,12 @@
     var monthLabel = monthStartDate.toLocaleDateString(undefined, { month: "long", year: "numeric" });
 
     var opening = debitCards.reduce(function (s, label) { return s + openingBalanceAt(label, monthStart); }, 0);
-    var expenses = debitCards.reduce(function (s, label) { return s + expensedInRange(label, monthStart, monthEnd); }, 0);
-    var income = debitCards.reduce(function (s, label) { return s + incomeInRange(label, monthStart, monthEnd); }, 0);
-    var available = opening + income - expenses;
+    var expensesAll = debitCards.reduce(function (s, label) { return s + expensedInRange(label, monthStart, monthEnd); }, 0);
+    var incomeAll = debitCards.reduce(function (s, label) { return s + incomeInRange(label, monthStart, monthEnd); }, 0);
+    var income = debitCards.reduce(function (s, label) { return s + realIncomeInRange(label, monthStart, monthEnd); }, 0);
+    var expenses = debitCards.reduce(function (s, label) { return s + realExpensedInRange(label, monthStart, monthEnd); }, 0);
+    var transfersNet = (incomeAll - income) - (expensesAll - expenses);
+    var available = opening + incomeAll - expensesAll;
     // Only the real current month is still "in progress" - a past month's
     // figure is final, and the label should say so rather than implying
     // it could still change.
@@ -2502,6 +2529,9 @@
     html += '<div class="footnote" style="margin:0 0 10px">' + monthLabel + '</div>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Total available funds <span class="footnote" style="display:inline">(at start of month)</span></span><span class="num">' + fmtMoney(opening) + '</span></div>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Income <span class="footnote" style="display:inline">(during month)</span></span><span class="num">+' + fmtMoney(income) + '</span></div>';
+    if (transfersNet !== 0) {
+      html += '<div class="disclosure" style="margin-bottom:8px"><span>Transfers <span class="footnote" style="display:inline">(during month)</span></span><span class="num">' + (transfersNet > 0 ? '+' : '-') + fmtMoney(Math.abs(transfersNet)) + '</span></div>';
+    }
     html += '<div class="disclosure" style="margin-bottom:10px"><span>Expenses <span class="footnote" style="display:inline">(during month)</span></span><span class="num">-' + fmtMoney(expenses) + '</span></div>';
     html += '<div class="disclosure" style="padding-top:10px;border-top:1px solid var(--line)"><span style="font-weight:600">' + balanceLabel + '</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(available) + '</span></div>';
     html += '<div class="month-picker">';
