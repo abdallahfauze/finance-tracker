@@ -2467,15 +2467,14 @@
      since it's not persisted. */
   var totalFundsMonthKey = null;
 
-  /* Opening balance, expenses, and what's left - all summed across every
-     debit card for the picked month. Opening and Expensed reuse the exact
-     same openingBalanceAt/expensedInRange each card's own row already
-     computes. Available also nets in that month's income (same formula
-     each card's own "left" figure uses) even though income isn't shown as
-     its own line here, so the bottom figure stays accurate rather than
-     just being Opening minus Expenses. Credit cards aren't included: a
-     credit limit isn't money you actually have, it's money you can
-     borrow. */
+  /* Opening balance, income, expenses, and what's left - all summed
+     across every debit card for the picked month. Opening, Income, and
+     Expensed reuse the exact same openingBalanceAt/incomeInRange/
+     expensedInRange each card's own row already computes, and all three
+     are shown so the bottom figure visibly reconciles instead of looking
+     like Opening minus Expenses when it isn't. Credit cards aren't
+     included: a credit limit isn't money you actually have, it's money
+     you can borrow. */
   function renderTotalFundsCard() {
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
     if (!debitCards.length) return "";
@@ -2502,7 +2501,8 @@
     var html = '<div class="card"><h2>Total Available Funds</h2>';
     html += '<div class="footnote" style="margin:0 0 10px">' + monthLabel + '</div>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Total available funds <span class="footnote" style="display:inline">(at start of month)</span></span><span class="num">' + fmtMoney(opening) + '</span></div>';
-    html += '<div class="disclosure" style="margin-bottom:10px"><span>Expenses <span class="footnote" style="display:inline">(during month)</span></span><span class="num">' + fmtMoney(expenses) + '</span></div>';
+    html += '<div class="disclosure" style="margin-bottom:8px"><span>Income <span class="footnote" style="display:inline">(during month)</span></span><span class="num">+' + fmtMoney(income) + '</span></div>';
+    html += '<div class="disclosure" style="margin-bottom:10px"><span>Expenses <span class="footnote" style="display:inline">(during month)</span></span><span class="num">-' + fmtMoney(expenses) + '</span></div>';
     html += '<div class="disclosure" style="padding-top:10px;border-top:1px solid var(--line)"><span style="font-weight:600">' + balanceLabel + '</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(available) + '</span></div>';
     html += '<div class="month-picker">';
     for (var m = 1; m <= 12; m++) {
