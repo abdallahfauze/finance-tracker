@@ -3137,37 +3137,22 @@
       });
       html += '</tr></tfoot></table></div></div>';
 
-      // Income vs. Actual Expenses: income is projected the same way the
-      // table above forecasts bills - active recurring income (salary
-      // etc.), respecting each item's own start/end window - while
-      // expenses reuse the exact actual totals already computed for the
-      // Total row, so the two tables can never silently disagree.
+      // Income vs. Actual Expenses: both rows are what's really been
+      // logged as transactions - income isn't limited to recurring salary
+      // items, so a one-off transfer-in, bonus, or gift you log directly
+      // shows up here too, same as any actual expense would. Expenses
+      // reuse the exact actual totals already computed for the Total row,
+      // so the two tables can never silently disagree.
       var incomeByMonth = {};
-      state.recurring.filter(function (r) { return r.isActive && r.kind === "income"; }).forEach(function (r) {
-        var d2 = r.nextDueDate;
-        var guard = 0;
-        // Same backward-normalization as the expense loop above: once
-        // this month's income has been marked received, nextDueDate has
-        // already advanced past windowStart and would otherwise drop it.
-        if (d2 >= windowStart) {
-          while (d2 >= windowStart && guard < 500) { d2 = subtractInterval(d2, r.frequency); guard++; }
-        }
-        guard = 0;
-        while (d2 < windowStart && guard < 500) { d2 = addInterval(d2, r.frequency); guard++; }
-        guard = 0;
-        while (d2 < windowEnd && guard < 500) {
-          if (r.endDate && d2 > r.endDate) break;
-          if (!r.startDate || d2 >= r.startDate) {
-            var mk = d2.slice(0, 7);
-            incomeByMonth[mk] = (incomeByMonth[mk] || 0) + r.amount;
-          }
-          d2 = addInterval(d2, r.frequency);
-          guard++;
-        }
+      state.transactions.forEach(function (t) {
+        if (t.type !== "income" || t.isTransfer) return;
+        if (t.date < windowStart || t.date >= windowEnd) return;
+        var mk = monthKeyOf(t.date);
+        incomeByMonth[mk] = (incomeByMonth[mk] || 0) + t.amount;
       });
 
       html += '<div class="card"><h2>Income vs. Actual Expenses</h2>';
-      html += '<p class="footnote" style="margin:0 0 12px">Income is projected from your active recurring income (salary etc.). Expenses are what\'s really been logged as transactions. Variance is Income minus Expenses.</p>';
+      html += '<p class="footnote" style="margin:0 0 12px">Both rows are what\'s really been logged as transactions. Variance is Income minus Expenses.</p>';
       html += '<div class="forecast-scroll"><table class="forecast-table"><thead><tr><th class="fc-sticky">&nbsp;</th>';
       months.forEach(function (m) { html += '<th>' + m.label + '</th>'; });
       html += '</tr></thead><tbody>';
