@@ -2810,7 +2810,12 @@
       html += emptyState("trend-down", "No loans tracked", "Add a car payment, personal loan, or other long-term debt to track its payoff progress.");
     } else {
       var totalBalance = state.loans.filter(function (l) { return l.isActive; }).reduce(function (s, l) { return s + loanProgress(l).balance; }, 0);
-      html += '<div class="card"><div class="disclosure"><span style="font-weight:600">Total balance remaining</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalBalance) + '</span></div></div>';
+      // Excludes paid-off loans, even ones the user hasn't gotten around to
+      // toggling Active off for - a loan with nothing left to pay has no
+      // ongoing monthly obligation regardless of that flag.
+      var totalMonthly = state.loans.filter(function (l) { return l.isActive && !loanProgress(l).isPaidOff; }).reduce(function (s, l) { return s + l.monthlyPayment; }, 0);
+      html += '<div class="card"><div class="disclosure" style="margin-bottom:8px"><span style="font-weight:600">Total balance remaining</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalBalance) + '</span></div>';
+      html += '<div class="disclosure"><span style="font-weight:600">Monthly total</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalMonthly) + '</span></div></div>';
       html += '<div class="card" style="padding:4px 16px">';
       state.loans.forEach(function (loan) { html += loanCard(loan); });
       html += '</div>';
@@ -2845,7 +2850,7 @@
     html += '<div class="bar-track"><div class="bar-fill" style="background:var(--accent);width:' + (p.pct * 100) + '%"></div></div>';
     html += '<div class="footnote num">Paid ' + fmtMoney(p.amountPaid) + ' of ' + fmtMoney(loan.totalAmount) + ' · ' + loan.paymentsMade + ' of ~' + p.estTotalPayments + ' payments</div>';
     html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">';
-    html += '<span class="footnote num" style="margin:0">Balance ' + fmtMoney(p.balance) + (p.isPaidOff ? '' : ' · Next ' + fmtDateShort(loan.nextPaymentDate)) + '</span>';
+    html += '<span class="footnote num" style="margin:0">' + (p.isPaidOff ? '' : fmtMoney(loan.monthlyPayment) + '/mo · ') + 'Balance ' + fmtMoney(p.balance) + (p.isPaidOff ? '' : ' · Next ' + fmtDateShort(loan.nextPaymentDate)) + '</span>';
     if (!p.isPaidOff) html += '<button class="icon-btn ghost" data-mark-loan-paid="' + loan.id + '" aria-label="Mark payment paid" style="width:28px;height:28px;flex-shrink:0">' + icon("check") + '</button>';
     html += '</div>';
     html += '</div>';
