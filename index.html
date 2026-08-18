@@ -3015,6 +3015,14 @@
       var catKey = r.categoryId || "__none";
       var d2 = r.nextDueDate;
       var guard = 0;
+      // If nextDueDate has already advanced past windowStart (e.g. this
+      // month's bill was already marked paid), walk backward first to
+      // recover the occurrence that falls in this window - same
+      // normalization occurrencesInRange() uses elsewhere.
+      if (d2 >= windowStart) {
+        while (d2 >= windowStart && guard < 500) { d2 = subtractInterval(d2, r.frequency); guard++; }
+      }
+      guard = 0;
       while (d2 < windowStart && guard < 500) { d2 = addInterval(d2, r.frequency); guard++; }
       guard = 0;
       while (d2 < windowEnd && guard < 500) {
@@ -3032,6 +3040,17 @@
       var d2 = l.nextPaymentDate;
       var paymentsSoFar = l.paymentsMade;
       var guard = 0;
+      // Same backward-normalization as the recurring-bills loop above:
+      // if this month's installment was already marked paid,
+      // nextPaymentDate has already advanced past windowStart.
+      if (d2 >= windowStart) {
+        while (d2 >= windowStart && paymentsSoFar > 0 && guard < 500) {
+          d2 = subtractInterval(d2, "monthly");
+          paymentsSoFar--;
+          guard++;
+        }
+      }
+      guard = 0;
       while (d2 < windowStart && paymentsSoFar * l.monthlyPayment < l.totalAmount && guard < 500) {
         d2 = addInterval(d2, "monthly");
         paymentsSoFar++;
@@ -3127,6 +3146,13 @@
       state.recurring.filter(function (r) { return r.isActive && r.kind === "income"; }).forEach(function (r) {
         var d2 = r.nextDueDate;
         var guard = 0;
+        // Same backward-normalization as the expense loop above: once
+        // this month's income has been marked received, nextDueDate has
+        // already advanced past windowStart and would otherwise drop it.
+        if (d2 >= windowStart) {
+          while (d2 >= windowStart && guard < 500) { d2 = subtractInterval(d2, r.frequency); guard++; }
+        }
+        guard = 0;
         while (d2 < windowStart && guard < 500) { d2 = addInterval(d2, r.frequency); guard++; }
         guard = 0;
         while (d2 < windowEnd && guard < 500) {
