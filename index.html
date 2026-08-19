@@ -721,7 +721,7 @@
   @media (min-width: 760px) {
     .fab-anchor { max-width: 900px; }
   }
-  .calc-fab {
+  .shortcut-fab {
     position: absolute; right: 16px;
     bottom: calc(84px + env(safe-area-inset-bottom));
     width: 56px; height: 56px; border-radius: 999px;
@@ -732,8 +732,8 @@
     pointer-events: auto;
     transition: transform .18s cubic-bezier(.34,1.5,.4,1), box-shadow .15s ease;
   }
-  .calc-fab:active { transform: scale(.88); }
-  .calc-fab svg { width: 26px; height: 26px; }
+  .shortcut-fab:active { transform: scale(.88); }
+  .shortcut-fab svg { width: 26px; height: 26px; }
 
   .calc-display {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
@@ -805,6 +805,10 @@
   <symbol id="i-swap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <line x1="4" y1="8" x2="18" y2="8" /><polyline points="14 4 18 8 14 12" />
     <line x1="20" y1="16" x2="6" y2="16" /><polyline points="10 12 6 16 10 20" />
+  </symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12.59 2.59 21 11l-9 9-8.41-8.41A2 2 0 0 1 3 10.17V4a1 1 0 0 1 1-1h6.17a2 2 0 0 1 1.42.59Z" />
+    <circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none" />
   </symbol>
   <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
@@ -890,9 +894,6 @@
       <button class="icon-btn ghost" id="appbar-refresh" aria-label="Refresh">
         <svg><use href="#i-refresh"/></svg>
       </button>
-      <button class="icon-btn ghost" id="appbar-menu" aria-label="More">
-        <svg><use href="#i-menu"/></svg>
-      </button>
       <button class="icon-btn" id="appbar-action" aria-label="Add">
         <svg><use href="#i-plus"/></svg>
       </button>
@@ -905,6 +906,8 @@
     <section class="tab" id="tab-recurring"></section>
     <section class="tab" id="tab-forecast"></section>
     <section class="tab" id="tab-loans"></section>
+    <section class="tab" id="tab-cards"></section>
+    <section class="tab" id="tab-categories"></section>
     <section class="tab" id="tab-transfer"></section>
     <section class="tab" id="tab-settings"></section>
   </main>
@@ -917,8 +920,8 @@
   </nav>
 
   <div class="fab-anchor">
-    <button class="calc-fab" id="calc-fab" aria-label="Quick calculator">
-      <svg><use href="#i-calculator"/></svg>
+    <button class="shortcut-fab" id="shortcut-fab" aria-label="Shortcuts">
+      <svg><use href="#i-menu"/></svg>
     </button>
   </div>
 </div>
@@ -1607,6 +1610,8 @@
     recurring: { title: "Recurring", sub: "Bills & subscriptions" },
     forecast: { title: "Forecast", sub: "Expected monthly payments" },
     loans: { title: "Loans", sub: "Long-term debt payoff" },
+    cards: { title: "Cards", sub: "Debit & credit accounts" },
+    categories: { title: "Categories", sub: "Spending categories & budgets" },
     transfer: { title: "Transfer", sub: "Move funds between accounts" },
     settings: { title: "Settings", sub: "Finance Tracker" }
   };
@@ -1622,7 +1627,7 @@
     document.getElementById("appbar-title").textContent = TAB_META[tab].title;
     document.getElementById("appbar-sub").textContent = TAB_META[tab].sub;
     var actionBtn = document.getElementById("appbar-action");
-    actionBtn.style.visibility = (tab === "settings" || tab === "forecast") ? "hidden" : "visible";
+    actionBtn.style.visibility = (tab === "settings" || tab === "forecast" || tab === "cards") ? "hidden" : "visible";
     renderAll();
   }
 
@@ -1634,20 +1639,28 @@
     if (currentTab === "dashboard" || currentTab === "transactions") openTransactionForm(null);
     else if (currentTab === "recurring") openRecurringForm(null);
     else if (currentTab === "loans") openLoanForm(null);
+    else if (currentTab === "categories") openCategoryForm(null);
     else if (currentTab === "transfer") openTransferForm();
   });
 
-  var MORE_MENU_ITEMS = [
+  /* The floating bubble used to open the quick calculator directly; it now
+     opens this shortcut menu instead, with Calculator as one of its
+     entries. Everything reachable here used to require the header's
+     3-line "More" menu, which this replaces entirely. */
+  var SHORTCUT_MENU_ITEMS = [
     { tab: "forecast", icon: "grid", label: "Forecast" },
+    { tab: "cards", icon: "card", label: "Add Cards" },
+    { tab: "categories", icon: "tag", label: "Categories" },
     { tab: "transfer", icon: "swap", label: "Transfer" },
-    { tab: "settings", icon: "sliders", label: "Settings" }
+    { tab: "settings", icon: "sliders", label: "Settings" },
+    { action: "calculator", icon: "calculator", label: "Calculator" }
   ];
 
-  document.getElementById("appbar-menu").addEventListener("click", function () {
-    var html = '<div class="modal-head"><h3>More</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+  function openShortcutMenu() {
+    var html = '<div class="modal-head"><h3>Shortcuts</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
     html += '<div class="card" style="padding:4px 16px">';
-    MORE_MENU_ITEMS.forEach(function (item) {
-      html += '<div class="row" data-goto-tab="' + item.tab + '">';
+    SHORTCUT_MENU_ITEMS.forEach(function (item) {
+      html += '<div class="row" data-shortcut="' + (item.tab || item.action) + '">';
       html += '<div class="badge" style="background:var(--accent);width:34px;height:34px">' + icon(item.icon) + '</div>';
       html += '<div class="main"><div class="title">' + item.label + '</div></div>';
       html += icon("chevron", "chevron-sm");
@@ -1656,13 +1669,15 @@
     html += '</div>';
     openModal(html);
     document.querySelector("[data-close]").addEventListener("click", closeModal);
-    document.querySelectorAll("[data-goto-tab]").forEach(function (el) {
+    document.querySelectorAll("[data-shortcut]").forEach(function (el) {
       el.addEventListener("click", function () {
+        var key = el.getAttribute("data-shortcut");
         closeModal();
-        setTab(el.getAttribute("data-goto-tab"));
+        if (key === "calculator") openCalculator();
+        else setTab(key);
       });
     });
-  });
+  }
 
   document.getElementById("appbar-refresh").addEventListener("click", function (e) {
     e.currentTarget.querySelector("svg").classList.add("spin-once");
@@ -1972,7 +1987,7 @@
     render();
   }
 
-  document.getElementById("calc-fab").addEventListener("click", openCalculator);
+  document.getElementById("shortcut-fab").addEventListener("click", openShortcutMenu);
 
   /* ---------- render: dashboard ---------- */
 
@@ -3498,20 +3513,14 @@
     if (existing) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
     html += '</form>';
 
-    // This form is only ever opened from the categories list below, and
-    // the app has one shared modal sheet rather than a real navigation
-    // stack - opening a new modal just replaces this one's content, so
-    // closeModal() here closed the whole thing and dropped back out to
-    // Settings instead of back to that list. Every exit path re-opens the
-    // list in the same modal instead.
     openModal(html);
-    document.querySelector("[data-close]").addEventListener("click", openCategoriesManager);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
 
     if (existing) document.querySelector("[data-delete]").addEventListener("click", function () {
       confirmAction("Delete this category? Transactions using it will become uncategorized.", "Delete", function () {
         state.categories = state.categories.filter(function (c) { return c.id !== existing.id; });
         state.transactions.forEach(function (t) { if (t.categoryId === existing.id) t.categoryId = null; });
-        save(); renderAll(); openCategoriesManager();
+        save(); closeModal(); renderAll();
       });
     });
 
@@ -3530,11 +3539,9 @@
       } else {
         state.categories.push({ id: uid(), name: name, slot: null, isSystem: false, keywords: keywords, budget: budget });
       }
-      save(); renderAll(); openCategoriesManager();
+      save(); closeModal(); renderAll();
     });
   }
-
-  /* ---------- render: settings ---------- */
 
   function bankCardConfigField(label) {
     var value = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
@@ -3575,19 +3582,10 @@
     });
   }
 
-  function renderSettings() {
+  /* ---------- render: cards ---------- */
+
+  function renderCardsPage() {
     var html = '<div class="card">';
-    html += '<h2>Categories</h2>';
-    html += '<div class="disclosure" data-manage-categories style="cursor:pointer;padding:2px 0"><span>Manage categories</span>' + icon("chevron") + '</div>';
-    html += '</div>';
-
-    html += '<div class="card"><h2>Currency</h2><select id="currency-select">';
-    CURRENCIES.forEach(function (c) {
-      html += '<option value="' + c + '"' + (state.settings.currency === c ? " selected" : "") + '>' + c + '</option>';
-    });
-    html += '</select></div>';
-
-    html += '<div class="card">';
     html += '<div class="disclosure" style="margin-bottom:12px"><h2 style="margin:0">Debit Cards — Opening Balance</h2><button class="icon-btn ghost" data-add-bank="debit" aria-label="Add debit account" style="width:26px;height:26px;flex-shrink:0">' + icon("plus") + '</button></div>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">Set this once, as your starting balance when you began tracking. Each month\'s opening balance after that rolls forward automatically from the previous month\'s closing balance on the Dashboard.</p>';
     allBankCards().filter(function (l) { return bankCardType(l) === "debit"; }).forEach(function (label) {
@@ -3601,6 +3599,66 @@
       html += bankCardConfigField(label);
     });
     html += '</div>';
+
+    document.getElementById("tab-cards").innerHTML = html;
+
+    document.querySelectorAll(".bank-card-config").forEach(function (input) {
+      input.addEventListener("change", function (e) {
+        var v = parseFloat(e.target.value);
+        state.bankCardConfig[e.target.getAttribute("data-label")] = { value: isNaN(v) ? 0 : v };
+        save(); renderAll();
+      });
+    });
+    document.querySelectorAll("[data-add-bank]").forEach(function (btn) {
+      btn.addEventListener("click", function () { openAddBankCardForm(btn.getAttribute("data-add-bank")); });
+    });
+    document.querySelectorAll("[data-remove-bank]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var label = btn.getAttribute("data-remove-bank");
+        confirmAction("Remove " + label + "? Existing transactions tagged with it are kept but will show as an unrecognized account.", "Remove", function () {
+          var isCustom = state.customBankCards.some(function (c) { return c.label === label; });
+          if (isCustom) {
+            state.customBankCards = state.customBankCards.filter(function (c) { return c.label !== label; });
+          } else if (state.removedBankCards.indexOf(label) === -1) {
+            state.removedBankCards.push(label);
+          }
+          save(); renderAll();
+        });
+      });
+    });
+  }
+
+  /* ---------- render: categories ---------- */
+
+  function renderCategoriesPage() {
+    var html = '<div class="card" style="padding:4px 16px">';
+    state.categories.forEach(function (c) {
+      html += '<div class="row" data-open-cat="' + c.id + '">';
+      html += badgeHtml(c, 32);
+      html += '<div class="main"><div class="title">' + escapeHtml(c.name) + '</div>' +
+        (c.budget ? '<div class="footnote">Budget ' + fmtMoney(c.budget) + '/mo</div>' : '') + '</div>';
+      if (c.isSystem) html += '<span class="footnote">Default</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+
+    document.getElementById("tab-categories").innerHTML = html;
+
+    document.querySelectorAll("[data-open-cat]").forEach(function (el) {
+      el.addEventListener("click", function () { openCategoryForm(el.getAttribute("data-open-cat")); });
+    });
+  }
+
+  /* ---------- render: settings ---------- */
+
+  function renderSettings() {
+    var html = '';
+
+    html += '<div class="card"><h2>Currency</h2><select id="currency-select">';
+    CURRENCIES.forEach(function (c) {
+      html += '<option value="' + c + '"' + (state.settings.currency === c ? " selected" : "") + '>' + c + '</option>';
+    });
+    html += '</select></div>';
 
     html += '<div class="card"><h2>Account</h2>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in as " + escapeHtml(auth.currentUser.email) + " — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
@@ -3629,34 +3687,9 @@
 
     document.getElementById("tab-settings").innerHTML = html;
 
-    document.querySelector("[data-manage-categories]").addEventListener("click", openCategoriesManager);
     document.getElementById("currency-select").addEventListener("change", function (e) {
       state.settings.currency = e.target.value;
       save(); renderAll();
-    });
-    document.querySelectorAll(".bank-card-config").forEach(function (input) {
-      input.addEventListener("change", function (e) {
-        var v = parseFloat(e.target.value);
-        state.bankCardConfig[e.target.getAttribute("data-label")] = { value: isNaN(v) ? 0 : v };
-        save(); renderAll();
-      });
-    });
-    document.querySelectorAll("[data-add-bank]").forEach(function (btn) {
-      btn.addEventListener("click", function () { openAddBankCardForm(btn.getAttribute("data-add-bank")); });
-    });
-    document.querySelectorAll("[data-remove-bank]").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        var label = btn.getAttribute("data-remove-bank");
-        confirmAction("Remove " + label + "? Existing transactions tagged with it are kept but will show as an unrecognized account.", "Remove", function () {
-          var isCustom = state.customBankCards.some(function (c) { return c.label === label; });
-          if (isCustom) {
-            state.customBankCards = state.customBankCards.filter(function (c) { return c.label !== label; });
-          } else if (state.removedBankCards.indexOf(label) === -1) {
-            state.removedBankCards.push(label);
-          }
-          save(); renderAll();
-        });
-      });
     });
     var changePinBtn = document.getElementById("change-pin");
     if (changePinBtn) changePinBtn.addEventListener("click", openChangePinForm);
@@ -3746,27 +3779,6 @@
     });
   }
 
-  function openCategoriesManager() {
-    var html = '<div class="modal-head"><h3>Categories</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
-    html += '<div class="card" style="padding:4px 16px;margin-bottom:14px">';
-    state.categories.forEach(function (c) {
-      html += '<div class="row" data-open-cat="' + c.id + '">';
-      html += badgeHtml(c, 32);
-      html += '<div class="main"><div class="title">' + escapeHtml(c.name) + '</div></div>';
-      if (c.isSystem) html += '<span class="footnote">Default</span>';
-      html += '</div>';
-    });
-    html += '</div>';
-    html += '<button class="btn primary" data-add-cat>Add Category</button>';
-
-    openModal(html);
-    document.querySelector("[data-close]").addEventListener("click", closeModal);
-    document.querySelector("[data-add-cat]").addEventListener("click", function () { openCategoryForm(null); });
-    document.querySelectorAll("[data-open-cat]").forEach(function (el) {
-      el.addEventListener("click", function () { openCategoryForm(el.getAttribute("data-open-cat")); });
-    });
-  }
-
   /* Saves a file to the viewer's device. Prefers window.claude.downloads (the
      Artifact runtime's viewer-consented save prompt) and falls back to a plain
      anchor-click Blob download when that API isn't present — e.g. when this
@@ -3851,6 +3863,8 @@
     renderRecurring();
     renderForecast();
     renderLoans();
+    renderCardsPage();
+    renderCategoriesPage();
     renderTransfer();
     renderSettings();
     try { checkBillReminders(); } catch (e) {}
