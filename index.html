@@ -36,6 +36,12 @@
     --accent-ink: #ffffff;
     --accent-warm: #B4700F;
     --accent-warm-soft: #F7E9D2;
+    /* Secondary accent for the speed-dial's label pills - deliberately not
+       overridden per-theme like the tokens above, since it's meant to read
+       as the same fixed mint chip in both light and dark mode rather than
+       adapting alongside the rest of the palette. */
+    --pill-mint: #E0F7F4;
+    --pill-mint-ink: #161B1E;
     --good: #0ca30c;
     --warning: #b9791f;
     --serious: #ec835a;
@@ -770,11 +776,10 @@
     pointer-events: auto;
   }
   .speed-dial-label {
-    background: var(--surface); color: var(--ink);
+    background: var(--pill-mint); color: var(--pill-mint-ink);
     padding: 6px 12px; border-radius: 999px;
     font-size: 13px; font-weight: 600; white-space: nowrap;
     box-shadow: 0 2px 8px rgba(0,0,0,.14);
-    border: 1px solid var(--line);
   }
   .speed-dial-btn {
     width: 44px; height: 44px; border-radius: 999px; flex-shrink: 0;
