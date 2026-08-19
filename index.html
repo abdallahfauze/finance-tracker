@@ -705,7 +705,7 @@
   .loan-detail-row .value .num { font-weight: 600; }
   .loan-detail-row .value .sub { font-size: 11px; color: var(--ink-muted); margin-top: 1px; }
 
-  /* ---------- quick calculator: floating bubble + popup ---------- */
+  /* ---------- shortcut speed-dial: floating bubble + popup menu ---------- */
   /* Anchored the same way nav.tabbar centers itself under the app column
      (left:50% + translateX(-50%) + matching max-width, including the
      900px desktop breakpoint above) rather than the viewport edge, so it
@@ -721,9 +721,14 @@
   @media (min-width: 760px) {
     .fab-anchor { max-width: 900px; }
   }
-  .shortcut-fab {
+  .speed-dial {
     position: absolute; right: 16px;
     bottom: calc(84px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; align-items: flex-end;
+    pointer-events: none;
+  }
+  .shortcut-fab {
+    position: relative; flex-shrink: 0;
     width: 56px; height: 56px; border-radius: 999px;
     background: var(--accent); color: var(--accent-ink);
     border: none; cursor: pointer;
@@ -733,7 +738,56 @@
     transition: transform .18s cubic-bezier(.34,1.5,.4,1), box-shadow .15s ease;
   }
   .shortcut-fab:active { transform: scale(.88); }
-  .shortcut-fab svg { width: 26px; height: 26px; }
+  .fab-icon {
+    position: absolute; width: 24px; height: 24px;
+    transition: opacity .18s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .fab-icon-menu { opacity: 1; transform: rotate(0deg) scale(1); }
+  .fab-icon-close { opacity: 0; transform: rotate(-90deg) scale(.4); }
+  .speed-dial.open .fab-icon-menu { opacity: 0; transform: rotate(90deg) scale(.4); }
+  .speed-dial.open .fab-icon-close { opacity: 1; transform: rotate(0deg) scale(1); }
+
+  /* Items stack bottom-up above the fab (column-reverse so the first item
+     in markup lands closest to it) and are hidden/collapsed by default;
+     .open fans them out with a per-item stagger via the --i custom
+     property, using an overshoot easing so each one visibly bounces into
+     place - and, since the same transition runs in reverse, bounces back
+     down into the fab when the menu closes. */
+  .speed-dial-items {
+    display: flex; flex-direction: column-reverse; align-items: flex-end;
+    gap: 14px; margin-bottom: 14px;
+  }
+  .speed-dial-item {
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0; transform: scale(.3) translateY(14px);
+    transform-origin: bottom right;
+    pointer-events: none;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .22s ease;
+    transition-delay: calc(var(--i, 0) * 35ms);
+  }
+  .speed-dial.open .speed-dial-item {
+    opacity: 1; transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+  .speed-dial-label {
+    background: var(--surface); color: var(--ink);
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,.14);
+    border: 1px solid var(--line);
+  }
+  .speed-dial-btn {
+    width: 44px; height: 44px; border-radius: 999px; flex-shrink: 0;
+    background: var(--accent); color: var(--accent-ink);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
+    transition: transform .15s ease;
+  }
+  .speed-dial-btn svg { width: 20px; height: 20px; }
+  .speed-dial-item:active .speed-dial-btn { transform: scale(.88); }
+  @media (prefers-reduced-motion: reduce) {
+    .speed-dial-item, .fab-icon { transition-duration: .01ms !important; transition-delay: 0s !important; }
+  }
 
   .calc-display {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
@@ -920,9 +974,13 @@
   </nav>
 
   <div class="fab-anchor">
-    <button class="shortcut-fab" id="shortcut-fab" aria-label="Shortcuts">
-      <svg><use href="#i-menu"/></svg>
-    </button>
+    <div class="speed-dial" id="speed-dial">
+      <div class="speed-dial-items" id="speed-dial-items"></div>
+      <button class="shortcut-fab" id="shortcut-fab" aria-label="Shortcuts">
+        <svg class="fab-icon fab-icon-menu"><use href="#i-menu"/></svg>
+        <svg class="fab-icon fab-icon-close"><use href="#i-x"/></svg>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1644,9 +1702,9 @@
   });
 
   /* The floating bubble used to open the quick calculator directly; it now
-     opens this shortcut menu instead, with Calculator as one of its
-     entries. Everything reachable here used to require the header's
-     3-line "More" menu, which this replaces entirely. */
+     fans this speed-dial menu out above itself instead, with Calculator as
+     one of its entries. Everything reachable here used to require the
+     header's 3-line "More" menu, which this replaces entirely. */
   var SHORTCUT_MENU_ITEMS = [
     { tab: "forecast", icon: "grid", label: "Forecast" },
     { tab: "cards", icon: "card", label: "Add Cards" },
@@ -1656,28 +1714,37 @@
     { action: "calculator", icon: "calculator", label: "Calculator" }
   ];
 
-  function openShortcutMenu() {
-    var html = '<div class="modal-head"><h3>Shortcuts</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
-    html += '<div class="card" style="padding:4px 16px">';
-    SHORTCUT_MENU_ITEMS.forEach(function (item) {
-      html += '<div class="row" data-shortcut="' + (item.tab || item.action) + '">';
-      html += '<div class="badge" style="background:var(--accent);width:34px;height:34px">' + icon(item.icon) + '</div>';
-      html += '<div class="main"><div class="title">' + item.label + '</div></div>';
-      html += icon("chevron", "chevron-sm");
+  var speedDialOpen = false;
+
+  function setSpeedDialOpen(open) {
+    speedDialOpen = open;
+    document.getElementById("speed-dial").classList.toggle("open", open);
+  }
+
+  /* Built once rather than on every renderAll() - the items are static
+     (they don't depend on app state), and rebuilding the DOM on every
+     render would reset the CSS transitions mid-animation and require
+     re-binding these listeners constantly. */
+  function buildSpeedDial() {
+    var html = "";
+    SHORTCUT_MENU_ITEMS.forEach(function (item, i) {
+      html += '<div class="speed-dial-item" data-shortcut="' + (item.tab || item.action) + '" style="--i:' + i + '">';
+      html += '<span class="speed-dial-label">' + item.label + '</span>';
+      html += '<span class="speed-dial-btn">' + icon(item.icon) + '</span>';
       html += '</div>';
     });
-    html += '</div>';
-    openModal(html);
-    document.querySelector("[data-close]").addEventListener("click", closeModal);
-    document.querySelectorAll("[data-shortcut]").forEach(function (el) {
+    var container = document.getElementById("speed-dial-items");
+    container.innerHTML = html;
+    container.querySelectorAll("[data-shortcut]").forEach(function (el) {
       el.addEventListener("click", function () {
         var key = el.getAttribute("data-shortcut");
-        closeModal();
+        setSpeedDialOpen(false);
         if (key === "calculator") openCalculator();
         else setTab(key);
       });
     });
   }
+  buildSpeedDial();
 
   document.getElementById("appbar-refresh").addEventListener("click", function (e) {
     e.currentTarget.querySelector("svg").classList.add("spin-once");
@@ -1987,7 +2054,9 @@
     render();
   }
 
-  document.getElementById("shortcut-fab").addEventListener("click", openShortcutMenu);
+  document.getElementById("shortcut-fab").addEventListener("click", function () {
+    setSpeedDialOpen(!speedDialOpen);
+  });
 
   /* ---------- render: dashboard ---------- */
 
