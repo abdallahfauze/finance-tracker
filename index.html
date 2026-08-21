@@ -1085,6 +1085,7 @@
     { id: "subscriptions", name: "Subscriptions", slot: null, isSystem: true, keywords: ["netflix","spotify","icloud","youtube premium","disney+","amazon prime","shahid","osn"] },
     { id: "entertainment", name: "Entertainment", slot: null, isSystem: true, keywords: ["cinema","movie","vox","theatre","concert","game"] },
     { id: "health", name: "Health", slot: null, isSystem: true, keywords: ["pharmacy","clinic","hospital","doctor","insurance"] },
+    { id: "savings", name: "Savings", slot: null, isSystem: true, keywords: [] },
     { id: "income", name: "Income", slot: null, isSystem: true, keywords: ["salary","payroll","deposit","transfer in","refund"] },
     { id: "other", name: "Other", slot: null, isSystem: true, keywords: [] }
   ];
@@ -1099,7 +1100,7 @@
   function assignCategorySlots() {
     var totals = {};
     state.transactions.forEach(function (t) {
-      if (t.type !== "expense" || !t.categoryId) return;
+      if (t.type !== "expense" || !t.categoryId || t.isGoalContribution) return;
       totals[t.categoryId] = (totals[t.categoryId] || 0) + t.amount;
     });
     var eligible = state.categories.filter(function (c) { return (totals[c.id] || 0) > 0; });
@@ -1239,6 +1240,12 @@
       parsed.categorySlotsMigratedV3 = true;
     }
     parsed.categories.forEach(function (c) { if (typeof c.budget !== "number") c.budget = 0; });
+    // Goal contributions default to a "Savings" category (see openTransactionForm
+    // and openGoalContributionForm) - existing accounts predate it, so backfill
+    // it the same way a brand-new account gets it from DEFAULT_CATEGORIES.
+    if (!byId(parsed.categories, "savings")) {
+      parsed.categories.push({ id: "savings", name: "Savings", slot: null, isSystem: true, keywords: [], budget: 0 });
+    }
     if (!parsed.settings.notifyBills) parsed.settings.notifyBills = false;
     // Recurring items didn't used to have a start/end window - backfill
     // existing ones as having always been open-ended, so this migration
@@ -2834,10 +2841,11 @@
             return;
           }
           if (t.isGoalContribution) {
-            html += '<div class="row" data-open-goal-tx="' + t.goalId + '">';
+            var goal = byId(state.goals, t.goalId);
+            html += '<div class="row" data-open-tx="' + t.id + '">';
             html += '<div class="badge" style="background:var(--accent);width:34px;height:34px">' + icon("target") + '</div>';
             html += '<div class="main"><div class="title">' + escapeHtml(t.merchant) + '</div>';
-            html += '<div class="meta">Savings goal' + (t.bankCard ? " · " + escapeHtml(t.bankCard) : "") + '</div></div>';
+            html += '<div class="meta">' + (goal ? escapeHtml(goal.name) : "Savings goal") + (t.bankCard ? " · " + escapeHtml(t.bankCard) : "") + '</div></div>';
             html += '<div class="amount num">' + fmtMoney(t.amount) + '</div>';
             html += '</div>';
             return;
@@ -2884,9 +2892,6 @@
     });
     document.querySelectorAll("#tab-transactions [data-open-transfer]").forEach(function (el) {
       el.addEventListener("click", function () { openTransferDetail(el.getAttribute("data-open-transfer")); });
-    });
-    document.querySelectorAll("#tab-transactions [data-open-goal-tx]").forEach(function (el) {
-      el.addEventListener("click", function () { openGoalForm(el.getAttribute("data-open-goal-tx")); });
     });
   }
 
@@ -3333,7 +3338,7 @@
       if (isNaN(amount) || amount <= 0) return;
       state.transactions.push({
         id: uid(), amount: amount, merchant: "Goal: " + goal.name, note: "",
-        date: f.get("date") || todayISO(), type: "expense", categoryId: null,
+        date: f.get("date") || todayISO(), type: "expense", categoryId: "savings",
         bankCard: f.get("bankCard") || null, isGoalContribution: true, goalId: goal.id
       });
       save(); closeModal(); renderAll();
@@ -3734,6 +3739,17 @@
       html += '<option value="' + c.id + '"' + (existing && existing.categoryId === c.id ? " selected" : "") + '>' + escapeHtml(c.name) + '</option>';
     });
     html += '</select></div>';
+    // Only shown once there's a goal to contribute to - picking one is the
+    // regular-transaction path onto the same isGoalContribution/goalId data
+    // the Goals page's own "Add Funds" shortcut writes, so both stay
+    // interchangeable (either can create or edit the same transaction).
+    if (state.goals.length) {
+      html += '<div class="field"><label>Contribute to Goal (optional)</label><select name="goalId" id="tx-goal-select"><option value="">None</option>';
+      state.goals.forEach(function (g) {
+        html += '<option value="' + g.id + '"' + (existing && existing.goalId === g.id ? " selected" : "") + '>' + escapeHtml(g.name) + '</option>';
+      });
+      html += '</select></div>';
+    }
     html += '<div class="field"><label>Bank / Card</label><select name="bankCard"><option value="">None</option>';
     allBankCards().forEach(function (bc) {
       html += '<option value="' + escapeAttr(bc) + '"' + (existing && existing.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
@@ -3750,8 +3766,13 @@
 
     var typeInput = document.querySelector('input[name="type"]');
     var catManuallyPicked = !!(existing && existing.categoryId);
+    var goalSelect = document.getElementById("tx-goal-select");
     document.querySelectorAll("#tx-type-seg button").forEach(function (b) {
       b.addEventListener("click", function () {
+        // A goal contribution is always money leaving, never income - while
+        // one's selected, Income is a no-op instead of a state that would
+        // contradict it.
+        if (b.getAttribute("data-val") === "income" && goalSelect && goalSelect.value) return;
         document.querySelectorAll("#tx-type-seg button").forEach(function (x) { x.classList.remove("active"); });
         b.classList.add("active");
         typeInput.value = b.getAttribute("data-val");
@@ -3763,6 +3784,20 @@
       if (suggestion) document.getElementById("tx-cat-select").value = suggestion;
     });
     document.getElementById("tx-cat-select").addEventListener("change", function () { catManuallyPicked = true; });
+    if (goalSelect) goalSelect.addEventListener("change", function () {
+      if (!goalSelect.value) return;
+      document.querySelectorAll("#tx-type-seg button").forEach(function (b) {
+        b.classList.toggle("active", b.getAttribute("data-val") === "expense");
+      });
+      typeInput.value = "expense";
+      document.getElementById("tx-cat-select").value = "savings";
+      catManuallyPicked = true;
+      var merchantInput = document.querySelector('input[name="merchant"]');
+      if (!merchantInput.value.trim()) {
+        var goal = byId(state.goals, goalSelect.value);
+        merchantInput.value = "Goal: " + (goal ? goal.name : "");
+      }
+    });
 
     if (existing) document.querySelector("[data-delete]").addEventListener("click", function () {
       confirmAction("Delete this transaction?", "Delete", function () {
@@ -3774,15 +3809,20 @@
     document.getElementById("tx-form").addEventListener("submit", function (e) {
       e.preventDefault();
       var f = new FormData(e.target);
+      var goalId = f.get("goalId") || null;
       var record = {
         id: existing ? existing.id : uid(),
         amount: parseFloat(f.get("amount")),
         merchant: f.get("merchant").trim(),
         note: (f.get("note") || "").trim(),
         date: f.get("date"),
-        type: f.get("type"),
+        // Belt-and-suspenders, not a UI escape hatch - the Income button is
+        // already blocked while a goal is selected (see tx-type-seg above).
+        type: goalId ? "expense" : f.get("type"),
         categoryId: f.get("categoryId") || null,
-        bankCard: f.get("bankCard") || null
+        bankCard: f.get("bankCard") || null,
+        isGoalContribution: !!goalId,
+        goalId: goalId
       };
       if (isNaN(record.amount) || !record.merchant) return;
       if (existing) {
