@@ -3240,9 +3240,13 @@
         catKeys.forEach(function (catKey) { actTotal += (actualMatrix[catKey] && actualMatrix[catKey][m.key]) || 0; });
         return actTotal;
       });
-      months.forEach(function (m, i) {
+      var fcExpenseByMonth = months.map(function (m) {
         var fcTotal = 0;
         catKeys.forEach(function (catKey) { fcTotal += (matrix[catKey] && matrix[catKey][m.key]) || 0; });
+        return fcTotal;
+      });
+      months.forEach(function (m, i) {
+        var fcTotal = fcExpenseByMonth[i];
         var actTotal = actualExpenseByMonth[i];
         var overspentTotal = actTotal - fcTotal;
         var varTotal = fcTotal - actTotal;
@@ -3251,14 +3255,34 @@
         html += '<td class="num">' + fmtWhole(actTotal) + '</td>';
         html += '<td class="num ' + varClass + '">' + (varTotal > 0 ? '+' : '') + fmtWhole(varTotal) + '</td>';
       });
-      html += '</tr></tfoot></table></div></div>';
+      html += '</tr>';
 
-      // Income vs. Actual Expenses: both rows are what's really been
-      // logged as transactions - income isn't limited to recurring salary
-      // items, so a one-off transfer-in, bonus, or gift you log directly
-      // shows up here too, same as any actual expense would. Expenses
-      // reuse the exact actual totals already computed for the Total row,
-      // so the two tables can never silently disagree.
+      // Income row mirrors the category rows above it: Fc is projected from
+      // active recurring income (salary etc.), same backward-normalized
+      // walk the expense loop at the top of this function uses, so an
+      // income item already marked received this month still counts. Act
+      // is every real income transaction logged - not limited to recurring
+      // items, so a one-off bonus or gift counts too.
+      var incomeFcByMonth = {};
+      state.recurring.filter(function (r) { return r.isActive && r.kind === "income"; }).forEach(function (r) {
+        var d2 = r.nextDueDate;
+        var guard = 0;
+        if (d2 >= windowStart) {
+          while (d2 >= windowStart && guard < 500) { d2 = subtractInterval(d2, r.frequency); guard++; }
+        }
+        guard = 0;
+        while (d2 < windowStart && guard < 500) { d2 = addInterval(d2, r.frequency); guard++; }
+        guard = 0;
+        while (d2 < windowEnd && guard < 500) {
+          if (r.endDate && d2 > r.endDate) break;
+          if (!r.startDate || d2 >= r.startDate) {
+            var mk = d2.slice(0, 7);
+            incomeFcByMonth[mk] = (incomeFcByMonth[mk] || 0) + r.amount;
+          }
+          d2 = addInterval(d2, r.frequency);
+          guard++;
+        }
+      });
       var incomeByMonth = {};
       state.transactions.forEach(function (t) {
         if (t.type !== "income" || t.isTransfer) return;
@@ -3266,36 +3290,47 @@
         var mk = monthKeyOf(t.date);
         incomeByMonth[mk] = (incomeByMonth[mk] || 0) + t.amount;
       });
-
-      html += '<div class="card"><h2>Income vs. Actual Expenses</h2>';
-      html += '<p class="footnote" style="margin:0 0 12px">Both rows are what\'s really been logged as transactions. Variance is Income minus Expenses.</p>';
-      html += '<div class="forecast-scroll"><table class="forecast-table"><thead><tr><th class="fc-sticky">&nbsp;</th>';
-      months.forEach(function (m) { html += '<th>' + m.label + '</th>'; });
-      html += '</tr></thead><tbody>';
+      var incomeFcByMonthArr = months.map(function (m) { return incomeFcByMonth[m.key] || 0; });
+      var incomeActByMonthArr = months.map(function (m) { return incomeByMonth[m.key] || 0; });
 
       html += '<tr><td class="fc-sticky">Income</td>';
-      months.forEach(function (m) {
-        var inc = incomeByMonth[m.key] || 0;
-        html += '<td class="num' + (inc === 0 ? ' zero' : '') + '">' + (inc === 0 ? '–' : fmtWhole(inc)) + '</td>';
-      });
-      html += '</tr>';
-
-      html += '<tr><td class="fc-sticky">Actual Expenses</td>';
       months.forEach(function (m, i) {
-        var act = actualExpenseByMonth[i];
+        var fc = incomeFcByMonthArr[i];
+        var act = incomeActByMonthArr[i];
+        // Actual minus Forecast (opposite of the expense rows' Fc minus
+        // Act) so a positive number always means "more than expected" and
+        // stays green - the expense convention would leave a green number
+        // showing as negative here, which reads backwards for income.
+        var variance = act - fc;
+        var varClass = variance > 0 ? "variance-under" : (variance < 0 ? "variance-over" : "zero");
+        html += '<td class="num fc-group-start' + (fc === 0 ? ' zero' : '') + '">' + (fc === 0 ? '–' : fmtWhole(fc)) + '</td>';
         html += '<td class="num' + (act === 0 ? ' zero' : '') + '">' + (act === 0 ? '–' : fmtWhole(act)) + '</td>';
-      });
-      html += '</tr>';
-
-      html += '</tbody><tfoot><tr><td class="fc-sticky">Variance</td>';
-      months.forEach(function (m, i) {
-        var inc = incomeByMonth[m.key] || 0;
-        var act = actualExpenseByMonth[i];
-        var variance = inc - act;
-        var varClass = variance < 0 ? "variance-over" : (variance > 0 ? "variance-under" : "");
         html += '<td class="num ' + varClass + '">' + (variance === 0 ? '–' : (variance > 0 ? '+' : '') + fmtWhole(variance)) + '</td>';
       });
-      html += '</tr></tfoot></table></div></div>';
+      html += '</tr>';
+
+      // Balance: Income minus Expenses, kept in its own Fc/Act pair rather
+      // than mixed with the Var column above (Fc balance uses the Fc
+      // income/expense projections, Act balance uses what's really been
+      // logged - the two shouldn't be blended into one number). Var here
+      // compares the two balances themselves (Act minus Fc, same
+      // positive-is-green direction as the Income row above) - did the
+      // actual bottom line come in better or worse than the planned one.
+      html += '<tr><td class="fc-sticky">Balance</td>';
+      months.forEach(function (m, i) {
+        var fcBalance = incomeFcByMonthArr[i] - fcExpenseByMonth[i];
+        var actBalance = incomeActByMonthArr[i] - actualExpenseByMonth[i];
+        var fcClass = fcBalance < 0 ? "variance-over" : (fcBalance > 0 ? "variance-under" : "zero");
+        var actClass = actBalance < 0 ? "variance-over" : (actBalance > 0 ? "variance-under" : "zero");
+        var balanceVariance = actBalance - fcBalance;
+        var varClass = balanceVariance > 0 ? "variance-under" : (balanceVariance < 0 ? "variance-over" : "zero");
+        html += '<td class="num fc-group-start ' + fcClass + '">' + (fcBalance === 0 ? '–' : (fcBalance > 0 ? '+' : '') + fmtWhole(fcBalance)) + '</td>';
+        html += '<td class="num ' + actClass + '">' + (actBalance === 0 ? '–' : (actBalance > 0 ? '+' : '') + fmtWhole(actBalance)) + '</td>';
+        html += '<td class="num ' + varClass + '">' + (balanceVariance === 0 ? '–' : (balanceVariance > 0 ? '+' : '') + fmtWhole(balanceVariance)) + '</td>';
+      });
+      html += '</tr>';
+
+      html += '</tfoot></table></div></div>';
     }
 
     document.getElementById("tab-forecast").innerHTML = html;
