@@ -6,6 +6,14 @@
     var __theme = localStorage.getItem("ledger.financeTracker.theme");
     if (__theme === "light" || __theme === "dark") document.documentElement.setAttribute("data-theme", __theme);
   } catch (e) {}
+  // Same early-paint reasoning as the theme choice above, but the accent
+  // color lives inside the synced app state rather than its own key.
+  try {
+    var __raw = localStorage.getItem("ledger.financeTracker.v1");
+    var __parsed = __raw && JSON.parse(__raw);
+    var __accent = __parsed && __parsed.settings && __parsed.settings.accentColor;
+    if (__accent) document.documentElement.setAttribute("data-accent", __accent);
+  } catch (e) {}
 </script>
 <title>Finance Tracker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -90,6 +98,36 @@
     --shadow-1: 0 1px 2px rgba(15,23,26,0.05), 0 1px 1px rgba(15,23,26,0.03);
     color-scheme: light;
   }
+
+  /* ---------- accent color presets (Settings > Theme Color) ----------
+     Same three-tier structure as the light/dark tokens just above (bare
+     fallback, prefers-color-scheme, then an explicit [data-theme] that
+     always wins), just keyed by [data-accent] instead - each preset gets
+     its own tuned light/dark pair so accent-ink (text drawn on top of the
+     accent) and accent-soft (chip backgrounds) stay legible either way,
+     the same relationship --accent/--accent-soft/--accent-ink already
+     have for the default teal. Teal itself gets an explicit block too so
+     applying a choice never needs to special-case the default. */
+  :root[data-accent="teal"] { --accent: #0A7A6C; --accent-soft: #DDF2EE; --accent-ink: #ffffff; }
+  :root[data-accent="sky"] { --accent: #0E7FBF; --accent-soft: #DCEEF9; --accent-ink: #ffffff; }
+  :root[data-accent="indigo"] { --accent: #3452D9; --accent-soft: #E1E5FB; --accent-ink: #ffffff; }
+  :root[data-accent="violet"] { --accent: #7A42E0; --accent-soft: #EEE3FB; --accent-ink: #ffffff; }
+  :root[data-accent="rose"] { --accent: #C22E72; --accent-soft: #FAE1EC; --accent-ink: #ffffff; }
+  :root[data-accent="forest"] { --accent: #1E8A54; --accent-soft: #DEF2E6; --accent-ink: #ffffff; }
+  @media (prefers-color-scheme: dark) {
+    :root[data-accent="teal"]:not([data-theme="light"]) { --accent: #3DD9C4; --accent-soft: #16302C; --accent-ink: #0B1413; }
+    :root[data-accent="sky"]:not([data-theme="light"]) { --accent: #56C8F5; --accent-soft: #123244; --accent-ink: #08181F; }
+    :root[data-accent="indigo"]:not([data-theme="light"]) { --accent: #7C9BFF; --accent-soft: #1C2340; --accent-ink: #0A0E1F; }
+    :root[data-accent="violet"]:not([data-theme="light"]) { --accent: #B79CFF; --accent-soft: #271C40; --accent-ink: #120D1F; }
+    :root[data-accent="rose"]:not([data-theme="light"]) { --accent: #F080B8; --accent-soft: #3A1A28; --accent-ink: #1F0D14; }
+    :root[data-accent="forest"]:not([data-theme="light"]) { --accent: #4ADE80; --accent-soft: #15301F; --accent-ink: #0A1710; }
+  }
+  :root[data-accent="teal"][data-theme="dark"] { --accent: #3DD9C4; --accent-soft: #16302C; --accent-ink: #0B1413; }
+  :root[data-accent="sky"][data-theme="dark"] { --accent: #56C8F5; --accent-soft: #123244; --accent-ink: #08181F; }
+  :root[data-accent="indigo"][data-theme="dark"] { --accent: #7C9BFF; --accent-soft: #1C2340; --accent-ink: #0A0E1F; }
+  :root[data-accent="violet"][data-theme="dark"] { --accent: #B79CFF; --accent-soft: #271C40; --accent-ink: #120D1F; }
+  :root[data-accent="rose"][data-theme="dark"] { --accent: #F080B8; --accent-soft: #3A1A28; --accent-ink: #1F0D14; }
+  :root[data-accent="forest"][data-theme="dark"] { --accent: #4ADE80; --accent-soft: #15301F; --accent-ink: #0A1710; }
 
   /* Official Saudi Riyal currency sign (U+20C1), SIL OFL 1.1 licensed font by Emran Alhaddad
      https://github.com/emran-alhaddad/Saudi-Riyal-Font — embedded because system fonts
@@ -711,6 +749,15 @@
   .loan-detail-row .value .num { font-weight: 600; }
   .loan-detail-row .value .sub { font-size: 11px; color: var(--ink-muted); margin-top: 1px; }
 
+  /* ---------- accent color swatches (Settings > Theme Color) ---------- */
+  .accent-grid { display: flex; flex-wrap: wrap; gap: 14px; }
+  .accent-opt { display: flex; flex-direction: column; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; padding: 0; }
+  .accent-swatch { width: 40px; height: 40px; border-radius: 999px; position: relative; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+  .accent-swatch svg { position: absolute; inset: 0; margin: auto; width: 17px; height: 17px; opacity: 0; color: #fff; }
+  .accent-opt.selected .accent-swatch { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+  .accent-opt.selected .accent-swatch svg { opacity: 1; }
+  .accent-opt .lbl { font-size: 11px; color: var(--ink-2); font-weight: 600; }
+
   /* ---------- shortcut speed-dial: floating bubble + popup menu ---------- */
   /* Anchored the same way nav.tabbar centers itself under the app column
      (left:50% + translateX(-50%) + matching max-width, including the
@@ -876,6 +923,9 @@
   <symbol id="i-trend-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" />
   </symbol>
+  <symbol id="i-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />
+  </symbol>
   <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
   </symbol>
@@ -965,6 +1015,7 @@
     <section class="tab" id="tab-recurring"></section>
     <section class="tab" id="tab-forecast"></section>
     <section class="tab" id="tab-loans"></section>
+    <section class="tab" id="tab-goals"></section>
     <section class="tab" id="tab-cards"></section>
     <section class="tab" id="tab-categories"></section>
     <section class="tab" id="tab-transfer"></section>
@@ -1076,6 +1127,20 @@
 
   var CURRENCIES = ["USD","EUR","GBP","AED","SAR","EGP","KWD","QAR"];
 
+  // Curated rather than a free-color picker: each preset's light/dark pair
+  // is hand-tuned (see the matching [data-accent] rules in the stylesheet)
+  // so accent-ink text stays legible on it and it doesn't drift into the
+  // hues already claimed by status colors (warning/critical/etc). "hex" is
+  // only used to draw the swatch itself here in Settings.
+  var ACCENT_PRESETS = [
+    { key: "teal", name: "Teal", hex: "#0A7A6C" },
+    { key: "sky", name: "Sky", hex: "#0E7FBF" },
+    { key: "indigo", name: "Indigo", hex: "#3452D9" },
+    { key: "violet", name: "Violet", hex: "#7A42E0" },
+    { key: "rose", name: "Rose", hex: "#C22E72" },
+    { key: "forest", name: "Forest", hex: "#1E8A54" }
+  ];
+
   var BANK_CARDS = [
     "SAB VISA 4576",
     "SAB VISA 6438",
@@ -1123,11 +1188,12 @@
       transactions: [],
       recurring: [],
       loans: [],
+      goals: [],
       cards: [],
       customBankCards: [],
       removedBankCards: BANK_CARDS.slice(),
       bankCardConfig: defaultBankCardConfig(),
-      settings: { currency: guessCurrency() }
+      settings: { currency: guessCurrency(), accentColor: "teal" }
     };
   }
 
@@ -1137,12 +1203,14 @@
 
   var state = load();
   if (assignCategorySlots()) save();
+  applyAccentColor();
 
   function normalizeState(parsed) {
     if (!parsed.categories || !parsed.categories.length) parsed.categories = defaultState().categories;
     if (!parsed.transactions) parsed.transactions = [];
     if (!parsed.recurring) parsed.recurring = [];
     if (!parsed.loans) parsed.loans = [];
+    if (!parsed.goals) parsed.goals = [];
     if (!parsed.cards) parsed.cards = [];
     if (!parsed.customBankCards) parsed.customBankCards = [];
     if (!parsed.removedBankCards) parsed.removedBankCards = [];
@@ -1152,6 +1220,7 @@
     });
     if (!parsed.settings) parsed.settings = { currency: guessCurrency() };
     if (parsed.settings.currency === "USD") parsed.settings.currency = "SAR";
+    if (!parsed.settings.accentColor) parsed.settings.accentColor = "teal";
     // One-time migration: chart color slots used to be permanently baked into
     // the 8 original default categories regardless of use, which starved any
     // custom category of ever getting a real color. Clear that out once so
@@ -1242,6 +1311,7 @@
       // showing every category as colorless "Other" until its next edit.
       var slotsChanged = assignCategorySlots();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      applyAccentColor();
       renderAll();
       isApplyingRemoteUpdate = false;
       if (slotsChanged) save();
@@ -1673,6 +1743,7 @@
     recurring: { title: "Recurring", sub: "Bills & subscriptions" },
     forecast: { title: "Forecast", sub: "Expected monthly payments" },
     loans: { title: "Loans", sub: "Long-term debt payoff" },
+    goals: { title: "Goals", sub: "Savings progress" },
     cards: { title: "Cards", sub: "Debit & credit accounts" },
     categories: { title: "Categories", sub: "Spending categories & budgets" },
     transfer: { title: "Transfer", sub: "Move funds between accounts" },
@@ -1702,6 +1773,7 @@
     if (currentTab === "dashboard" || currentTab === "transactions") openTransactionForm(null);
     else if (currentTab === "recurring") openRecurringForm(null);
     else if (currentTab === "loans") openLoanForm(null);
+    else if (currentTab === "goals") openGoalForm(null);
     else if (currentTab === "categories") openCategoryForm(null);
     else if (currentTab === "transfer") openTransferForm();
   });
@@ -1712,6 +1784,7 @@
      header's 3-line "More" menu, which this replaces entirely. */
   var SHORTCUT_MENU_ITEMS = [
     { tab: "forecast", icon: "grid", label: "Forecast" },
+    { tab: "goals", icon: "target", label: "Goals" },
     { tab: "cards", icon: "card", label: "Add Cards" },
     { tab: "categories", icon: "tag", label: "Categories" },
     { tab: "transfer", icon: "swap", label: "Transfer" },
@@ -1787,6 +1860,17 @@
   document.getElementById("theme-toggle").addEventListener("click", function () {
     applyTheme(currentTheme() === "dark" ? "light" : "dark");
   });
+
+  /* ---------- accent color ----------
+     Unlike the theme choice above, the accent is part of the synced state
+     (Settings > Theme Color), so it follows the account across devices.
+     Applying it is just setting [data-accent] on <html> - the actual
+     per-preset values live in CSS (see the [data-accent] rules near the
+     top of the stylesheet), keeping this in the same "CSS attribute
+     switch" shape as the theme toggle instead of computing colors in JS. */
+  function applyAccentColor() {
+    document.documentElement.setAttribute("data-accent", state.settings.accentColor || "teal");
+  }
 
   function openModal(html) {
     document.getElementById("modal-sheet").innerHTML = html;
@@ -2100,10 +2184,11 @@
 
     var range = periodRange(viewPeriod);
     var periodTx = transactionsInRange(range.start, range.end);
-    // Transfers move money between the user's own accounts - they aren't
-    // real spending or income, so they're excluded from these totals (but
+    // Transfers move money between the user's own accounts, and goal
+    // contributions set money aside rather than spend it - neither is real
+    // spending or income, so both are excluded from these totals (but
     // still count toward each individual card's balance, see renderBankCardSummary).
-    var realTx = periodTx.filter(function (t) { return !t.isTransfer; });
+    var realTx = periodTx.filter(function (t) { return !t.isTransfer && !t.isGoalContribution; });
     var spent = realTx.filter(function (t) { return t.type === "expense"; }).reduce(function (s, t) { return s + t.amount; }, 0);
     var income = realTx.filter(function (t) { return t.type === "income"; }).reduce(function (s, t) { return s + t.amount; }, 0);
 
@@ -2132,6 +2217,7 @@
 
     html += renderBudgetsCard(byCat);
     html += renderTotalFundsCard();
+    html += renderGoalsDashboardCard();
     html += renderBankCardSummary(range);
 
     if (spent > 0) {
@@ -2526,7 +2612,7 @@
     if (!months) return "";
     var totals = months.map(function (m) {
       return state.transactions.filter(function (t) {
-        return !t.isTransfer && t.type === "expense" && t.date >= m.start && t.date < m.end;
+        return !t.isTransfer && !t.isGoalContribution && t.type === "expense" && t.date >= m.start && t.date < m.end;
       }).reduce(function (s, t) { return s + t.amount; }, 0);
     });
     if (!totals.some(function (v) { return v > 0; })) return "";
@@ -2630,10 +2716,30 @@
     return html;
   }
 
+  /* Mirrors Upcoming Bills below it - omitted entirely rather than shown
+     empty when there are no goals yet, so the dashboard doesn't advertise
+     a feature with nothing in it. Only the first couple of goals get a
+     mini progress row here; the rest are a tap away via View All Goals. */
+  function renderGoalsDashboardCard() {
+    if (!state.goals.length) return "";
+    var totalSaved = state.goals.reduce(function (s, g) { return s + goalProgress(g).saved; }, 0);
+    var html = '<div class="card"><h2>Savings Goals</h2>';
+    html += '<div class="disclosure" style="margin-bottom:14px"><span class="footnote" style="display:inline">Saved across ' + state.goals.length + (state.goals.length === 1 ? " goal" : " goals") + '</span><span class="num" style="font-size:16px;font-weight:700;color:var(--accent)">' + fmtMoney(totalSaved) + '</span></div>';
+    state.goals.slice(0, 2).forEach(function (goal) {
+      var p = goalProgress(goal);
+      html += '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px"><span style="font-weight:600">' + escapeHtml(goal.name) + '</span><span class="footnote" style="display:inline">' + Math.round(p.pct * 100) + '%</span></div>';
+      html += '<div class="bar-track" style="margin:6px 0 0"><div class="bar-fill" style="background:var(--accent);width:' + (p.pct * 100) + '%"></div></div></div>';
+    });
+    html += '<button type="button" class="btn plain" data-go-goals>View All Goals</button></div>';
+    return html;
+  }
+
   function wireDashboardEvents() {
     document.querySelectorAll("#tab-dashboard [data-open-recurring]").forEach(function (el) {
       el.addEventListener("click", function () { openRecurringForm(el.getAttribute("data-open-recurring")); });
     });
+    var goGoalsBtn = document.querySelector("#tab-dashboard [data-go-goals]");
+    if (goGoalsBtn) goGoalsBtn.addEventListener("click", function () { setTab("goals"); });
     document.querySelectorAll("#tab-dashboard [data-month]").forEach(function (btn) {
       btn.addEventListener("click", function () {
         totalFundsMonthKey = btn.getAttribute("data-month");
@@ -2727,6 +2833,15 @@
             html += '</div>';
             return;
           }
+          if (t.isGoalContribution) {
+            html += '<div class="row" data-open-goal-tx="' + t.goalId + '">';
+            html += '<div class="badge" style="background:var(--accent);width:34px;height:34px">' + icon("target") + '</div>';
+            html += '<div class="main"><div class="title">' + escapeHtml(t.merchant) + '</div>';
+            html += '<div class="meta">Savings goal' + (t.bankCard ? " · " + escapeHtml(t.bankCard) : "") + '</div></div>';
+            html += '<div class="amount num">' + fmtMoney(t.amount) + '</div>';
+            html += '</div>';
+            return;
+          }
           var cat = byId(state.categories, t.categoryId);
           html += '<div class="row" data-open-tx="' + t.id + '">';
           html += badgeHtml(cat, 34);
@@ -2738,10 +2853,10 @@
         html += '</div>';
       });
 
-      // Totals for whatever's currently filtered - transfers are excluded
-      // from Spent/Income here too, same as the Dashboard, since moving
-      // money between your own accounts isn't real spending or income.
-      var realList = list.filter(function (t) { return !t.isTransfer; });
+      // Totals for whatever's currently filtered - transfers and goal
+      // contributions are excluded from Spent/Income here too, same as the
+      // Dashboard, since neither is real spending or income.
+      var realList = list.filter(function (t) { return !t.isTransfer && !t.isGoalContribution; });
       var filteredSpent = realList.filter(function (t) { return t.type === "expense"; }).reduce(function (s, t) { return s + t.amount; }, 0);
       var filteredIncome = realList.filter(function (t) { return t.type === "income"; }).reduce(function (s, t) { return s + t.amount; }, 0);
       html += '<div class="card"><div class="footnote" style="margin:0 0 10px">' + list.length + (list.length === 1 ? " transaction" : " transactions") + '</div>';
@@ -2769,6 +2884,9 @@
     });
     document.querySelectorAll("#tab-transactions [data-open-transfer]").forEach(function (el) {
       el.addEventListener("click", function () { openTransferDetail(el.getAttribute("data-open-transfer")); });
+    });
+    document.querySelectorAll("#tab-transactions [data-open-goal-tx]").forEach(function (el) {
+      el.addEventListener("click", function () { openGoalForm(el.getAttribute("data-open-goal-tx")); });
     });
   }
 
@@ -3100,6 +3218,171 @@
     });
   }
 
+  /* ---------- render: goals ---------- */
+
+  function goalProgress(goal) {
+    var contributions = state.transactions.filter(function (t) { return t.isGoalContribution && t.goalId === goal.id; });
+    var saved = contributions.reduce(function (s, t) { return s + t.amount; }, 0);
+    var pct = goal.targetAmount > 0 ? Math.min(saved / goal.targetAmount, 1) : 0;
+    var isReached = saved >= goal.targetAmount;
+    return { saved: saved, pct: pct, count: contributions.length, isReached: isReached, paceStatus: isReached ? null : goalPaceStatus(goal, saved) };
+  }
+
+  /* "Behind pace" compares how much of the goal's own timeline (from when
+     it was created to its target date) has elapsed against how much of the
+     target has actually been saved - a goal with no target date has no
+     timeline to fall behind on, so it's simply never flagged. */
+  function goalPaceStatus(goal, saved) {
+    if (!goal.targetDate) return null;
+    if (daysUntil(goal.targetDate) < 0) return "overdue";
+    var totalDays = daysBetween(goal.createdAt, goal.targetDate);
+    if (totalDays <= 0) return null;
+    var elapsedDays = Math.max(0, daysBetween(goal.createdAt, todayISO()));
+    var expectedPct = Math.min(elapsedDays / totalDays, 1);
+    var actualPct = goal.targetAmount > 0 ? saved / goal.targetAmount : 1;
+    return actualPct < expectedPct - 0.1 ? "behind" : null;
+  }
+
+  function daysBetween(isoA, isoB) {
+    return Math.round((new Date(isoB + "T00:00:00") - new Date(isoA + "T00:00:00")) / 86400000);
+  }
+
+  function renderGoals() {
+    var html = "";
+    if (!state.goals.length) {
+      html += emptyState("target", "No savings goals", "Add a goal - an emergency fund, a trip, a big purchase - and track how close you are.");
+    } else {
+      var totalGoal = state.goals.reduce(function (s, g) { return s + g.targetAmount; }, 0);
+      var totalSaved = state.goals.reduce(function (s, g) { return s + goalProgress(g).saved; }, 0);
+      html += '<div class="card"><div class="disclosure" style="margin-bottom:8px"><span style="font-weight:600">Goal</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalGoal) + '</span></div>';
+      html += '<div class="disclosure"><span style="font-weight:600">Total saved</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalSaved) + '</span></div></div>';
+      html += '<div class="card" style="padding:4px 16px">';
+      state.goals.forEach(function (goal) { html += goalCard(goal); });
+      html += '</div>';
+    }
+
+    document.getElementById("tab-goals").innerHTML = html;
+
+    document.querySelectorAll("#tab-goals [data-open-goal]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        if (e.target.closest("[data-add-funds]")) return;
+        openGoalForm(el.getAttribute("data-open-goal"));
+      });
+    });
+    document.querySelectorAll("#tab-goals [data-add-funds]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.stopPropagation();
+        openGoalContributionForm(el.getAttribute("data-add-funds"));
+      });
+    });
+  }
+
+  function goalCard(goal) {
+    var p = goalProgress(goal);
+    var html = '<div data-open-goal="' + goal.id + '" style="margin-bottom:16px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px">';
+    html += '<span style="font-size:14.5px;font-weight:600">' + escapeHtml(goal.name) + '</span>';
+    if (p.isReached) html += '<span class="chip milestone">' + icon("check") + 'Goal Reached</span>';
+    else if (p.paceStatus === "overdue") html += '<span class="chip critical">' + icon("alert") + 'Overdue</span>';
+    else if (p.paceStatus === "behind") html += '<span class="chip warning">' + icon("alert") + 'Behind Pace</span>';
+    html += '</div>';
+    html += '<div class="bar-track"><div class="bar-fill" style="background:var(--accent);width:' + (p.pct * 100) + '%"></div></div>';
+
+    html += '<div class="loan-details">';
+    html += loanDetailRow("Target", goal.targetAmount, goal.targetDate ? "by " + fmtDateLong(goal.targetDate) : null);
+    html += loanDetailRow("Saved", p.saved, p.count + (p.count === 1 ? " contribution" : " contributions"));
+    if (!p.isReached) {
+      var addFundsBtn = '<button class="icon-btn ghost" data-add-funds="' + goal.id + '" aria-label="Add funds" style="width:28px;height:28px;flex-shrink:0;margin-left:10px">' + icon("plus") + '</button>';
+      html += loanDetailRow("Remaining", goal.targetAmount - p.saved, null, addFundsBtn);
+    }
+    html += '</div>';
+    html += '</div>';
+    return html;
+  }
+
+  /* Contributions are logged as ordinary expense transactions (tagged
+     isGoalContribution + goalId) rather than a separate ledger, the same
+     way a transfer is a real transaction rather than its own record type -
+     that keeps a goal's progress, and Total Available Funds, both honest
+     without special-casing goals throughout the money math. They're
+     excluded from spend totals (see the isGoalContribution checks
+     alongside isTransfer) since setting money aside isn't spending it. */
+  function openGoalContributionForm(id) {
+    var goal = byId(state.goals, id);
+    if (!goal) return;
+    var p = goalProgress(goal);
+    var html = '<div class="modal-head"><h3>Add Funds</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<p style="font-size:14.5px;color:var(--ink-2);margin:0 0 16px">' + escapeHtml(goal.name) + ' · ' + fmtMoney(Math.max(goal.targetAmount - p.saved, 0)) + ' remaining</p>';
+    html += '<form id="goal-contribution-form">';
+    html += '<div class="field"><label>Amount</label><input type="number" step="0.01" min="0.01" name="amount" required /></div>';
+    html += '<div class="field"><label>From</label><select name="bankCard"><option value="">None</option>';
+    allBankCards().forEach(function (bc) {
+      html += '<option value="' + escapeAttr(bc) + '">' + escapeHtml(bc) + '</option>';
+    });
+    html += '</select></div>';
+    html += '<div class="field"><label>Date</label><input type="date" name="date" value="' + todayISO() + '" required /></div>';
+    html += '<button type="submit" class="btn primary">Add Contribution</button>';
+    html += '</form>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    document.getElementById("goal-contribution-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var f = new FormData(e.target);
+      var amount = parseFloat(f.get("amount"));
+      if (isNaN(amount) || amount <= 0) return;
+      state.transactions.push({
+        id: uid(), amount: amount, merchant: "Goal: " + goal.name, note: "",
+        date: f.get("date") || todayISO(), type: "expense", categoryId: null,
+        bankCard: f.get("bankCard") || null, isGoalContribution: true, goalId: goal.id
+      });
+      save(); closeModal(); renderAll();
+    });
+  }
+
+  function openGoalForm(id) {
+    var existing = id ? byId(state.goals, id) : null;
+    var html = '<div class="modal-head"><h3>' + (existing ? "Edit Goal" : "New Goal") + '</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<form id="goal-form">';
+    html += '<div class="field"><label>Name</label><input type="text" name="name" placeholder="e.g. Emergency Fund, Umrah Trip" value="' + escapeAttr(existing ? existing.name : "") + '" required /></div>';
+    html += '<div class="field"><label>Target Amount</label><input type="number" step="0.01" min="0.01" name="targetAmount" value="' + (existing ? existing.targetAmount : "") + '" required /></div>';
+    html += '<div class="field"><label>Target Date (optional)</label><input type="date" name="targetDate" value="' + (existing && existing.targetDate ? existing.targetDate : "") + '" />';
+    html += '<div class="footnote">Set this to get a heads-up if you fall behind the pace needed to hit the goal in time.</div></div>';
+    html += '<button type="submit" class="btn primary" style="margin-top:8px">Save</button>';
+    if (existing) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
+    html += '</form>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+
+    if (existing) document.querySelector("[data-delete]").addEventListener("click", function () {
+      confirmAction("Delete this goal? Its contribution history in Transactions is kept.", "Delete", function () {
+        state.goals = state.goals.filter(function (g) { return g.id !== existing.id; });
+        save(); renderAll();
+      });
+    });
+
+    document.getElementById("goal-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var f = new FormData(e.target);
+      var record = {
+        id: existing ? existing.id : uid(),
+        name: f.get("name").trim(),
+        targetAmount: parseFloat(f.get("targetAmount")),
+        targetDate: f.get("targetDate") || null,
+        createdAt: existing ? existing.createdAt : todayISO()
+      };
+      if (isNaN(record.targetAmount) || !record.name) return;
+      if (existing) {
+        var idx = state.goals.findIndex(function (g) { return g.id === existing.id; });
+        state.goals[idx] = record;
+      } else {
+        state.goals.push(record);
+      }
+      save(); closeModal(); renderAll();
+    });
+  }
+
   /* ---------- render: forecast ---------- */
 
   function renderForecast() {
@@ -3188,7 +3471,7 @@
     var actualMatrix = {};
     var actualTotals = {};
     state.transactions.forEach(function (t) {
-      if (t.type !== "expense" || t.isTransfer) return;
+      if (t.type !== "expense" || t.isTransfer || t.isGoalContribution) return;
       if (t.date < windowStart || t.date >= windowEnd) return;
       var catKey = t.categoryId || "__none";
       var mk = monthKeyOf(t.date);
@@ -3769,6 +4052,17 @@
     });
     html += '</select></div>';
 
+    html += '<div class="card"><h2>Theme Color</h2><div class="accent-grid">';
+    ACCENT_PRESETS.forEach(function (p) {
+      var selected = (state.settings.accentColor || "teal") === p.key;
+      html += '<button type="button" class="accent-opt' + (selected ? " selected" : "") + '" data-accent-pick="' + p.key + '" aria-label="' + p.name + '">';
+      html += '<span class="accent-swatch" style="background:' + p.hex + '">' + icon("check") + '</span>';
+      html += '<span class="lbl">' + p.name + '</span></button>';
+    });
+    html += '</div>';
+    html += '<p class="footnote" style="margin-top:14px;margin-bottom:0">Curated presets rather than a full color wheel, so button text and the paid/overdue/warning colors stay legible against whatever you pick.</p>';
+    html += '</div>';
+
     html += '<div class="card"><h2>Account</h2>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in as " + escapeHtml(auth.currentUser.email) + " — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
     if (cloudEnabled && auth && auth.currentUser) html += '<button class="btn plain" id="change-pin" style="margin-bottom:10px">Change PIN</button>';
@@ -3799,6 +4093,13 @@
     document.getElementById("currency-select").addEventListener("change", function (e) {
       state.settings.currency = e.target.value;
       save(); renderAll();
+    });
+    document.querySelectorAll("#tab-settings [data-accent-pick]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.settings.accentColor = btn.getAttribute("data-accent-pick");
+        applyAccentColor();
+        save(); renderSettings();
+      });
     });
     var changePinBtn = document.getElementById("change-pin");
     if (changePinBtn) changePinBtn.addEventListener("click", openChangePinForm);
@@ -3972,6 +4273,7 @@
     renderRecurring();
     renderForecast();
     renderLoans();
+    renderGoals();
     renderCardsPage();
     renderCategoriesPage();
     renderTransfer();
