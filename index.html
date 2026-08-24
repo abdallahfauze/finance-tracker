@@ -1788,15 +1788,20 @@
   /* The floating bubble used to open the quick calculator directly; it now
      fans this speed-dial menu out above itself instead, with Calculator as
      one of its entries. Everything reachable here used to require the
-     header's 3-line "More" menu, which this replaces entirely. */
+     header's 3-line "More" menu, which this replaces entirely.
+     .speed-dial-items is column-reverse (see its CSS), so the fab-closest,
+     bottom-most item on screen is this array's FIRST entry and the
+     top-most item is its LAST - this list is ordered bottom-to-top to read
+     top-to-bottom on screen as: Add Cards, Categories, Transfer, Goals,
+     Forecast, Calculator, Settings. */
   var SHORTCUT_MENU_ITEMS = [
+    { tab: "settings", icon: "sliders", label: "Settings" },
+    { action: "calculator", icon: "calculator", label: "Calculator" },
     { tab: "forecast", icon: "grid", label: "Forecast" },
     { tab: "goals", icon: "target", label: "Goals" },
-    { tab: "cards", icon: "card", label: "Add Cards" },
-    { tab: "categories", icon: "tag", label: "Categories" },
     { tab: "transfer", icon: "swap", label: "Transfer" },
-    { tab: "settings", icon: "sliders", label: "Settings" },
-    { action: "calculator", icon: "calculator", label: "Calculator" }
+    { tab: "categories", icon: "tag", label: "Categories" },
+    { tab: "cards", icon: "card", label: "Add Cards" }
   ];
 
   var speedDialOpen = false;
