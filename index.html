@@ -2213,6 +2213,7 @@
     html += '</div></div>';
 
     html += renderBudgetsCard(byCat);
+    html += renderNetWorthCard();
     html += renderTotalFundsCard();
     html += renderGoalsDashboardCard();
     html += renderBankCardSummary(range);
@@ -2674,6 +2675,45 @@
      Expenses, no separate Transfers line needed. Credit cards aren't
      included in the debit total itself: a credit limit isn't money you
      actually have, it's money you can borrow. */
+  /* A real-time snapshot (not scoped to the dashboard's Month/Year period,
+     same as Total Available Funds below it) - Available Funds is every
+     debit card's running balance as of today (openingBalanceAt with
+     tomorrow as the cutoff, so today's own transactions are included).
+     Liabilities is what's actually owed right now: each credit card's
+     all-time expensed minus all-time paid down (floored at 0 - an
+     overpaid card isn't a negative liability), plus every active,
+     not-yet-paid-off loan's remaining balance. */
+  function renderNetWorthCard() {
+    if (!allBankCards().length && !state.loans.length) return "";
+
+    var tomorrow = new Date(today());
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    var asOf = tomorrow.getFullYear() + "-" + pad(tomorrow.getMonth() + 1) + "-" + pad(tomorrow.getDate());
+    var EPOCH = "0001-01-01";
+
+    var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
+    var creditCards = allBankCards().filter(function (l) { return bankCardType(l) === "credit"; });
+
+    var availableFunds = debitCards.reduce(function (s, l) { return s + openingBalanceAt(l, asOf); }, 0);
+    var creditOwed = creditCards.reduce(function (s, l) {
+      var owed = expensedInRange(l, EPOCH, asOf) - incomeInRange(l, EPOCH, asOf);
+      return s + Math.max(owed, 0);
+    }, 0);
+    var loanBalance = state.loans
+      .filter(function (l) { return l.isActive && !loanProgress(l).isPaidOff; })
+      .reduce(function (s, l) { return s + loanProgress(l).balance; }, 0);
+
+    var liabilities = creditOwed + loanBalance;
+    var netWorth = availableFunds - liabilities;
+
+    var html = '<div class="card"><h2>Net Worth</h2>';
+    html += '<p class="hero-num num" style="font-size:28px;margin:0 0 14px;color:' + (netWorth < 0 ? "var(--critical)" : "var(--ink)") + '">' + fmtMoney(netWorth) + '</p>';
+    html += '<div class="disclosure" style="margin-bottom:8px"><span>Available Funds</span><span class="num">' + fmtMoney(availableFunds) + '</span></div>';
+    html += '<div class="disclosure"><span>Liabilities</span><span class="num">' + (liabilities > 0 ? "-" : "") + fmtMoney(liabilities) + '</span></div>';
+    html += '</div>';
+    return html;
+  }
+
   function renderTotalFundsCard() {
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
     if (!debitCards.length) return "";
