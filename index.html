@@ -2430,11 +2430,18 @@
       " Z";
   }
 
-  /* Picks readable text ink for a wedge's own fill rather than a fixed
-     white - resolves the CSS color (a var(--catN) reference) to its actual
-     rendered RGB via a throwaway probe element, since the categorical
-     palette's lighter hues (yellow, aqua) don't clear contrast with white. */
-  function donutLabelColor(cssColor) {
+  /* Resolves any CSS color (a var(--catN) reference included) to its
+     actual rendered [r, g, b] via a throwaway probe element - works
+     everywhere, unlike color-mix(), which the donut's gradients used to
+     lean on directly inside SVG stop-color/fill attributes. That
+     combination (a CSS Color Level 5 function, nested var() resolution,
+     inside an SVG presentation attribute rather than a stylesheet) needs a
+     fairly recent Chromium and can silently fail on an older WebView -
+     MoneyQuill's Android build (same donut code, ported from here) hit
+     exactly that: the whole donut rendered invisibly on-device despite
+     looking correct in desktop/mobile browser testing. Resolving here and
+     blending manually below sidesteps the compatibility gap entirely. */
+  function resolveColorRgb(cssColor) {
     var probe = document.createElement("span");
     probe.style.color = cssColor;
     probe.style.display = "none";
@@ -2442,10 +2449,28 @@
     var resolved = getComputedStyle(probe).color;
     document.body.removeChild(probe);
     var m = resolved.match(/[\d.]+/g);
-    if (!m) return "#ffffff";
-    var r = m[0] / 255, g = m[1] / 255, b = m[2] / 255;
-    var lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    return m ? [Number(m[0]), Number(m[1]), Number(m[2])] : [0, 0, 0];
+  }
+
+  /* Picks readable text ink for a wedge's own fill rather than a fixed
+     white, since the categorical palette's lighter hues (yellow, aqua)
+     don't clear contrast with white. */
+  function donutLabelColor(cssColor) {
+    var rgb = resolveColorRgb(cssColor);
+    var lum = 0.2126 * (rgb[0] / 255) + 0.7152 * (rgb[1] / 255) + 0.0722 * (rgb[2] / 255);
     return lum > 0.6 ? "#171717" : "#ffffff";
+  }
+
+  /* Mirrors color-mix(in srgb, cssColor <pct*100>%, mixWithRgb) - blends
+     pct of cssColor's resolved RGB with the given RGB, in plain rgb()
+     output rather than a CSS function, so it renders identically
+     everywhere. */
+  function mixColor(cssColor, pct, mixWithRgb) {
+    var rgb = resolveColorRgb(cssColor);
+    var mr = Math.round(rgb[0] * pct + mixWithRgb[0] * (1 - pct));
+    var mg = Math.round(rgb[1] * pct + mixWithRgb[1] * (1 - pct));
+    var mb = Math.round(rgb[2] * pct + mixWithRgb[2] * (1 - pct));
+    return "rgb(" + mr + ", " + mg + ", " + mb + ")";
   }
 
   /* The ring itself is capped at the validated 8-hue categorical palette
@@ -2512,11 +2537,12 @@
       // plus a darker twin sitting underneath is what sells the slice as
       // having thickness rather than being a flat tinted shape.
       var gradId = "donut-grad-" + i;
+      var gradStart = mixColor(seg.color, 0.55, [255, 255, 255]);
       defsSvg += '<radialGradient id="' + gradId + '" cx="35%" cy="30%" r="75%">' +
-        '<stop offset="0%" stop-color="color-mix(in srgb, ' + seg.color + ' 55%, white)" />' +
+        '<stop offset="0%" stop-color="' + gradStart + '" />' +
         '<stop offset="100%" stop-color="' + seg.color + '" />' +
         '</radialGradient>';
-      var shadowColor = "color-mix(in srgb, " + seg.color + " 72%, black)";
+      var shadowColor = mixColor(seg.color, 0.72, [0, 0, 0]);
       shadowsSvg += '<path class="donut-seg-shadow" data-seg="' + i + '" d="' + d + '" fill="' + shadowColor + '" style="' + styleVars + '"></path>';
       wedgesSvg += '<path class="donut-seg" data-seg="' + i + '" d="' + d + '" fill="url(#' + gradId + ')" style="' + styleVars + '"></path>';
 
