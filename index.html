@@ -2226,18 +2226,24 @@
     html += renderSpendingTrendCard();
 
     if (isCurrentMonthPeriod(viewPeriod)) {
-      var upcoming = state.recurring.filter(function (r) { return r.isActive && r.kind !== "income" && daysUntil(r.nextDueDate) <= 30; })
-        .sort(function (a, b) { return a.nextDueDate < b.nextDueDate ? -1 : 1; });
+      var upcomingBills = state.recurring
+        .filter(function (r) { return r.isActive && r.kind !== "income" && daysUntil(r.nextDueDate) <= 30; })
+        .map(function (r) { return { kind: "recurring", id: r.id, name: r.name, categoryId: r.categoryId, dueDate: r.nextDueDate, amount: r.amount }; });
+      var upcomingLoans = state.loans
+        .filter(function (l) { return l.isActive && !loanProgress(l).isPaidOff && daysUntil(l.nextPaymentDate) <= 30; })
+        .map(function (l) { return { kind: "loan", id: l.id, name: l.name, categoryId: l.categoryId, dueDate: l.nextPaymentDate, amount: l.monthlyPayment }; });
+      var upcoming = upcomingBills.concat(upcomingLoans)
+        .sort(function (a, b) { return a.dueDate < b.dueDate ? -1 : 1; });
       if (upcoming.length) {
         html += '<div class="card"><h2>Upcoming Bills</h2>';
-        upcoming.forEach(function (r) {
-          var cat = byId(state.categories, r.categoryId);
-          var d = daysUntil(r.nextDueDate);
-          html += '<div class="row" data-open-recurring="' + r.id + '">';
+        upcoming.forEach(function (item) {
+          var cat = byId(state.categories, item.categoryId);
+          var d = daysUntil(item.dueDate);
+          html += '<div class="row" data-open-' + item.kind + '="' + item.id + '">';
           html += badgeHtml(cat, 30);
-          html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + fmtDateShort(r.nextDueDate) + '</div></div>';
+          html += '<div class="main"><div class="title">' + escapeHtml(item.name) + '</div><div class="meta">' + fmtDateShort(item.dueDate) + (item.kind === "loan" ? " · Loan" : "") + '</div></div>';
           if (d <= 3) html += dueChip(d);
-          html += '<div class="amount num">' + fmtMoney(r.amount) + '</div>';
+          html += '<div class="amount num">' + fmtMoney(item.amount) + '</div>';
           html += '</div>';
         });
         html += '</div>';
@@ -2734,6 +2740,9 @@
   function wireDashboardEvents() {
     document.querySelectorAll("#tab-dashboard [data-open-recurring]").forEach(function (el) {
       el.addEventListener("click", function () { openRecurringForm(el.getAttribute("data-open-recurring")); });
+    });
+    document.querySelectorAll("#tab-dashboard [data-open-loan]").forEach(function (el) {
+      el.addEventListener("click", function () { openLoanForm(el.getAttribute("data-open-loan")); });
     });
     var goGoalsBtn = document.querySelector("#tab-dashboard [data-go-goals]");
     if (goGoalsBtn) goGoalsBtn.addEventListener("click", function () { setTab("goals"); });
