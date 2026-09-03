@@ -2370,6 +2370,21 @@
     return initial + priorNet;
   }
 
+  /* A credit card's balance owed carries forward exactly like a debit
+     card's opening balance does (see openingBalanceAt above), just in
+     the opposite direction: every expense before the period increases
+     what's owed, every payment before it decreases what's owed. Without
+     this, "Used" only reflected the current period's own charges and
+     silently dropped any unpaid balance the moment the month rolled
+     over - the same all-time carry-forward the Net Worth card's
+     Liabilities figure already does correctly (see renderNetWorthCard),
+     just missing here on the Cards page itself. */
+  function creditOwedBefore(label, periodStartISO) {
+    return state.transactions
+      .filter(function (t) { return t.bankCard === label && t.date < periodStartISO && (t.type === "expense" || t.type === "income"); })
+      .reduce(function (s, t) { return s + (t.type === "expense" ? t.amount : -t.amount); }, 0);
+  }
+
   function renderBankCardSummary(range) {
     var debitCards = allBankCards().filter(function (l) { return bankCardType(l) === "debit"; });
     var creditCards = allBankCards().filter(function (l) { return bankCardType(l) === "credit"; });
@@ -2391,12 +2406,14 @@
     html += '<div class="card"><h2>Credit Cards (Visa / Mastercard)</h2>';
     creditCards.forEach(function (label) {
       var limit = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
-      var used = expensedInRange(label, range.start, range.end);
-      var refunded = incomeInRange(label, range.start, range.end);
-      var available = limit + refunded - used;
+      var owedBefore = creditOwedBefore(label, range.start);
+      var usedThisPeriod = expensedInRange(label, range.start, range.end);
+      var paidThisPeriod = incomeInRange(label, range.start, range.end);
+      var used = owedBefore + usedThisPeriod - paidThisPeriod;
+      var available = limit - used;
       var pct = limit > 0 ? Math.min(Math.max(used / limit, 0), 1) : 0;
       var status = available < 0 ? "critical" : utilStatus(pct);
-      html += bankCardRow(label, "Limit", limit, "Used", used, available, status, pct, refunded);
+      html += bankCardRow(label, "Limit", limit, "Used", used, available, status, pct, paidThisPeriod);
     });
     html += '</div>';
 
