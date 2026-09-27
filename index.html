@@ -485,6 +485,7 @@
   .badge svg { width: 16px; height: 16px; }
   .row .main { flex: 1; min-width: 0; }
   .row .title { font-size: 14.5px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .review-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--warning); margin-right: 6px; flex-shrink: 0; vertical-align: middle; }
   .row .meta { font-size: 12px; color: var(--ink-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .row .amount { font-size: 14.5px; flex-shrink: 0; }
   .row .amount.income { color: var(--good); }
@@ -951,6 +952,9 @@
   </symbol>
   <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+  </symbol>
+  <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-5-5L5 21" />
   </symbol>
   <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
@@ -1709,6 +1713,88 @@
     if (!candidates.length) return null;
     candidates.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
     return candidates[0].categoryId;
+  }
+
+  /* ---------- import transactions from a screenshot ----------
+     Sends one image (bank SMS thread, in-app transaction list, or receipt)
+     to a small serverless function that asks a vision model to pull out
+     every transaction it can find. Each one gets added directly (not
+     staged for approval first) with needsReview:true, so it shows up
+     immediately with the small dot from .review-dot next to it (see
+     renderTransactions()) - the user verifies/edits it later via the
+     normal edit-transaction flow, which naturally clears the flag since
+     that flow always rebuilds the record fresh from the form fields. */
+  var SCREENSHOT_IMPORT_API = "https://finance-tracker-screenshot-import.vercel.app/api/parse-screenshot";
+
+  function fileToBase64(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function () {
+        var result = reader.result;
+        var idx = result.indexOf(",");
+        resolve(idx === -1 ? result : result.slice(idx + 1));
+      };
+      reader.onerror = function () { reject(new Error("Could not read that file")); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function importTransactionsFromScreenshot(file) {
+    var btn = document.getElementById("tx-import-btn");
+    var originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span>Reading screenshot...</span>';
+
+    fileToBase64(file).then(function (base64) {
+      return fetch(SCREENSHOT_IMPORT_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64, mediaType: file.type || "image/jpeg" })
+      });
+    }).then(function (res) {
+      return res.json().then(function (data) {
+        if (!res.ok) throw new Error(data.error || "Import failed");
+        return data;
+      });
+    }).then(function (data) {
+      var found = data.transactions || [];
+      var added = 0;
+      found.forEach(function (t) {
+        var amount = parseFloat(t.amount);
+        if (isNaN(amount) || amount <= 0) return;
+        var merchant = (t.merchant || "").trim() || "Unknown merchant";
+        var type = t.type === "income" ? "income" : "expense";
+        var date = (t.date && /^\d{4}-\d{2}-\d{2}$/.test(t.date)) ? t.date : todayISO();
+        var categoryId = suggestCategoryFromHistory(merchant) || suggestCategory(merchant);
+        state.transactions.push({
+          id: uid(),
+          amount: amount,
+          merchant: merchant,
+          note: "",
+          date: date,
+          type: type,
+          categoryId: categoryId || null,
+          bankCard: null,
+          isGoalContribution: false,
+          goalId: null,
+          needsReview: true
+        });
+        added++;
+      });
+      if (added) {
+        assignCategorySlots();
+        save();
+        renderAll();
+        showMessage(added + " transaction" + (added === 1 ? "" : "s") + " imported - look for the dot next to each one and check it's correct.");
+      } else {
+        showMessage("Couldn't find any transactions in that screenshot.");
+      }
+    }).catch(function (err) {
+      showMessage(err.message || "Something went wrong importing that screenshot.");
+    }).then(function () {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    });
   }
 
   function icon(name, extraClass) {
@@ -2874,6 +2960,9 @@
 
     var html = '<div class="search-wrap">' + icon("search") + '<input type="text" id="tx-search" placeholder="Search merchant or note" value="' + escapeAttr(txSearch) + '" /></div>';
 
+    html += '<button type="button" class="btn plain" id="tx-import-btn" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;justify-content:center">' + icon("image") + '<span>Import from Screenshot</span></button>';
+    html += '<input type="file" id="tx-import-input" accept="image/*" style="display:none" />';
+
     html += '<select id="tx-filter-cat" style="margin-bottom:10px">';
     html += '<option value="">All categories</option>';
     state.categories.forEach(function (c) {
@@ -2936,7 +3025,7 @@
           var cat = byId(state.categories, t.categoryId);
           html += '<div class="row" data-open-tx="' + t.id + '">';
           html += badgeHtml(cat, 34);
-          html += '<div class="main"><div class="title">' + escapeHtml(t.merchant) + '</div>';
+          html += '<div class="main"><div class="title">' + (t.needsReview ? '<span class="review-dot" title="Imported from a screenshot - check this transaction"></span>' : '') + escapeHtml(t.merchant) + '</div>';
           html += '<div class="meta">' + (cat ? escapeHtml(cat.name) : "Uncategorized") + (t.bankCard ? " · " + escapeHtml(t.bankCard) : "") + (t.note ? " · " + escapeHtml(t.note) : "") + '</div></div>';
           html += '<div class="amount num' + (t.type === "income" ? " income" : "") + '">' + (t.type === "income" ? "+" : "") + fmtMoney(t.amount) + '</div>';
           html += '</div>';
@@ -2970,6 +3059,14 @@
     document.getElementById("tx-filter-cat").addEventListener("change", function (e) { txFilterCat = e.target.value; renderTransactions(); });
     document.getElementById("tx-filter-bank").addEventListener("change", function (e) { txFilterBank = e.target.value; renderTransactions(); });
     document.getElementById("tx-filter-month").addEventListener("change", function (e) { txFilterMonth = e.target.value; renderTransactions(); });
+    document.getElementById("tx-import-btn").addEventListener("click", function () {
+      document.getElementById("tx-import-input").click();
+    });
+    document.getElementById("tx-import-input").addEventListener("change", function (e) {
+      var file = e.target.files && e.target.files[0];
+      e.target.value = ""; // allow re-selecting the same file next time
+      if (file) importTransactionsFromScreenshot(file);
+    });
     document.querySelectorAll("#tab-transactions [data-open-tx]").forEach(function (el) {
       el.addEventListener("click", function () { openTransactionForm(el.getAttribute("data-open-tx")); });
     });
