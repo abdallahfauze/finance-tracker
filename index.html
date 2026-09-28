@@ -2624,7 +2624,7 @@
   function renderDonut(byCat, total) {
     var SQUASH_Y = 0.6, WALL_DEPTH = 14;
     var cx = 88, cy = 88 - WALL_DEPTH / 2, rOuter = 74, rInner = 0, rLabel = rOuter * 0.6;
-    var gapRad = 0.045, explodeDist = 6;
+    var gapRad = 0.045, explodeDist = 3;
 
     var ordered = state.categories.filter(function (c) { return c.slot !== null && c.slot !== undefined; })
       .sort(function (a, b) { return a.slot - b.slot; });
