@@ -354,21 +354,23 @@
      .donut-wrap are what turn that resting render into a scroll-triggered
      wiggle-into-place entrance instead.
 
-     The 3D read comes from .donut-seg-shadow: a darker copy of the exact
-     same wedge shape, sitting directly beneath the real (gradient-filled)
-     wedge and offset a fixed 6px down via the standalone `translate`
-     property - deliberately NOT part of the `transform` shorthand, so it
-     composes with whatever `transform` (explode offset, wiggle-in, hover
-     pop) is active on that wedge at any moment instead of needing its own
-     duplicate keyframes. The result reads as the wedge's own extruded
-     underside, like a thick slice of cake. */
+     The 3D read comes from two things working together: the whole chart's
+     geometry is squashed into an ellipse (SQUASH_Y in renderDonut(), an
+     isometric-style tilt) rather than a flat top-down circle, and every
+     wedge's actual side wall (wedgeWallPath() - its full silhouette,
+     straight cut edges and curved rim alike, extruded straight down by
+     WALL_DEPTH) is drawn as .donut-seg-shadow directly beneath the real
+     gradient-filled top face (.donut-seg). Both classes share the same
+     --tx/--ty transform so the wall rides along with its top face through
+     every explode/wiggle-in/hover animation below with no extra keyframes
+     of its own - only their `d` (the shapes themselves) differ. */
   .donut-seg, .donut-seg-shadow, .donut-seg-label {
     transform-box: fill-box; transform-origin: center;
     transform: translate(var(--tx), var(--ty)) scale(1);
     opacity: 1;
     transition: transform .15s ease, opacity .15s ease, translate .15s ease;
   }
-  .donut-seg-shadow { translate: 0 6px; pointer-events: none; }
+  .donut-seg-shadow { pointer-events: none; }
   .donut-seg-label {
     font-size: 11px; font-weight: 700;
     text-anchor: middle; dominant-baseline: central;
@@ -2521,17 +2523,50 @@
     return html;
   }
 
-  function donutWedgePath(cx, cy, rInner, rOuter, a0, a1) {
+  /* squashY < 1 flattens the circle into an ellipse - the standard trick
+     for reading a flat 2D shape as a disc viewed from above at an angle
+     (isometric-style) rather than dead-on. Applied to every y coordinate
+     and to the arc's y-radius so the curve itself is elliptical too, not
+     just the points. */
+  function donutWedgePath(cx, cy, rInner, rOuter, a0, a1, squashY) {
     var largeArc = (a1 - a0) > Math.PI ? 1 : 0;
-    var p0x = cx + rOuter * Math.cos(a0), p0y = cy + rOuter * Math.sin(a0);
-    var p1x = cx + rOuter * Math.cos(a1), p1y = cy + rOuter * Math.sin(a1);
-    var p2x = cx + rInner * Math.cos(a1), p2y = cy + rInner * Math.sin(a1);
-    var p3x = cx + rInner * Math.cos(a0), p3y = cy + rInner * Math.sin(a0);
+    var p0x = cx + rOuter * Math.cos(a0), p0y = cy + rOuter * Math.sin(a0) * squashY;
+    var p1x = cx + rOuter * Math.cos(a1), p1y = cy + rOuter * Math.sin(a1) * squashY;
+    var p2x = cx + rInner * Math.cos(a1), p2y = cy + rInner * Math.sin(a1) * squashY;
+    var p3x = cx + rInner * Math.cos(a0), p3y = cy + rInner * Math.sin(a0) * squashY;
     return "M" + p0x.toFixed(2) + "," + p0y.toFixed(2) +
-      " A" + rOuter + "," + rOuter + " 0 " + largeArc + " 1 " + p1x.toFixed(2) + "," + p1y.toFixed(2) +
+      " A" + rOuter + "," + (rOuter * squashY).toFixed(2) + " 0 " + largeArc + " 1 " + p1x.toFixed(2) + "," + p1y.toFixed(2) +
       " L" + p2x.toFixed(2) + "," + p2y.toFixed(2) +
-      " A" + rInner + "," + rInner + " 0 " + largeArc + " 0 " + p3x.toFixed(2) + "," + p3y.toFixed(2) +
+      " A" + rInner + "," + (rInner * squashY).toFixed(2) + " 0 " + largeArc + " 0 " + p3x.toFixed(2) + "," + p3y.toFixed(2) +
       " Z";
+  }
+
+  /* The extruded "side" of one wedge - not a flat duplicate shifted down
+     (which reads as a drop shadow, not a solid edge), but an actual wall
+     following the wedge's full silhouette: both straight radial cuts and
+     the curved outer rim, each rendered as its own quad running from the
+     top surface down to top+depth. Built as one multi-subpath `d` string
+     (a plain SVG path can hold any number of "M...Z" pieces and still
+     fill as a single shape) so it stays one <path> element - the same
+     shape used to work with the existing bounce/explode CSS, which only
+     ever cares about the element's class, not what's inside `d`. */
+  function wedgeWallPath(cx, cy, rOuter, a0, a1, squashY, depth) {
+    var steps = Math.max(2, Math.ceil((a1 - a0) / (Math.PI / 18)));
+    var pts = [[cx, cy]];
+    for (var i = 0; i <= steps; i++) {
+      var a = a0 + (a1 - a0) * (i / steps);
+      pts.push([cx + rOuter * Math.cos(a), cy + rOuter * Math.sin(a) * squashY]);
+    }
+    pts.push([cx, cy]);
+    var d = "";
+    for (var j = 0; j < pts.length - 1; j++) {
+      var p = pts[j], q = pts[j + 1];
+      d += "M" + p[0].toFixed(2) + "," + p[1].toFixed(2) +
+        "L" + q[0].toFixed(2) + "," + q[1].toFixed(2) +
+        "L" + q[0].toFixed(2) + "," + (q[1] + depth).toFixed(2) +
+        "L" + p[0].toFixed(2) + "," + (p[1] + depth).toFixed(2) + "Z";
+    }
+    return d;
   }
 
   /* Resolves any CSS color (a var(--catN) reference included) to its
@@ -2587,7 +2622,8 @@
      labeled "Uncategorized" - a category without a color slot is never
      mistaken for one. */
   function renderDonut(byCat, total) {
-    var cx = 88, cy = 88, rOuter = 74, rInner = 0, rLabel = rOuter * 0.6;
+    var SQUASH_Y = 0.6, WALL_DEPTH = 14;
+    var cx = 88, cy = 88 - WALL_DEPTH / 2, rOuter = 74, rInner = 0, rLabel = rOuter * 0.6;
     var gapRad = 0.045, explodeDist = 6;
 
     var ordered = state.categories.filter(function (c) { return c.slot !== null && c.slot !== undefined; })
@@ -2633,32 +2669,41 @@
       var pa0 = a0 + pad, pa1 = a1 - pad;
       var mid = (pa0 + pa1) / 2;
       var tx = (Math.cos(mid) * explodeDist).toFixed(2);
-      var ty = (Math.sin(mid) * explodeDist).toFixed(2);
-      var d = donutWedgePath(cx, cy, rInner, rOuter, pa0, pa1);
+      var ty = (Math.sin(mid) * explodeDist * SQUASH_Y).toFixed(2);
+      var d = donutWedgePath(cx, cy, rInner, rOuter, pa0, pa1, SQUASH_Y);
+      var wallD = wedgeWallPath(cx, cy, rOuter, pa0, pa1, SQUASH_Y, WALL_DEPTH);
       var styleVars = "--tx:" + tx + "px;--ty:" + ty + "px;--i:" + i;
 
       // A radial highlight (light near the center, true color at the rim)
-      // plus a darker twin sitting underneath is what sells the slice as
-      // having thickness rather than being a flat tinted shape.
+      // is what sells the top face as a lit, slightly curved surface
+      // rather than a flat tinted shape; the wall beneath (wedgeWallPath,
+      // flat dark fill, no gradient) is what actually reads as thickness.
       var gradId = "donut-grad-" + i;
       var gradStart = mixColor(seg.color, 0.55, [255, 255, 255]);
       defsSvg += '<radialGradient id="' + gradId + '" cx="35%" cy="30%" r="75%">' +
         '<stop offset="0%" stop-color="' + gradStart + '" />' +
         '<stop offset="100%" stop-color="' + seg.color + '" />' +
         '</radialGradient>';
-      var shadowColor = mixColor(seg.color, 0.72, [0, 0, 0]);
-      shadowsSvg += '<path class="donut-seg-shadow" data-seg="' + i + '" d="' + d + '" fill="' + shadowColor + '" style="' + styleVars + '"></path>';
+      var shadowColor = mixColor(seg.color, 0.6, [0, 0, 0]);
+      shadowsSvg += '<path class="donut-seg-shadow" data-seg="' + i + '" d="' + wallD + '" fill="' + shadowColor + '" style="' + styleVars + '"></path>';
       wedgesSvg += '<path class="donut-seg" data-seg="' + i + '" d="' + d + '" fill="url(#' + gradId + ')" style="' + styleVars + '"></path>';
 
       var pct = Math.round(frac * 100);
       if (pct >= 6) {
         var lx = (cx + Math.cos(mid) * rLabel).toFixed(2);
-        var ly = (cy + Math.sin(mid) * rLabel).toFixed(2);
+        var ly = (cy + Math.sin(mid) * rLabel * SQUASH_Y).toFixed(2);
         labelsSvg += '<text class="donut-seg-label" data-seg="' + i + '" x="' + lx + '" y="' + ly + '" fill="' + donutLabelColor(seg.color) + '" style="' + styleVars + '">' + pct + '%</text>';
       }
     });
 
-    var svg = '<svg viewBox="0 0 176 176" class="donut-svg"><defs>' + defsSvg + '</defs>' + shadowsSvg + wedgesSvg + labelsSvg + '</svg>';
+    // A soft blurred ellipse under the whole shape sells it as an object
+    // resting on a surface rather than floating flat against the page -
+    // feGaussianBlur is basic SVG 1.1, safe on any WebView old enough to
+    // matter here (unlike color-mix(), see resolveColorRgb() above).
+    var groundShadowD = '<ellipse cx="' + cx + '" cy="' + (cy + rOuter * SQUASH_Y + WALL_DEPTH + 5).toFixed(2) + '" rx="' + (rOuter * 0.94).toFixed(2) + '" ry="' + (rOuter * SQUASH_Y * 0.24).toFixed(2) + '" fill="rgba(0,0,0,0.18)" filter="url(#donut-ground-blur)"></ellipse>';
+    var groundFilter = '<filter id="donut-ground-blur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.5" /></filter>';
+
+    var svg = '<svg viewBox="0 0 176 176" class="donut-svg"><defs>' + groundFilter + defsSvg + '</defs>' + groundShadowD + shadowsSvg + wedgesSvg + labelsSvg + '</svg>';
 
     var html = '<div class="donut-wrap">' + svg + '</div>' +
       '<div class="donut-total"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div>';
