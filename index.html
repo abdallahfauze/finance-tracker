@@ -2578,23 +2578,44 @@
      (a plain SVG path can hold any number of "M...Z" pieces and still
      fill as a single shape) so it stays one <path> element - the same
      shape used to work with the existing bounce/explode CSS, which only
-     ever cares about the element's class, not what's inside `d`. */
+     ever cares about the element's class, not what's inside `d`.
+
+     Only the front half of a tilted disc's rim actually has visible
+     thickness - the far/back half's wall is physically occluded by the
+     disc's own bulk, the same reason you can't see the far edge of a
+     tilted coin. Drawing a full-height wall all the way around (the
+     previous version of this function) is what made the wedges sitting
+     near the back of the disc - inevitably the smaller slices, since the
+     big ones dominate the front - look like a flat colored top plate
+     with an unrelated dark plate floating under it rather than one solid
+     3D shape: there was no front rim there to explain the dark shape's
+     presence. frontDepth() below fades each point's wall height to zero
+     by sin(angle) (our convention: sin>0 is the near/bottom half of the
+     ellipse, i.e. toward the viewer) instead of a hard cutoff, so the
+     wall tapers smoothly to nothing right at the silhouette edge instead
+     of snapping off into a visible shelf. */
+  function frontDepth(a, depth) { return depth * Math.max(0, Math.sin(a)); }
+  function wallQuad(px, py, qx, qy, pDepth, qDepth) {
+    return "M" + px.toFixed(2) + "," + py.toFixed(2) +
+      "L" + qx.toFixed(2) + "," + qy.toFixed(2) +
+      "L" + qx.toFixed(2) + "," + (qy + qDepth).toFixed(2) +
+      "L" + px.toFixed(2) + "," + (py + pDepth).toFixed(2) + "Z";
+  }
   function wedgeWallPath(cx, cy, rOuter, a0, a1, squashY, depth) {
-    var steps = Math.max(2, Math.ceil((a1 - a0) / (Math.PI / 18)));
-    var pts = [[cx, cy]];
+    var steps = Math.max(4, Math.ceil((a1 - a0) / (Math.PI / 36)));
+    var pts = [];
     for (var i = 0; i <= steps; i++) {
       var a = a0 + (a1 - a0) * (i / steps);
-      pts.push([cx + rOuter * Math.cos(a), cy + rOuter * Math.sin(a) * squashY]);
+      pts.push({ x: cx + rOuter * Math.cos(a), y: cy + rOuter * Math.sin(a) * squashY, d: frontDepth(a, depth) });
     }
-    pts.push([cx, cy]);
     var d = "";
+    if (pts[0].d > 0.01) d += wallQuad(cx, cy, pts[0].x, pts[0].y, pts[0].d, pts[0].d);
     for (var j = 0; j < pts.length - 1; j++) {
       var p = pts[j], q = pts[j + 1];
-      d += "M" + p[0].toFixed(2) + "," + p[1].toFixed(2) +
-        "L" + q[0].toFixed(2) + "," + q[1].toFixed(2) +
-        "L" + q[0].toFixed(2) + "," + (q[1] + depth).toFixed(2) +
-        "L" + p[0].toFixed(2) + "," + (p[1] + depth).toFixed(2) + "Z";
+      if (p.d > 0.01 || q.d > 0.01) d += wallQuad(p.x, p.y, q.x, q.y, p.d, q.d);
     }
+    var last = pts[pts.length - 1];
+    if (last.d > 0.01) d += wallQuad(last.x, last.y, cx, cy, last.d, last.d);
     return d;
   }
 
