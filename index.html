@@ -2723,6 +2723,18 @@
     var lightCx = cx - rOuter * 0.4;
     var lightCy = cy - rOuter * SQUASH_Y * 0.55;
     var lightR = rOuter * 1.4;
+
+    // The wall's own vertical gradient, shared bounds for every wedge: it
+    // starts at the top face's own rim color (seg.color, unmixed - the
+    // same color the radial gradient above settles to at the rim) and
+    // only then darkens going down. A flat, pre-darkened wall color here
+    // instead creates a hard brightness jump right at the seam where the
+    // top face meets the wall, which is what makes the two pieces read as
+    // separate flat surfaces stacked together rather than one curved
+    // object - the gradient keeps the wall a continuation of the same lit
+    // surface instead of an unrelated dark panel glued on underneath.
+    var wallGradTopY = cy;
+    var wallGradBottomY = cy + rOuter * SQUASH_Y + WALL_DEPTH;
     ringSegments.forEach(function (seg, i) {
       var frac = seg.amt / total;
       var a0 = startAngle + cum * 2 * Math.PI;
@@ -2750,8 +2762,12 @@
         '<stop offset="0%" stop-color="' + gradStart + '" />' +
         '<stop offset="100%" stop-color="' + seg.color + '" />' +
         '</radialGradient>';
-      var shadowColor = mixColor(seg.color, 0.6, [0, 0, 0]);
-      shadowsSvg += '<path class="donut-seg-shadow" data-seg="' + i + '" d="' + wallD + '" fill="' + shadowColor + '" style="' + styleVars + '"></path>';
+      var wallGradId = "donut-wallgrad-" + i;
+      defsSvg += '<linearGradient id="' + wallGradId + '" gradientUnits="userSpaceOnUse" x1="0" y1="' + wallGradTopY.toFixed(2) + '" x2="0" y2="' + wallGradBottomY.toFixed(2) + '">' +
+        '<stop offset="0%" stop-color="' + seg.color + '" />' +
+        '<stop offset="100%" stop-color="' + mixColor(seg.color, 0.45, [0, 0, 0]) + '" />' +
+        '</linearGradient>';
+      shadowsSvg += '<path class="donut-seg-shadow" data-seg="' + i + '" d="' + wallD + '" fill="url(#' + wallGradId + ')" style="' + styleVars + '"></path>';
       wedgesSvg += '<path class="donut-seg" data-seg="' + i + '" d="' + d + '" fill="url(#' + gradId + ')" style="' + styleVars + '"></path>';
 
       var pct = Math.round(frac * 100);
