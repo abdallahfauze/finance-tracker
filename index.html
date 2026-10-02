@@ -1729,16 +1729,45 @@
      that flow always rebuilds the record fresh from the form fields. */
   var SCREENSHOT_IMPORT_API = "https://finance-tracker-screenshot-import.vercel.app/api/parse-screenshot";
 
-  function fileToBase64(file) {
+  function fileToDataUrl(file) {
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
-      reader.onload = function () {
-        var result = reader.result;
-        var idx = result.indexOf(",");
-        resolve(idx === -1 ? result : result.slice(idx + 1));
-      };
+      reader.onload = function () { resolve(reader.result); };
       reader.onerror = function () { reject(new Error("Could not read that file")); };
       reader.readAsDataURL(file);
+    });
+  }
+
+  // Re-encodes whatever the user picked as a JPEG via canvas before upload,
+  // instead of sending the raw file + its reported file.type. Two real
+  // failure modes this fixes: (1) a photo-library pick on iOS is often
+  // HEIC - File.type for those is unreliable (sometimes "", sometimes a
+  // type that doesn't match the actual bytes), and Gemini rejects image
+  // bytes that don't match the declared mime type; canvas always decodes
+  // the source via the browser's native image support and re-encodes to a
+  // format every client/server agrees on. (2) full-resolution phone camera
+  // photos can be several MB, pushing the base64 payload close to size/time
+  // limits - downscaling the long edge keeps things fast without losing any
+  // legibility a vision model needs.
+  function normalizeImageForUpload(file) {
+    return fileToDataUrl(file).then(function (dataUrl) {
+      return new Promise(function (resolve, reject) {
+        var img = new Image();
+        img.onload = function () {
+          var MAX_EDGE = 1800;
+          var scale = Math.min(1, MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
+          var w = Math.max(1, Math.round(img.naturalWidth * scale));
+          var h = Math.max(1, Math.round(img.naturalHeight * scale));
+          var canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          var jpegDataUrl = canvas.toDataURL("image/jpeg", 0.85);
+          resolve(jpegDataUrl.slice(jpegDataUrl.indexOf(",") + 1));
+        };
+        img.onerror = function () { reject(new Error("Could not read that image")); };
+        img.src = dataUrl;
+      });
     });
   }
 
@@ -1748,15 +1777,15 @@
     btn.disabled = true;
     btn.innerHTML = '<span>Reading screenshot...</span>';
 
-    fileToBase64(file).then(function (base64) {
+    normalizeImageForUpload(file).then(function (base64) {
       return fetch(SCREENSHOT_IMPORT_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64, mediaType: file.type || "image/jpeg" })
+        body: JSON.stringify({ image: base64, mediaType: "image/jpeg" })
       });
     }).then(function (res) {
       return res.json().then(function (data) {
-        if (!res.ok) throw new Error(data.error || "Import failed");
+        if (!res.ok) throw new Error(data.detail ? (data.error + ": " + data.detail) : (data.error || "Import failed"));
         return data;
       });
     }).then(function (data) {
