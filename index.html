@@ -2689,6 +2689,19 @@
     var startAngle = -Math.PI / 2;
     var cum = 0;
     var defsSvg = "", shadowsSvg = "", wedgesSvg = "", labelsSvg = "";
+
+    // A single light position shared by every wedge, fixed in disc space
+    // rather than each wedge's own bounding box, is what makes the ring
+    // read as one lit object instead of N separately-lit chips - with a
+    // per-wedge-relative highlight (the old objectBoundingBox default),
+    // every wedge gets its own bright spot in its own corner regardless of
+    // where it sits on the disc, which is exactly what breaks the illusion
+    // of one continuous surface and makes it look like loose, separate
+    // pieces. Placed up and to the left of disc center, like an overhead
+    // light from that direction.
+    var lightCx = cx - rOuter * 0.4;
+    var lightCy = cy - rOuter * SQUASH_Y * 0.55;
+    var lightR = rOuter * 1.4;
     ringSegments.forEach(function (seg, i) {
       var frac = seg.amt / total;
       var a0 = startAngle + cum * 2 * Math.PI;
@@ -2707,9 +2720,12 @@
       // is what sells the top face as a lit, slightly curved surface
       // rather than a flat tinted shape; the wall beneath (wedgeWallPath,
       // flat dark fill, no gradient) is what actually reads as thickness.
+      // gradientUnits="userSpaceOnUse" with the shared lightCx/lightCy/lightR
+      // computed above (rather than the objectBoundingBox default) is what
+      // keeps that highlight at one fixed spot on the disc for every wedge.
       var gradId = "donut-grad-" + i;
       var gradStart = mixColor(seg.color, 0.55, [255, 255, 255]);
-      defsSvg += '<radialGradient id="' + gradId + '" cx="35%" cy="30%" r="75%">' +
+      defsSvg += '<radialGradient id="' + gradId + '" gradientUnits="userSpaceOnUse" cx="' + lightCx.toFixed(2) + '" cy="' + lightCy.toFixed(2) + '" r="' + lightR.toFixed(2) + '">' +
         '<stop offset="0%" stop-color="' + gradStart + '" />' +
         '<stop offset="100%" stop-color="' + seg.color + '" />' +
         '</radialGradient>';
