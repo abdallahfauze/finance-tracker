@@ -1777,11 +1777,30 @@
     btn.disabled = true;
     btn.innerHTML = '<span>Reading screenshot...</span>';
 
-    normalizeImageForUpload(file).then(function (base64) {
+    // Without this, a stalled request (dead network, a cold-starting
+    // serverless function that never comes back) leaves the button
+    // disabled forever with no way out - 30s is generous for a vision
+    // model call but still short enough that a real hang doesn't strand
+    // the user indefinitely.
+    var timedOut = false;
+    var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+    var timeoutId = controller && setTimeout(function () { timedOut = true; controller.abort(); }, 30000);
+
+    // The import endpoint requires a signed-in finance-tracker user (every
+    // real user already is one - the app itself is locked behind Firebase
+    // auth) so it can verify the caller server-side instead of being a
+    // fully anonymous public endpoint anyone with the URL can hammer.
+    var idTokenPromise = (cloudEnabled && auth && auth.currentUser) ? auth.currentUser.getIdToken() : Promise.resolve(null);
+
+    Promise.all([normalizeImageForUpload(file), idTokenPromise]).then(function (results) {
+      var base64 = results[0], idToken = results[1];
+      var headers = { "Content-Type": "application/json" };
+      if (idToken) headers["Authorization"] = "Bearer " + idToken;
       return fetch(SCREENSHOT_IMPORT_API, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64, mediaType: "image/jpeg" })
+        headers: headers,
+        body: JSON.stringify({ image: base64, mediaType: "image/jpeg" }),
+        signal: controller ? controller.signal : undefined
       });
     }).then(function (res) {
       return res.json().then(function (data) {
@@ -1822,8 +1841,10 @@
         showMessage("Couldn't find any transactions in that screenshot.");
       }
     }).catch(function (err) {
+      if (timedOut) { showMessage("That took too long - check your connection and try again."); return; }
       showMessage(err.message || "Something went wrong importing that screenshot.");
     }).then(function () {
+      if (timeoutId) clearTimeout(timeoutId);
       btn.disabled = false;
       btn.innerHTML = originalHtml;
     });
@@ -1921,7 +1942,7 @@
   function buildSpeedDial() {
     var html = "";
     SHORTCUT_MENU_ITEMS.forEach(function (item, i) {
-      html += '<div class="speed-dial-item" data-shortcut="' + (item.tab || item.action) + '" style="--i:' + i + '">';
+      html += '<div class="speed-dial-item" data-shortcut="' + (item.tab || item.action) + '" role="button" tabindex="0" aria-label="' + escapeAttr(item.label) + '" style="--i:' + i + '">';
       html += '<span class="speed-dial-label">' + item.label + '</span>';
       html += '<span class="speed-dial-btn">' + icon(item.icon) + '</span>';
       html += '</div>';
@@ -1929,11 +1950,18 @@
     var container = document.getElementById("speed-dial-items");
     container.innerHTML = html;
     container.querySelectorAll("[data-shortcut]").forEach(function (el) {
-      el.addEventListener("click", function () {
+      function activate() {
         var key = el.getAttribute("data-shortcut");
         setSpeedDialOpen(false);
         if (key === "calculator") openCalculator();
         else setTab(key);
+      }
+      el.addEventListener("click", activate);
+      // These are plain divs, not <button>, so they need their own
+      // Enter/Space handling - a <div role="button"> gets none of that
+      // for free the way a real button element would.
+      el.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
       });
     });
   }
@@ -1997,6 +2025,15 @@
   }
   document.getElementById("modal-overlay").addEventListener("click", function (e) {
     if (e.target === e.currentTarget) closeModal();
+  });
+
+  // A keyboard-only user has no mouse to tap the backdrop with, and
+  // without this there was no way to back out of a modal or the speed-dial
+  // menu at all from the keyboard.
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Escape") return;
+    if (document.getElementById("modal-overlay").classList.contains("open")) closeModal();
+    else if (speedDialOpen) setSpeedDialOpen(false);
   });
 
   /* Custom confirm dialog — window.confirm() is blocked inside a sandboxed iframe
@@ -2818,13 +2855,30 @@
       labels.forEach(function (l) { l.classList.toggle("active", l.getAttribute("data-seg") === idx); });
       rows.forEach(function (r) { r.classList.toggle("dim", idx !== null && r.getAttribute("data-seg") !== idx); });
     }
+    // mouseenter/mouseleave alone never fire on a touch device, so on phones
+    // - this app's actual primary platform - tapping a wedge or legend row
+    // did nothing at all. pinnedIdx adds a tap-to-toggle on top of the
+    // existing hover behavior: tapping pins a segment active (ignoring
+    // hover) until it's tapped again, which also doubles as a "lock the
+    // highlight" convenience on desktop.
+    var pinnedIdx = null;
+    function hoverOn(idx) { if (pinnedIdx === null) setActive(idx); }
+    function hoverOff() { if (pinnedIdx === null) setActive(null); }
+    function toggleTap(idx) {
+      pinnedIdx = (pinnedIdx === idx) ? null : idx;
+      setActive(pinnedIdx);
+    }
     segs.forEach(function (s) {
-      s.addEventListener("mouseenter", function () { setActive(s.getAttribute("data-seg")); });
-      s.addEventListener("mouseleave", function () { setActive(null); });
+      var idx = s.getAttribute("data-seg");
+      s.addEventListener("mouseenter", function () { hoverOn(idx); });
+      s.addEventListener("mouseleave", hoverOff);
+      s.addEventListener("click", function () { toggleTap(idx); });
     });
     rows.forEach(function (r) {
-      r.addEventListener("mouseenter", function () { setActive(r.getAttribute("data-seg")); });
-      r.addEventListener("mouseleave", function () { setActive(null); });
+      var idx = r.getAttribute("data-seg");
+      r.addEventListener("mouseenter", function () { hoverOn(idx); });
+      r.addEventListener("mouseleave", hoverOff);
+      r.addEventListener("click", function () { toggleTap(idx); });
     });
   }
 
@@ -3425,7 +3479,7 @@
     html += loanDetailRow("Paid", p.amountPaid, loan.paymentsMade + (loan.paymentsMade === 1 ? " installment" : " installments"));
     html += loanDetailRow("Balance", p.balance, remainingInstallments + (remainingInstallments === 1 ? " installment left" : " installments left"));
     if (!p.isPaidOff) {
-      var markPaidBtn = '<button class="icon-btn ghost" data-mark-loan-paid="' + loan.id + '" aria-label="Mark payment paid" style="width:28px;height:28px;flex-shrink:0;margin-left:10px">' + icon("check") + '</button>';
+      var markPaidBtn = '<button class="icon-btn ghost" data-mark-loan-paid="' + loan.id + '" aria-label="Mark payment paid" style="flex-shrink:0;margin-left:10px">' + icon("check") + '</button>';
       html += loanDetailRow("Next installment", loan.monthlyPayment, fmtDateLong(loan.nextPaymentDate), markPaidBtn);
     }
     html += '</div>';
@@ -3605,7 +3659,7 @@
     html += loanDetailRow("Target", goal.targetAmount, goal.targetDate ? "by " + fmtDateLong(goal.targetDate) : null);
     html += loanDetailRow("Saved", p.saved, p.count + (p.count === 1 ? " contribution" : " contributions"));
     if (!p.isReached) {
-      var addFundsBtn = '<button class="icon-btn ghost" data-add-funds="' + goal.id + '" aria-label="Add funds" style="width:28px;height:28px;flex-shrink:0;margin-left:10px">' + icon("plus") + '</button>';
+      var addFundsBtn = '<button class="icon-btn ghost" data-add-funds="' + goal.id + '" aria-label="Add funds" style="flex-shrink:0;margin-left:10px">' + icon("plus") + '</button>';
       html += loanDetailRow("Remaining", goal.targetAmount - p.saved, null, addFundsBtn);
     }
     html += '</div>';
@@ -4287,7 +4341,7 @@
     var value = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
     var html = '<div class="field" style="margin-bottom:10px">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center"><label style="margin-bottom:0">' + escapeHtml(label) + '</label>';
-    html += '<button type="button" class="icon-btn ghost" data-remove-bank="' + escapeAttr(label) + '" aria-label="Remove account" style="width:24px;height:24px;flex-shrink:0">' + icon("trash") + '</button>';
+    html += '<button type="button" class="icon-btn ghost" data-remove-bank="' + escapeAttr(label) + '" aria-label="Remove account" style="flex-shrink:0">' + icon("trash") + '</button>';
     html += '</div>';
     html += '<input type="number" step="0.01" min="0" class="bank-card-config" data-label="' + escapeAttr(label) + '" value="' + value + '" />';
     html += '</div>';
@@ -4563,6 +4617,19 @@
     URL.revokeObjectURL(url);
   }
 
+  // A value starting with =, +, -, @ (or a tab/CR) is read as a formula by
+  // Excel/Sheets even inside a quoted CSV field - quoting alone only
+  // escapes commas/newlines, not this. Merchant/note text isn't typed by
+  // the user alone: it can also come from the screenshot-import feature,
+  // i.e. from a vision model reading an attacker-supplied image, so a
+  // crafted screenshot could otherwise plant a formula that runs when the
+  // exported file is opened. Prefixing a leading apostrophe is the
+  // standard neutralization - spreadsheet apps treat it as "force text"
+  // and it isn't visible in the opened cell.
+  function csvSafe(v) {
+    var s = String(v);
+    return /^[=+\-@\t\r]/.test(s) ? "'" + s : s;
+  }
   function exportCSV() {
     var rows = [["Date","Type","Merchant","Category","Bank/Card","Amount","Note"]];
     state.transactions.slice().sort(function (a, b) { return a.date < b.date ? -1 : 1; }).forEach(function (t) {
@@ -4570,7 +4637,7 @@
       rows.push([t.date, t.type, t.merchant, cat ? cat.name : "", t.bankCard || "", t.amount, t.note || ""]);
     });
     var csv = rows.map(function (r) {
-      return r.map(function (v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(",");
+      return r.map(function (v) { return '"' + csvSafe(v).replace(/"/g, '""') + '"'; }).join(",");
     }).join("\n");
     saveFile("transactions.csv", csv, "text/csv");
   }
