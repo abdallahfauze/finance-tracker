@@ -3752,8 +3752,19 @@
 
   /* ---------- render: forecast ---------- */
 
+  // Months offset from the current month that the visible 12-month window
+  // starts at - 0 is "this month forward", negative slides it into the
+  // past. Module-level like viewPeriod so it survives a re-render but
+  // resets on reload.
+  var forecastWindowOffset = 0;
+
+  function shiftForecastWindow(delta) {
+    forecastWindowOffset += delta;
+    renderForecast();
+  }
+
   function renderForecast() {
-    var base = new Date(today().getFullYear(), today().getMonth(), 1);
+    var base = new Date(today().getFullYear(), today().getMonth() + forecastWindowOffset, 1);
     var months = [];
     for (var i = 0; i < 12; i++) {
       var d = new Date(base.getFullYear(), base.getMonth() + i, 1);
@@ -3854,7 +3865,13 @@
       return ((catTotals[b] || 0) + (actualTotals[b] || 0)) - ((catTotals[a] || 0) + (actualTotals[a] || 0));
     });
 
-    var html = '<div class="card"><p class="footnote" style="margin:0">Forecast is projected from your active recurring payments and loans. Actual is what\'s really been logged as transactions. Variance is Forecast minus Actual - positive means you spent less than planned, negative means you spent more.</p></div>';
+    var html = '<div class="card"><div style="display:flex;align-items:center;justify-content:space-between">';
+    html += '<button class="icon-btn accent-ghost" id="forecast-prev" aria-label="Earlier months" style="width:32px;height:32px">' + icon("chevron", "chevron-flip") + '</button>';
+    html += '<h2 style="margin:0;font-size:15px">' + months[0].label + ' – ' + months[months.length - 1].label + '</h2>';
+    html += '<button class="icon-btn accent-ghost" id="forecast-next" aria-label="Later months" style="width:32px;height:32px">' + icon("chevron") + '</button>';
+    html += '</div></div>';
+
+    html += '<div class="card"><p class="footnote" style="margin:0">Forecast is projected from your active recurring payments and loans. Actual is what\'s really been logged as transactions. Variance is Forecast minus Actual - positive means you spent less than planned, negative means you spent more.</p></div>';
 
     if (!catKeys.length) {
       html += emptyState("grid", "Nothing to forecast", "Add active recurring payments or loans, or log some transactions, to see forecast vs. actual here.");
@@ -3984,6 +4001,8 @@
     }
 
     document.getElementById("tab-forecast").innerHTML = html;
+    document.getElementById("forecast-prev").addEventListener("click", function () { shiftForecastWindow(-1); });
+    document.getElementById("forecast-next").addEventListener("click", function () { shiftForecastWindow(1); });
   }
 
   /* ---------- render: transfer ---------- */
