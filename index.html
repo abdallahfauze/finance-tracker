@@ -3425,7 +3425,7 @@
 
     document.querySelectorAll("#tab-recurring [data-open-recurring]").forEach(function (el) {
       el.addEventListener("click", function (e) {
-        if (e.target.closest("[data-mark-paid]")) return;
+        if (e.target.closest("[data-mark-paid], [data-delete-archived]")) return;
         openRecurringForm(el.getAttribute("data-open-recurring"));
       });
     });
@@ -3433,6 +3433,17 @@
       el.addEventListener("click", function (e) {
         e.stopPropagation();
         openMarkPaidConfirm(el.getAttribute("data-mark-paid"));
+      });
+    });
+    document.querySelectorAll("#tab-recurring [data-delete-archived]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var id = el.getAttribute("data-delete-archived");
+        var r = byId(state.recurring, id);
+        confirmAction('Delete "' + (r ? r.name : "this item") + '"? Its past transactions are kept, but this entry itself is removed for good.', "Delete", function () {
+          state.recurring = state.recurring.filter(function (x) { return x.id !== id; });
+          save(); renderAll();
+        });
       });
     });
     document.querySelectorAll("#recurring-sort-seg button").forEach(function (b) {
@@ -3483,7 +3494,8 @@
       html += '<div class="main"><div class="title">' + escapeHtml(r.name) + '</div><div class="meta">' + (FREQUENCY_LABELS[r.frequency] || capitalize(r.frequency)) + ' · ' + statusText +
         (r.bankCard ? ' · ' + escapeHtml(r.bankCard) : '') + '</div></div>';
       html += '<div class="amount num' + (isIncome ? " income" : "") + '">' + (isIncome ? "+" : "") + fmtMoney(r.amount) + '</div>';
-      if (!archived) html += '<button class="icon-btn ghost" data-mark-paid="' + r.id + '" aria-label="' + (isIncome ? "Mark as received" : "Mark as paid") + '" style="width:30px;height:30px">' + icon("check") + '</button>';
+      if (archived) html += '<button class="icon-btn ghost" data-delete-archived="' + r.id + '" aria-label="Delete" style="width:30px;height:30px">' + icon("trash") + '</button>';
+      else html += '<button class="icon-btn ghost" data-mark-paid="' + r.id + '" aria-label="' + (isIncome ? "Mark as received" : "Mark as paid") + '" style="width:30px;height:30px">' + icon("check") + '</button>';
       html += '</div>';
     });
     html += '</div>';
