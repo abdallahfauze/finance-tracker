@@ -950,6 +950,9 @@
     <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
     <line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" />
   </symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17 3a2.83 2.83 0 0 1 4 4L7 21l-4 1 1-4Z" /><path d="M15 5l4 4" />
+  </symbol>
   <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
   </symbol>
@@ -4360,7 +4363,10 @@
     var value = (state.bankCardConfig[label] && state.bankCardConfig[label].value) || 0;
     var html = '<div class="field" style="margin-bottom:10px">';
     html += '<div style="display:flex;justify-content:space-between;align-items:center"><label style="margin-bottom:0">' + escapeHtml(label) + '</label>';
-    html += '<button type="button" class="icon-btn ghost" data-remove-bank="' + escapeAttr(label) + '" aria-label="Remove account" style="flex-shrink:0">' + icon("trash") + '</button>';
+    html += '<div style="display:flex;gap:6px;flex-shrink:0">';
+    html += '<button type="button" class="icon-btn ghost" data-rename-bank="' + escapeAttr(label) + '" aria-label="Rename account">' + icon("pencil") + '</button>';
+    html += '<button type="button" class="icon-btn ghost" data-remove-bank="' + escapeAttr(label) + '" aria-label="Remove account">' + icon("trash") + '</button>';
+    html += '</div>';
     html += '</div>';
     html += '<input type="number" step="0.01" min="0" class="bank-card-config" data-label="' + escapeAttr(label) + '" value="' + value + '" />';
     html += '</div>';
@@ -4395,6 +4401,57 @@
     });
   }
 
+  // Unlike MoneyQuill's relational schema (cards have a stable id, label is
+  // just a display field), finance-tracker identifies a card by its label
+  // string everywhere - state.bankCardConfig is keyed by it, and every
+  // transaction/recurring item/loan stores the raw label in its own
+  // bankCard field, not a foreign key. So renaming isn't just one field:
+  // every one of those has to be migrated to the new label too, or the
+  // rename would silently orphan all of that card's history exactly like
+  // Remove does (acceptable there, not here).
+  function openRenameBankCardForm(oldLabel) {
+    var html = '<div class="modal-head"><h3>Rename Account</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<form id="rename-bank-form">';
+    html += '<div class="field"><label>Name</label><input type="text" name="label" value="' + escapeAttr(oldLabel) + '" required /></div>';
+    html += '<button type="submit" class="btn primary">Save</button>';
+    html += '</form>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+
+    document.getElementById("rename-bank-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var f = new FormData(e.target);
+      var newLabel = f.get("label").trim();
+      if (!newLabel || newLabel === oldLabel) { closeModal(); return; }
+      if (allBankCards().indexOf(newLabel) !== -1) {
+        showMessage("You already have an account named \"" + newLabel + "\".");
+        return;
+      }
+
+      var custom = state.customBankCards.filter(function (c) { return c.label === oldLabel; })[0];
+      if (custom) {
+        custom.label = newLabel;
+      } else {
+        // Built-in bank (from the hardcoded BANK_CARDS list, not owned by
+        // the user) - hide the old name and add the new one as a custom
+        // card, same overlay pattern Remove already uses for built-ins.
+        state.removedBankCards.push(oldLabel);
+        state.customBankCards.push({ label: newLabel, type: bankCardType(oldLabel) });
+      }
+
+      if (state.bankCardConfig[oldLabel]) {
+        state.bankCardConfig[newLabel] = state.bankCardConfig[oldLabel];
+        delete state.bankCardConfig[oldLabel];
+      }
+      state.transactions.forEach(function (t) { if (t.bankCard === oldLabel) t.bankCard = newLabel; });
+      state.recurring.forEach(function (r) { if (r.bankCard === oldLabel) r.bankCard = newLabel; });
+      state.loans.forEach(function (l) { if (l.bankCard === oldLabel) l.bankCard = newLabel; });
+
+      save(); closeModal(); renderAll();
+    });
+  }
+
   /* ---------- render: cards ---------- */
 
   function renderCardsPage() {
@@ -4424,6 +4481,9 @@
     });
     document.querySelectorAll("[data-add-bank]").forEach(function (btn) {
       btn.addEventListener("click", function () { openAddBankCardForm(btn.getAttribute("data-add-bank")); });
+    });
+    document.querySelectorAll("[data-rename-bank]").forEach(function (btn) {
+      btn.addEventListener("click", function () { openRenameBankCardForm(btn.getAttribute("data-rename-bank")); });
     });
     document.querySelectorAll("[data-remove-bank]").forEach(function (btn) {
       btn.addEventListener("click", function () {
