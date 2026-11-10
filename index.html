@@ -2380,6 +2380,13 @@
   document.getElementById("shortcut-fab").addEventListener("click", function () {
     setSpeedDialOpen(!speedDialOpen);
   });
+  // Tapping anywhere outside the dial also closes it, same pattern as
+  // #modal-overlay click-to-close above, in addition to the X-button
+  // toggle and Escape key. The toggle's own click target is inside
+  // #speed-dial, so this doesn't fire back-to-back with opening it.
+  document.addEventListener("click", function (e) {
+    if (speedDialOpen && !document.getElementById("speed-dial").contains(e.target)) setSpeedDialOpen(false);
+  });
 
   /* ---------- render: dashboard ---------- */
 
