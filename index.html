@@ -1782,12 +1782,12 @@
   function callImportApi(payload) {
     // Without a timeout, a stalled request (dead network, a cold-starting
     // serverless function that never comes back) leaves the caller's
-    // button disabled forever with no way out - 30s is generous for a
+    // button disabled forever with no way out - 45s is generous for a
     // model call but still short enough that a real hang doesn't strand
     // the user indefinitely.
     var timedOut = false;
     var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
-    var timeoutId = controller && setTimeout(function () { timedOut = true; controller.abort(); }, 30000);
+    var timeoutId = controller && setTimeout(function () { timedOut = true; controller.abort(); }, 45000);
 
     // The import endpoint requires a signed-in finance-tracker user (every
     // real user already is one - the app itself is locked behind Firebase
