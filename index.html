@@ -953,6 +953,9 @@
   <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M17 3a2.83 2.83 0 0 1 4 4L7 21l-4 1 1-4Z" /><path d="M15 5l4 4" />
   </symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /><rect x="8" y="2" width="8" height="4" rx="1" />
+  </symbol>
   <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
   </symbol>
@@ -1774,15 +1777,12 @@
     });
   }
 
-  function importTransactionsFromScreenshot(file) {
-    var btn = document.getElementById("tx-import-btn");
-    var originalHtml = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span>Reading screenshot...</span>';
-
-    // Without this, a stalled request (dead network, a cold-starting
-    // serverless function that never comes back) leaves the button
-    // disabled forever with no way out - 30s is generous for a vision
+  // Both import paths (a screenshot, or text pasted in) go through the same
+  // endpoint, timeout and insert loop - only the request payload differs.
+  function callImportApi(payload) {
+    // Without a timeout, a stalled request (dead network, a cold-starting
+    // serverless function that never comes back) leaves the caller's
+    // button disabled forever with no way out - 30s is generous for a
     // model call but still short enough that a real hang doesn't strand
     // the user indefinitely.
     var timedOut = false;
@@ -1795,61 +1795,130 @@
     // fully anonymous public endpoint anyone with the URL can hammer.
     var idTokenPromise = (cloudEnabled && auth && auth.currentUser) ? auth.currentUser.getIdToken() : Promise.resolve(null);
 
-    Promise.all([normalizeImageForUpload(file), idTokenPromise]).then(function (results) {
-      var base64 = results[0], idToken = results[1];
+    return idTokenPromise.then(function (idToken) {
       var headers = { "Content-Type": "application/json" };
       if (idToken) headers["Authorization"] = "Bearer " + idToken;
       return fetch(SCREENSHOT_IMPORT_API, {
         method: "POST",
         headers: headers,
-        body: JSON.stringify({ image: base64, mediaType: "image/jpeg" }),
+        body: JSON.stringify(payload),
         signal: controller ? controller.signal : undefined
       });
     }).then(function (res) {
       return res.json().then(function (data) {
         if (!res.ok) throw new Error(data.detail ? (data.error + ": " + data.detail) : (data.error || "Import failed"));
-        return data;
+        return data.transactions || [];
       });
-    }).then(function (data) {
-      var found = data.transactions || [];
-      var added = 0;
-      found.forEach(function (t) {
-        var amount = parseFloat(t.amount);
-        if (isNaN(amount) || amount <= 0) return;
-        var merchant = (t.merchant || "").trim() || "Unknown merchant";
-        var type = t.type === "income" ? "income" : "expense";
-        var date = (t.date && /^\d{4}-\d{2}-\d{2}$/.test(t.date)) ? t.date : todayISO();
-        var categoryId = suggestCategoryFromHistory(merchant) || suggestCategory(merchant);
-        state.transactions.push({
-          id: uid(),
-          amount: amount,
-          merchant: merchant,
-          note: "",
-          date: date,
-          type: type,
-          categoryId: categoryId || null,
-          bankCard: null,
-          isGoalContribution: false,
-          goalId: null,
-          needsReview: true
-        });
-        added++;
+    }).then(function (found) {
+      if (timeoutId) clearTimeout(timeoutId);
+      return found;
+    }, function (err) {
+      if (timeoutId) clearTimeout(timeoutId);
+      if (timedOut) throw new Error("That took too long - check your connection and try again.");
+      throw err;
+    });
+  }
+
+  function addImportedTransactions(found) {
+    var added = 0;
+    found.forEach(function (t) {
+      var amount = parseFloat(t.amount);
+      if (isNaN(amount) || amount <= 0) return;
+      var merchant = (t.merchant || "").trim() || "Unknown merchant";
+      var type = t.type === "income" ? "income" : "expense";
+      var date = (t.date && /^\d{4}-\d{2}-\d{2}$/.test(t.date)) ? t.date : todayISO();
+      var categoryId = suggestCategoryFromHistory(merchant) || suggestCategory(merchant);
+      state.transactions.push({
+        id: uid(),
+        amount: amount,
+        merchant: merchant,
+        note: "",
+        date: date,
+        type: type,
+        categoryId: categoryId || null,
+        bankCard: null,
+        isGoalContribution: false,
+        goalId: null,
+        needsReview: true
       });
+      added++;
+    });
+    if (added) {
+      assignCategorySlots();
+      save();
+      renderAll();
+    }
+    return added;
+  }
+
+  function importTransactionsFromScreenshot(file) {
+    var btn = document.getElementById("tx-import-btn");
+    var originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span>Reading screenshot...</span>';
+
+    normalizeImageForUpload(file).then(function (base64) {
+      return callImportApi({ image: base64, mediaType: "image/jpeg" });
+    }).then(function (found) {
+      var added = addImportedTransactions(found);
       if (added) {
-        assignCategorySlots();
-        save();
-        renderAll();
         showMessage(added + " transaction" + (added === 1 ? "" : "s") + " imported - look for the dot next to each one and check it's correct.");
       } else {
         showMessage("Couldn't find any transactions in that screenshot.");
       }
     }).catch(function (err) {
-      if (timedOut) { showMessage("That took too long - check your connection and try again."); return; }
       showMessage(err.message || "Something went wrong importing that screenshot.");
     }).then(function () {
-      if (timeoutId) clearTimeout(timeoutId);
       btn.disabled = false;
       btn.innerHTML = originalHtml;
+    });
+  }
+
+  // Matches the server's MAX_TEXT_CHARS - checked here too so a too-long
+  // paste gets a clear message instead of a round trip that's guaranteed
+  // to fail.
+  var IMPORT_TEXT_MAX_CHARS = 20000;
+  var IMPORT_TEXT_TOO_LONG = "Too long - paste fewer messages at a time (roughly 40 at once).";
+
+  // Paste several bank SMS in one go instead of screenshotting each thread -
+  // the same endpoint and the same needsReview flag as the screenshot import.
+  function openTextImportForm() {
+    var html = '<div class="modal-head"><h3>Import from Text</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
+    html += '<form id="text-import-form">';
+    html += '<p class="footnote" style="margin:0 0 10px">Copy your bank messages and paste them here - as many as you like at once. Anything that isn\'t a transaction (codes, offers) is skipped.</p>';
+    html += '<div class="field"><textarea id="text-import-input" name="text" rows="9" style="min-height:180px;resize:vertical" placeholder="Paste messages here" required></textarea></div>';
+    html += '<p class="footnote" id="text-import-count" style="margin:-6px 0 12px"></p>';
+    html += '<button type="submit" class="btn primary" id="text-import-submit">Import</button>';
+    html += '</form>';
+
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+
+    var input = document.getElementById("text-import-input");
+    var counter = document.getElementById("text-import-count");
+    input.addEventListener("input", function () {
+      counter.textContent = input.value.length > IMPORT_TEXT_MAX_CHARS ? IMPORT_TEXT_TOO_LONG : "";
+    });
+
+    document.getElementById("text-import-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      if (text.length > IMPORT_TEXT_MAX_CHARS) { counter.textContent = IMPORT_TEXT_TOO_LONG; return; }
+      var submit = document.getElementById("text-import-submit");
+      submit.disabled = true;
+      submit.textContent = "Reading messages...";
+      callImportApi({ text: text }).then(function (found) {
+        var added = addImportedTransactions(found);
+        closeModal();
+        showMessage(added
+          ? added + " transaction" + (added === 1 ? "" : "s") + " imported - look for the dot next to each one and check it's correct."
+          : "Couldn't find any transactions in that text.");
+      }).catch(function (err) {
+        submit.disabled = false;
+        submit.textContent = "Import";
+        counter.textContent = err.message || "Something went wrong importing that text.";
+      });
     });
   }
 
@@ -1919,7 +1988,7 @@
      .speed-dial-items is column-reverse (see its CSS), so the fab-closest,
      bottom-most item on screen is this array's FIRST entry and the
      top-most item is its LAST - this list is ordered bottom-to-top to read
-     top-to-bottom on screen as: Add Cards, Categories, Transfer, Goals,
+     top-to-bottom on screen as: Cards, Categories, Transfer, Goals,
      Forecast, Calculator, Settings. */
   var SHORTCUT_MENU_ITEMS = [
     { tab: "settings", icon: "sliders", label: "Settings" },
@@ -1928,7 +1997,7 @@
     { tab: "goals", icon: "target", label: "Goals" },
     { tab: "transfer", icon: "swap", label: "Transfer" },
     { tab: "categories", icon: "tag", label: "Categories" },
-    { tab: "cards", icon: "card", label: "Add Cards" }
+    { tab: "cards", icon: "card", label: "Cards" }
   ];
 
   var speedDialOpen = false;
@@ -3231,7 +3300,11 @@
 
     var html = '<div class="search-wrap">' + icon("search") + '<input type="text" id="tx-search" placeholder="Search merchant or note" value="' + escapeAttr(txSearch) + '" /></div>';
 
-    html += '<button type="button" id="tx-import-btn" style="margin-bottom:10px;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:none;border-radius:var(--radius-md);background:var(--accent-soft);color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer">' + icon("image", "import-icon") + '<span>Import from Screenshot</span></button>';
+    var importBtnStyle = "display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:none;border-radius:var(--radius-md);background:var(--accent-soft);color:var(--accent);font-size:12.5px;font-weight:600;cursor:pointer";
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">';
+    html += '<button type="button" id="tx-import-btn" style="' + importBtnStyle + '">' + icon("image", "import-icon") + '<span>Import from Screenshot</span></button>';
+    html += '<button type="button" id="tx-import-text-btn" style="' + importBtnStyle + '">' + icon("clipboard", "import-icon") + '<span>Import from Text</span></button>';
+    html += '</div>';
     html += '<input type="file" id="tx-import-input" accept="image/*" style="display:none" />';
 
     html += '<select id="tx-filter-cat" style="margin-bottom:10px">';
@@ -3338,6 +3411,7 @@
       e.target.value = ""; // allow re-selecting the same file next time
       if (file) importTransactionsFromScreenshot(file);
     });
+    document.getElementById("tx-import-text-btn").addEventListener("click", openTextImportForm);
     document.querySelectorAll("#tab-transactions [data-open-tx]").forEach(function (el) {
       el.addEventListener("click", function () { openTransactionForm(el.getAttribute("data-open-tx")); });
     });
