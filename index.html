@@ -122,6 +122,7 @@
   :root[data-accent="violet"] { --accent: #7A42E0; --accent-soft: #EEE3FB; --accent-ink: #ffffff; }
   :root[data-accent="rose"] { --accent: #C22E72; --accent-soft: #FAE1EC; --accent-ink: #ffffff; }
   :root[data-accent="forest"] { --accent: #1E8A54; --accent-soft: #DEF2E6; --accent-ink: #ffffff; }
+  :root[data-accent="orange"] { --accent: #C84B1B; --accent-soft: #FBE4DA; --accent-ink: #ffffff; }
   @media (prefers-color-scheme: dark) {
     :root[data-accent="teal"]:not([data-theme="light"]) { --accent: #3DD9C4; --accent-soft: #16302C; --accent-ink: #0B1413; }
     :root[data-accent="sky"]:not([data-theme="light"]) { --accent: #56C8F5; --accent-soft: #123244; --accent-ink: #08181F; }
@@ -129,6 +130,7 @@
     :root[data-accent="violet"]:not([data-theme="light"]) { --accent: #B79CFF; --accent-soft: #271C40; --accent-ink: #120D1F; }
     :root[data-accent="rose"]:not([data-theme="light"]) { --accent: #F080B8; --accent-soft: #3A1A28; --accent-ink: #1F0D14; }
     :root[data-accent="forest"]:not([data-theme="light"]) { --accent: #4ADE80; --accent-soft: #15301F; --accent-ink: #0A1710; }
+    :root[data-accent="orange"]:not([data-theme="light"]) { --accent: #FF8A5C; --accent-soft: #3A2216; --accent-ink: #1F0E06; }
   }
   :root[data-accent="teal"][data-theme="dark"] { --accent: #3DD9C4; --accent-soft: #16302C; --accent-ink: #0B1413; }
   :root[data-accent="sky"][data-theme="dark"] { --accent: #56C8F5; --accent-soft: #123244; --accent-ink: #08181F; }
@@ -136,6 +138,7 @@
   :root[data-accent="violet"][data-theme="dark"] { --accent: #B79CFF; --accent-soft: #271C40; --accent-ink: #120D1F; }
   :root[data-accent="rose"][data-theme="dark"] { --accent: #F080B8; --accent-soft: #3A1A28; --accent-ink: #1F0D14; }
   :root[data-accent="forest"][data-theme="dark"] { --accent: #4ADE80; --accent-soft: #15301F; --accent-ink: #0A1710; }
+  :root[data-accent="orange"][data-theme="dark"] { --accent: #FF8A5C; --accent-soft: #3A2216; --accent-ink: #1F0E06; }
 
   /* Official Saudi Riyal currency sign (U+20C1), SIL OFL 1.1 licensed font by Emran Alhaddad
      https://github.com/emran-alhaddad/Saudi-Riyal-Font — embedded because system fonts
@@ -907,53 +910,112 @@
   .calc-history-row .calc-history-result { font-size: 17px; font-weight: 700; }
   .calc-history-empty { text-align: center; color: var(--ink-muted); font-size: 13px; padding: 30px 0; }
 
-  /* ================= "Soft" skin (opt-in, dark only for now) =================
+
+  /* ================= "Soft" skin (opt-in; light and dark) =================
      Neumorphic look: surfaces are cut from the same material as the page and
      read as raised or pressed purely through paired light/dark shadows, with
-     the teal accent used as a glowing ring on whatever is active. Switched on
-     with data-skin="soft" on <html> (?skin=soft in the URL, remembered; ?skin=off
-     turns it back off). Nothing above this block is changed, so removing the
-     block - or the attribute - restores the original design. In light mode
-     the skin does nothing yet.
-     ":root[data-skin="soft"][data-theme="dark"]" below is expanded at build time to the two dark-mode selector forms
-     (explicit data-theme="dark", or system dark with no explicit light). */
-  :root[data-skin="soft"][data-theme="dark"] {
-    --page: #25292d;
-    --surface: #25292d;
-    --surface-2: #1f2326;
-    --line: rgba(255,255,255,0.05);
-    --ink: #EEF2F3;
-    --ink-2: #B3BCC1;
-    --ink-muted: #8A949B;
-    --pill-mint: #25292d;
-    --pill-mint-ink: #EEF2F3;
+     the accent colour used as a ring on whatever is active. Switched on with
+     data-skin="soft" on <html> (Settings > Appearance, or ?skin=soft /
+     ?skin=off in the URL). Nothing above this block is changed, so removing
+     the block - or the attribute - restores the original design.
+     Tokens first (light, then dark so dark wins when both could apply), then
+     the component rules, which use only the tokens. Teal and Orange each get
+     their own tuned light and dark accent. */
+:root[data-skin="soft"]:not([data-theme]),
+  :root[data-skin="soft"][data-theme="light"] {
+    --pill-mint: var(--page);
+    --pill-mint-ink: var(--ink);
     --radius-lg: 20px;
     --radius-md: 14px;
     --radius-sm: 8px;
-    --soft-raise: 6px 6px 14px rgba(0,0,0,0.5), -5px -5px 12px rgba(255,255,255,0.035);
-    --soft-raise-sm: 3px 3px 8px rgba(0,0,0,0.5), -3px -3px 7px rgba(255,255,255,0.035);
-    --soft-inset: inset 3px 3px 7px rgba(0,0,0,0.55), inset -2px -2px 6px rgba(255,255,255,0.03);
     --soft-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
     --soft-ring-flat: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent);
     --shadow-1: var(--soft-raise-sm);
+    --page: #E6EAED; --surface: #E6EAED; --surface-2: #DAE0E4;
+    --line: rgba(0,0,0,0.06);
+    --ink: #1B2226; --ink-2: #46535B; --ink-muted: #5F6C75;
+    --soft-raise: 6px 6px 14px rgba(150,163,176,0.65), -6px -6px 14px rgba(255,255,255,0.95);
+    --soft-raise-sm: 3px 3px 8px rgba(150,163,176,0.65), -3px -3px 8px rgba(255,255,255,0.95);
+    --soft-inset: inset 3px 3px 7px rgba(150,163,176,0.75), inset -3px -3px 7px rgba(255,255,255,0.9);
+    --soft-groove: rgba(150,163,176,0.45); --soft-groove-hi: rgba(255,255,255,0.9);
+    --soft-overlay: rgba(40,52,62,0.38); --soft-sheet-shadow: 0 -10px 34px rgba(60,75,90,0.28);
+    --soft-thumb: #F4F7F9;
+    --soft-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2346535B' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    --soft-seg-stroke: rgba(255,255,255,0.75);
+    --soft-seg-shadow: drop-shadow(3px 4px 4px rgba(120,135,150,0.55)) drop-shadow(-2px -2px 3px rgba(255,255,255,0.85));
+  }
+  :root[data-skin="soft"]:not([data-theme])[data-accent="teal"],
+  :root[data-skin="soft"][data-theme="light"][data-accent="teal"] { --accent: #0A8576; --accent-soft: #CDE8E3; --accent-ink: #ffffff; }
+  :root[data-skin="soft"]:not([data-theme])[data-accent="orange"],
+  :root[data-skin="soft"][data-theme="light"][data-accent="orange"] { --accent: #D9481F; --accent-soft: #F6DDD2; --accent-ink: #ffffff; --page: #EAE5E0; --surface: #EAE5E0; --surface-2: #DFD8D1; }
+  @media (prefers-color-scheme: dark) {
+  :root[data-skin="soft"]:not([data-theme="light"]) {
+      --pill-mint: var(--page);
+      --pill-mint-ink: var(--ink);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 8px;
+      --soft-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
+      --soft-ring-flat: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent);
+      --shadow-1: var(--soft-raise-sm);
+      --page: #25292d; --surface: #25292d; --surface-2: #1f2326;
+      --line: rgba(255,255,255,0.05);
+      --ink: #EEF2F3; --ink-2: #B3BCC1; --ink-muted: #8A949B;
+      --soft-raise: 6px 6px 14px rgba(0,0,0,0.5), -5px -5px 12px rgba(255,255,255,0.035);
+      --soft-raise-sm: 3px 3px 8px rgba(0,0,0,0.5), -3px -3px 7px rgba(255,255,255,0.035);
+      --soft-inset: inset 3px 3px 7px rgba(0,0,0,0.55), inset -2px -2px 6px rgba(255,255,255,0.03);
+      --soft-groove: rgba(0,0,0,0.28); --soft-groove-hi: rgba(255,255,255,0.03);
+      --soft-overlay: rgba(10,12,14,0.55); --soft-sheet-shadow: 0 -10px 34px rgba(0,0,0,0.5);
+      --soft-thumb: #4a5258;
+      --soft-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23AEB8BF' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      --soft-seg-stroke: rgba(255,255,255,0.14);
+      --soft-seg-shadow: drop-shadow(3px 4px 4px rgba(0,0,0,0.6)) drop-shadow(-2px -2px 3px rgba(255,255,255,0.05));
+    }
+    :root[data-skin="soft"]:not([data-theme="light"])[data-accent="teal"] { --accent: #38E3CE; --accent-soft: #1b3a38; --accent-ink: #06201d; }
+    :root[data-skin="soft"]:not([data-theme="light"])[data-accent="orange"] { --accent: #FF7A4D; --accent-soft: #3a2418; --accent-ink: #240d04; --page: #232830; --surface: #232830; --surface-2: #1d2128; }
+
+  }
+:root[data-skin="soft"][data-theme="dark"] {
+    --pill-mint: var(--page);
+    --pill-mint-ink: var(--ink);
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 8px;
+    --soft-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
+    --soft-ring-flat: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent);
+    --shadow-1: var(--soft-raise-sm);
+    --page: #25292d; --surface: #25292d; --surface-2: #1f2326;
+    --line: rgba(255,255,255,0.05);
+    --ink: #EEF2F3; --ink-2: #B3BCC1; --ink-muted: #8A949B;
+    --soft-raise: 6px 6px 14px rgba(0,0,0,0.5), -5px -5px 12px rgba(255,255,255,0.035);
+    --soft-raise-sm: 3px 3px 8px rgba(0,0,0,0.5), -3px -3px 7px rgba(255,255,255,0.035);
+    --soft-inset: inset 3px 3px 7px rgba(0,0,0,0.55), inset -2px -2px 6px rgba(255,255,255,0.03);
+    --soft-groove: rgba(0,0,0,0.28); --soft-groove-hi: rgba(255,255,255,0.03);
+    --soft-overlay: rgba(10,12,14,0.55); --soft-sheet-shadow: 0 -10px 34px rgba(0,0,0,0.5);
+    --soft-thumb: #4a5258;
+    --soft-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23AEB8BF' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    --soft-seg-stroke: rgba(255,255,255,0.14);
+    --soft-seg-shadow: drop-shadow(3px 4px 4px rgba(0,0,0,0.6)) drop-shadow(-2px -2px 3px rgba(255,255,255,0.05));
   }
   :root[data-skin="soft"][data-theme="dark"][data-accent="teal"] { --accent: #38E3CE; --accent-soft: #1b3a38; --accent-ink: #06201d; }
-  :root[data-skin="soft"][data-theme="dark"] body { background-image: none; }
-  :root[data-skin="soft"][data-theme="dark"] .app { background: var(--page); }
-  :root[data-skin="soft"][data-theme="dark"] .appbar { background: var(--page); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: none; }
+  :root[data-skin="soft"][data-theme="dark"][data-accent="orange"] { --accent: #FF7A4D; --accent-soft: #3a2418; --accent-ink: #240d04; --page: #232830; --surface: #232830; --surface-2: #1d2128; }
+
+:root[data-skin="soft"] body { background-image: none; }
+  :root[data-skin="soft"] .app { background: var(--page); }
+  :root[data-skin="soft"] .appbar { background: var(--page); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: none; }
 
   /* round buttons: accent-ringed, raised */
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn:not(.ghost) {
+  :root[data-skin="soft"] .icon-btn:not(.ghost) {
     background: var(--page); color: var(--accent);
     box-shadow: var(--soft-raise-sm), var(--soft-ring);
   }
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn:active { box-shadow: var(--soft-inset), var(--soft-ring); opacity: 1; }
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn.ghost { background: var(--page); color: var(--ink-2); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn.ghost:active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn.accent-ghost { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .icon-btn:active { box-shadow: var(--soft-inset), var(--soft-ring); opacity: 1; }
+  :root[data-skin="soft"] .icon-btn.ghost { background: var(--page); color: var(--ink-2); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .icon-btn.ghost:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .icon-btn.accent-ghost { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset); }
 
   /* floating pill tab bar */
-  :root[data-skin="soft"][data-theme="dark"] nav.tabbar {
+  :root[data-skin="soft"] nav.tabbar {
     bottom: calc(10px + env(safe-area-inset-bottom));
     width: calc(100% - 28px); max-width: 452px;
     padding-bottom: 0;
@@ -964,305 +1026,132 @@
     padding: 6px;
     gap: 4px;
   }
-  :root[data-skin="soft"][data-theme="dark"] nav.tabbar button { border-radius: 22px; padding: 8px 2px 7px; transition: box-shadow .15s ease, color .15s ease; }
-  :root[data-skin="soft"][data-theme="dark"] nav.tabbar button.active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] nav.tabbar button.active::before { display: none; }
-  :root[data-skin="soft"][data-theme="dark"] nav.tabbar button.active svg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 70%, transparent)); }
+  :root[data-skin="soft"] nav.tabbar button { border-radius: 22px; padding: 8px 2px 7px; transition: box-shadow .15s ease, color .15s ease; }
+  :root[data-skin="soft"] nav.tabbar button.active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] nav.tabbar button.active::before { display: none; }
+  :root[data-skin="soft"] nav.tabbar button.active svg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 70%, transparent)); }
 
   /* panels */
-  :root[data-skin="soft"][data-theme="dark"] .card { border: none; box-shadow: var(--soft-raise); padding: 18px; }
-  :root[data-skin="soft"][data-theme="dark"] .card + .card { margin-top: 20px; }
-  :root[data-skin="soft"][data-theme="dark"] .card h2 { color: var(--ink-2); }
-  :root[data-skin="soft"][data-theme="dark"] .stat { background: var(--page); box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] .row { border-bottom: 1px solid rgba(0,0,0,0.28); box-shadow: 0 1px 0 rgba(255,255,255,0.03); }
-  :root[data-skin="soft"][data-theme="dark"] .row:last-child { box-shadow: none; }
-  :root[data-skin="soft"][data-theme="dark"] .row:active { background: transparent; box-shadow: var(--soft-inset); border-radius: 12px; }
-  :root[data-skin="soft"][data-theme="dark"] .badge { box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"][data-theme="dark"] .legend-row:hover, :root[data-skin="soft"][data-theme="dark"] .legend-row:active { background: transparent; }
-  :root[data-skin="soft"][data-theme="dark"] .chip { background: var(--page); box-shadow: var(--soft-inset); border-radius: 999px; padding: 4px 10px; }
-  :root[data-skin="soft"][data-theme="dark"] .chip.good { background: var(--page); color: var(--accent); }
-  :root[data-skin="soft"][data-theme="dark"] .chip.warning, :root[data-skin="soft"][data-theme="dark"] .chip.critical, :root[data-skin="soft"][data-theme="dark"] .chip.milestone { background: var(--page); }
+  :root[data-skin="soft"] .card { border: none; box-shadow: var(--soft-raise); padding: 18px; }
+  :root[data-skin="soft"] .card + .card { margin-top: 20px; }
+  :root[data-skin="soft"] .card h2 { color: var(--ink-2); }
+  :root[data-skin="soft"] .stat { background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .row { border-bottom: 1px solid var(--soft-groove); box-shadow: 0 1px 0 var(--soft-groove-hi); }
+  :root[data-skin="soft"] .row:last-child { box-shadow: none; }
+  :root[data-skin="soft"] .row:active { background: transparent; box-shadow: var(--soft-inset); border-radius: 12px; }
+  :root[data-skin="soft"] .badge { box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .legend-row:hover, :root[data-skin="soft"] .legend-row:active { background: transparent; }
+  :root[data-skin="soft"] .chip { background: var(--page); box-shadow: var(--soft-inset); border-radius: 999px; padding: 4px 10px; }
+  :root[data-skin="soft"] .chip.good { background: var(--page); color: var(--accent); }
+  :root[data-skin="soft"] .chip.warning, :root[data-skin="soft"] .chip.critical, :root[data-skin="soft"] .chip.milestone { background: var(--page); }
 
   /* gauges: a pressed groove with a glowing fill */
-  :root[data-skin="soft"][data-theme="dark"] .bar-track { height: 10px; border-radius: 999px; background: var(--page); background-image: none; box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] .bar-fill { border-radius: 999px; }
-  :root[data-skin="soft"][data-theme="dark"] .bar-fill.good { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
-  :root[data-skin="soft"][data-theme="dark"] .bar-fill.warning { box-shadow: 0 0 10px color-mix(in srgb, var(--warning) 55%, transparent); }
-  :root[data-skin="soft"][data-theme="dark"] .bar-fill.critical { box-shadow: 0 0 10px color-mix(in srgb, var(--critical) 55%, transparent); }
-  :root[data-skin="soft"][data-theme="dark"] .legend-bar-track { background: var(--page); box-shadow: var(--soft-inset); height: 5px; }
+  :root[data-skin="soft"] .bar-track { height: 10px; border-radius: 999px; background: var(--page); background-image: none; box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .bar-fill { border-radius: 999px; }
+  :root[data-skin="soft"] .bar-fill.good { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+  :root[data-skin="soft"] .bar-fill.warning { box-shadow: 0 0 10px color-mix(in srgb, var(--warning) 55%, transparent); }
+  :root[data-skin="soft"] .bar-fill.critical { box-shadow: 0 0 10px color-mix(in srgb, var(--critical) 55%, transparent); }
+  :root[data-skin="soft"] .legend-bar-track { background: var(--page); box-shadow: var(--soft-inset); height: 5px; }
 
   /* inputs are pressed in */
-  :root[data-skin="soft"][data-theme="dark"] input[type="text"], :root[data-skin="soft"][data-theme="dark"] input[type="number"], :root[data-skin="soft"][data-theme="dark"] input[type="date"], :root[data-skin="soft"][data-theme="dark"] select, :root[data-skin="soft"][data-theme="dark"] textarea {
+  :root[data-skin="soft"] input[type="text"], :root[data-skin="soft"] input[type="number"], :root[data-skin="soft"] input[type="date"], :root[data-skin="soft"] select, :root[data-skin="soft"] textarea {
     border: none; background: var(--page); box-shadow: var(--soft-inset); padding: 13px 15px;
   }
-  :root[data-skin="soft"][data-theme="dark"] input:focus, :root[data-skin="soft"][data-theme="dark"] select:focus, :root[data-skin="soft"][data-theme="dark"] textarea:focus { outline: none; box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+  :root[data-skin="soft"] input:focus, :root[data-skin="soft"] select:focus, :root[data-skin="soft"] textarea:focus { outline: none; box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
 
-  :root[data-skin="soft"][data-theme="dark"] .segmented { background: var(--page); box-shadow: var(--soft-inset); padding: 4px; border-radius: 16px; }
-  :root[data-skin="soft"][data-theme="dark"] .segmented button { border-radius: 12px; }
-  :root[data-skin="soft"][data-theme="dark"] .segmented button.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"][data-theme="dark"] .month-picker-btn { border: none; background: var(--page); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"][data-theme="dark"] .month-picker-btn:active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] .month-picker-btn.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
-
-  /* buttons */
-  :root[data-skin="soft"][data-theme="dark"] .btn { border-radius: 16px; }
-  :root[data-skin="soft"][data-theme="dark"] .btn.primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent), var(--soft-raise-sm); }
-  :root[data-skin="soft"][data-theme="dark"] .btn.primary:active { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent), inset 2px 2px 6px rgba(0,0,0,0.25); }
-  :root[data-skin="soft"][data-theme="dark"] .btn.plain { background: var(--page); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"][data-theme="dark"] .btn.plain:active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] .btn.danger { background: var(--page); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"][data-theme="dark"] .btn.danger:active { box-shadow: var(--soft-inset); }
-
-  /* sheets and the shortcut menu */
-  :root[data-skin="soft"][data-theme="dark"] .modal-overlay { background: rgba(10,12,14,0.55); }
-  :root[data-skin="soft"][data-theme="dark"] .modal-sheet { background: var(--page); border-top: none; border-radius: 28px 28px 0 0; box-shadow: 0 -10px 34px rgba(0,0,0,0.5); }
-  :root[data-skin="soft"][data-theme="dark"] .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring-flat); }
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn.add-fab { box-shadow: var(--soft-raise), var(--soft-ring-flat); }
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn.add-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
-  :root[data-skin="soft"][data-theme="dark"] .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
-  :root[data-skin="soft"][data-theme="dark"] .speed-dial-btn { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
-  :root[data-skin="soft"][data-theme="dark"] .speed-dial-label { background: var(--page); color: var(--ink); box-shadow: var(--soft-raise-sm); }
-
-  /* switches: pressed track, glowing teal when on */
-  :root[data-skin="soft"][data-theme="dark"] .switch .track { background: var(--page); border: none; box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] .switch .thumb { background: #4a5258; box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"][data-theme="dark"] .switch input:checked + .track { background: var(--page); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
-  :root[data-skin="soft"][data-theme="dark"] .switch input:checked ~ .thumb { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 75%, transparent); }
-  :root[data-skin="soft"][data-theme="dark"] .search-wrap input { padding-left: 42px; }
-  :root[data-skin="soft"][data-theme="dark"] #tx-import-btn, :root[data-skin="soft"][data-theme="dark"] #tx-import-text-btn { background: var(--page) !important; border: none !important; box-shadow: var(--soft-raise-sm) !important; color: var(--accent) !important; border-radius: 999px !important; }
-  :root[data-skin="soft"][data-theme="dark"] #tx-import-btn:active, :root[data-skin="soft"][data-theme="dark"] #tx-import-text-btn:active { box-shadow: var(--soft-inset) !important; }
-  :root[data-skin="soft"][data-theme="dark"] .card:not(:last-child) { margin-bottom: 16px; }
-  @media (prefers-color-scheme: dark) {
-
-  /* ================= "Soft" skin (opt-in, dark only for now) =================
-     Neumorphic look: surfaces are cut from the same material as the page and
-     read as raised or pressed purely through paired light/dark shadows, with
-     the teal accent used as a glowing ring on whatever is active. Switched on
-     with data-skin="soft" on <html> (?skin=soft in the URL, remembered; ?skin=off
-     turns it back off). Nothing above this block is changed, so removing the
-     block - or the attribute - restores the original design. In light mode
-     the skin does nothing yet.
-     ":root[data-skin="soft"]:not([data-theme="light"])" below is expanded at build time to the two dark-mode selector forms
-     (explicit data-theme="dark", or system dark with no explicit light). */
-  :root[data-skin="soft"]:not([data-theme="light"]) {
-    --page: #25292d;
-    --surface: #25292d;
-    --surface-2: #1f2326;
-    --line: rgba(255,255,255,0.05);
-    --ink: #EEF2F3;
-    --ink-2: #B3BCC1;
-    --ink-muted: #8A949B;
-    --pill-mint: #25292d;
-    --pill-mint-ink: #EEF2F3;
-    --radius-lg: 20px;
-    --radius-md: 14px;
-    --radius-sm: 8px;
-    --soft-raise: 6px 6px 14px rgba(0,0,0,0.5), -5px -5px 12px rgba(255,255,255,0.035);
-    --soft-raise-sm: 3px 3px 8px rgba(0,0,0,0.5), -3px -3px 7px rgba(255,255,255,0.035);
-    --soft-inset: inset 3px 3px 7px rgba(0,0,0,0.55), inset -2px -2px 6px rgba(255,255,255,0.03);
-    --soft-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
-    --soft-ring-flat: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent);
-    --shadow-1: var(--soft-raise-sm);
-  }
-  :root[data-skin="soft"]:not([data-theme="light"])[data-accent="teal"] { --accent: #38E3CE; --accent-soft: #1b3a38; --accent-ink: #06201d; }
-  :root[data-skin="soft"]:not([data-theme="light"]) body { background-image: none; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .app { background: var(--page); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .appbar { background: var(--page); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: none; }
-
-  /* round buttons: accent-ringed, raised */
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn:not(.ghost) {
-    background: var(--page); color: var(--accent);
-    box-shadow: var(--soft-raise-sm), var(--soft-ring);
-  }
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn:active { box-shadow: var(--soft-inset), var(--soft-ring); opacity: 1; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.ghost { background: var(--page); color: var(--ink-2); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.ghost:active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.accent-ghost { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset); }
-
-  /* floating pill tab bar */
-  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar {
-    bottom: calc(10px + env(safe-area-inset-bottom));
-    width: calc(100% - 28px); max-width: 452px;
-    padding-bottom: 0;
-    border-top: none; border-radius: 28px;
-    background: var(--page);
-    backdrop-filter: none; -webkit-backdrop-filter: none;
-    box-shadow: var(--soft-raise);
-    padding: 6px;
-    gap: 4px;
-  }
-  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar button { border-radius: 22px; padding: 8px 2px 7px; transition: box-shadow .15s ease, color .15s ease; }
-  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar button.active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar button.active::before { display: none; }
-  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar button.active svg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 70%, transparent)); }
-
-  /* panels */
-  :root[data-skin="soft"]:not([data-theme="light"]) .card { border: none; box-shadow: var(--soft-raise); padding: 18px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card + .card { margin-top: 20px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card h2 { color: var(--ink-2); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .stat { background: var(--page); box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .row { border-bottom: 1px solid rgba(0,0,0,0.28); box-shadow: 0 1px 0 rgba(255,255,255,0.03); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .row:last-child { box-shadow: none; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .row:active { background: transparent; box-shadow: var(--soft-inset); border-radius: 12px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .badge { box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .legend-row:hover, :root[data-skin="soft"]:not([data-theme="light"]) .legend-row:active { background: transparent; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .chip { background: var(--page); box-shadow: var(--soft-inset); border-radius: 999px; padding: 4px 10px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .chip.good { background: var(--page); color: var(--accent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .chip.warning, :root[data-skin="soft"]:not([data-theme="light"]) .chip.critical, :root[data-skin="soft"]:not([data-theme="light"]) .chip.milestone { background: var(--page); }
-
-  /* gauges: a pressed groove with a glowing fill */
-  :root[data-skin="soft"]:not([data-theme="light"]) .bar-track { height: 10px; border-radius: 999px; background: var(--page); background-image: none; box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .bar-fill { border-radius: 999px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .bar-fill.good { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .bar-fill.warning { box-shadow: 0 0 10px color-mix(in srgb, var(--warning) 55%, transparent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .bar-fill.critical { box-shadow: 0 0 10px color-mix(in srgb, var(--critical) 55%, transparent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .legend-bar-track { background: var(--page); box-shadow: var(--soft-inset); height: 5px; }
-
-  /* inputs are pressed in */
-  :root[data-skin="soft"]:not([data-theme="light"]) input[type="text"], :root[data-skin="soft"]:not([data-theme="light"]) input[type="number"], :root[data-skin="soft"]:not([data-theme="light"]) input[type="date"], :root[data-skin="soft"]:not([data-theme="light"]) select, :root[data-skin="soft"]:not([data-theme="light"]) textarea {
-    border: none; background: var(--page); box-shadow: var(--soft-inset); padding: 13px 15px;
-  }
-  :root[data-skin="soft"]:not([data-theme="light"]) input:focus, :root[data-skin="soft"]:not([data-theme="light"]) select:focus, :root[data-skin="soft"]:not([data-theme="light"]) textarea:focus { outline: none; box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
-
-  :root[data-skin="soft"]:not([data-theme="light"]) .segmented { background: var(--page); box-shadow: var(--soft-inset); padding: 4px; border-radius: 16px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .segmented button { border-radius: 12px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .segmented button.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-btn { border: none; background: var(--page); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-btn:active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-btn.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
+  :root[data-skin="soft"] .segmented { background: var(--page); box-shadow: var(--soft-inset); padding: 4px; border-radius: 16px; }
+  :root[data-skin="soft"] .segmented button { border-radius: 12px; }
+  :root[data-skin="soft"] .segmented button.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .month-picker-btn { border: none; background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .month-picker-btn:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .month-picker-btn.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
 
   /* buttons */
-  :root[data-skin="soft"]:not([data-theme="light"]) .btn { border-radius: 16px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .btn.primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent), var(--soft-raise-sm); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .btn.primary:active { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent), inset 2px 2px 6px rgba(0,0,0,0.25); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .btn.plain { background: var(--page); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .btn.plain:active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .btn.danger { background: var(--page); box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .btn.danger:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .btn { border-radius: 16px; }
+  :root[data-skin="soft"] .btn.primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent), var(--soft-raise-sm); }
+  :root[data-skin="soft"] .btn.primary:active { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent), inset 2px 2px 6px rgba(0,0,0,0.25); }
+  :root[data-skin="soft"] .btn.plain { background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .btn.plain:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .btn.danger { background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .btn.danger:active { box-shadow: var(--soft-inset); }
 
   /* sheets and the shortcut menu */
-  :root[data-skin="soft"]:not([data-theme="light"]) .modal-overlay { background: rgba(10,12,14,0.55); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .modal-sheet { background: var(--page); border-top: none; border-radius: 28px 28px 0 0; box-shadow: 0 -10px 34px rgba(0,0,0,0.5); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring-flat); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.add-fab { box-shadow: var(--soft-raise), var(--soft-ring-flat); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.add-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .speed-dial-btn { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .speed-dial-label { background: var(--page); color: var(--ink); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .modal-overlay { background: var(--soft-overlay); }
+  :root[data-skin="soft"] .modal-sheet { background: var(--page); border-top: none; border-radius: 28px 28px 0 0; box-shadow: var(--soft-sheet-shadow); }
+  :root[data-skin="soft"] .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring-flat); }
+  :root[data-skin="soft"] .icon-btn.add-fab { box-shadow: var(--soft-raise), var(--soft-ring-flat); }
+  :root[data-skin="soft"] .icon-btn.add-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
+  :root[data-skin="soft"] .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
+  :root[data-skin="soft"] .speed-dial-btn { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
+  :root[data-skin="soft"] .speed-dial-label { background: var(--page); color: var(--ink); box-shadow: var(--soft-raise-sm); }
 
   /* switches: pressed track, glowing teal when on */
-  :root[data-skin="soft"]:not([data-theme="light"]) .switch .track { background: var(--page); border: none; box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .switch .thumb { background: #4a5258; box-shadow: var(--soft-raise-sm); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .switch input:checked + .track { background: var(--page); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .switch input:checked ~ .thumb { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 75%, transparent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .search-wrap input { padding-left: 42px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-btn, :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-text-btn { background: var(--page) !important; border: none !important; box-shadow: var(--soft-raise-sm) !important; color: var(--accent) !important; border-radius: 999px !important; }
-  :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-btn:active, :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-text-btn:active { box-shadow: var(--soft-inset) !important; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card:not(:last-child) { margin-bottom: 16px; }
-  }
+  :root[data-skin="soft"] .switch .track { background: var(--page); border: none; box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .switch .thumb { background: var(--soft-thumb); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .switch input:checked + .track { background: var(--page); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+  :root[data-skin="soft"] .switch input:checked ~ .thumb { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 75%, transparent); }
+  :root[data-skin="soft"] .search-wrap input { padding-left: 42px; }
+  :root[data-skin="soft"] #tx-import-btn, :root[data-skin="soft"] #tx-import-text-btn { background: var(--page) !important; border: none !important; box-shadow: var(--soft-raise-sm) !important; color: var(--accent) !important; border-radius: 999px !important; }
+  :root[data-skin="soft"] #tx-import-btn:active, :root[data-skin="soft"] #tx-import-text-btn:active { box-shadow: var(--soft-inset) !important; }
+  :root[data-skin="soft"] .card:not(:last-child) { margin-bottom: 16px; }
 
   /* Soft skin: the pie becomes a ring sitting in a pressed dish, with the
      grand total on a raised disc in the middle. */
-  :root[data-skin="soft"][data-theme="dark"] .donut-wrap.donut-soft { width: 196px; height: 196px; border-radius: 50%; background: var(--page); box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] .donut-soft .donut-seg { stroke: rgba(255,255,255,0.14); stroke-width: 0.7; stroke-linejoin: round; filter: drop-shadow(3px 4px 4px rgba(0,0,0,0.6)) drop-shadow(-2px -2px 3px rgba(255,255,255,0.05)); }
-  :root[data-skin="soft"][data-theme="dark"] .donut-soft .donut-seg-label { font-size: 9.5px; }
-  :root[data-skin="soft"][data-theme="dark"] .donut-core {
+  :root[data-skin="soft"] .donut-wrap.donut-soft { width: 196px; height: 196px; border-radius: 50%; background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .donut-soft .donut-seg { stroke: var(--soft-seg-stroke); stroke-width: 0.7; stroke-linejoin: round; filter: var(--soft-seg-shadow); }
+  :root[data-skin="soft"] .donut-soft .donut-seg-label { font-size: 9.5px; }
+  :root[data-skin="soft"] .donut-core {
     position: absolute; left: 50%; top: 50%; width: 100px; height: 100px; transform: translate(-50%, -50%);
     border-radius: 50%; background: var(--page); box-shadow: var(--soft-raise);
     display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
     pointer-events: none;
   }
-  :root[data-skin="soft"][data-theme="dark"] .donut-core .amt { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; max-width: 88px; }
-  :root[data-skin="soft"][data-theme="dark"] .donut-core .lbl { font-size: 9.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
-  @media (prefers-color-scheme: dark) {
-
-  /* Soft skin: the pie becomes a ring sitting in a pressed dish, with the
-     grand total on a raised disc in the middle. */
-  :root[data-skin="soft"]:not([data-theme="light"]) .donut-wrap.donut-soft { width: 196px; height: 196px; border-radius: 50%; background: var(--page); box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .donut-soft .donut-seg { stroke: rgba(255,255,255,0.14); stroke-width: 0.7; stroke-linejoin: round; filter: drop-shadow(3px 4px 4px rgba(0,0,0,0.6)) drop-shadow(-2px -2px 3px rgba(255,255,255,0.05)); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .donut-soft .donut-seg-label { font-size: 9.5px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .donut-core {
-    position: absolute; left: 50%; top: 50%; width: 100px; height: 100px; transform: translate(-50%, -50%);
-    border-radius: 50%; background: var(--page); box-shadow: var(--soft-raise);
-    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-    pointer-events: none;
-  }
-  :root[data-skin="soft"]:not([data-theme="light"]) .donut-core .amt { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; max-width: 88px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .donut-core .lbl { font-size: 9.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
-  }
+  :root[data-skin="soft"] .donut-core .amt { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; max-width: 88px; }
+  :root[data-skin="soft"] .donut-core .lbl { font-size: 9.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
 
   /* Soft skin, round 2: readouts pressed in, bars in slots, glowing ticks. */
-  :root[data-skin="soft"][data-theme="dark"] .card-ledger .hero-num { display: block; background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 12px 16px; text-align: center; }
-  :root[data-skin="soft"][data-theme="dark"] .card-ledger .disclosure > .num { background: var(--page); box-shadow: var(--soft-inset); border-radius: 12px; padding: 5px 12px; white-space: nowrap; flex-shrink: 0; }
-  :root[data-skin="soft"][data-theme="dark"] .card-ledger .disclosure { gap: 10px; }
+  :root[data-skin="soft"] .card-ledger .hero-num { display: block; background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 12px 16px; text-align: center; }
+  :root[data-skin="soft"] .card-ledger .disclosure > .num { background: var(--page); box-shadow: var(--soft-inset); border-radius: 12px; padding: 5px 12px; white-space: nowrap; flex-shrink: 0; }
+  :root[data-skin="soft"] .card-ledger .disclosure { gap: 10px; }
 
-  :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row, :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row:last-child { background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 10px 14px; margin-bottom: 12px; border-bottom: none; }
-  :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row:last-child { margin-bottom: 0; }
-  :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row .amount { background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 12px; padding: 4px 9px; white-space: nowrap; }
+  :root[data-skin="soft"] .card-upcoming .row, :root[data-skin="soft"] .card-upcoming .row:last-child { background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 10px 14px; margin-bottom: 12px; border-bottom: none; }
+  :root[data-skin="soft"] .card-upcoming .row:last-child { margin-bottom: 0; }
+  :root[data-skin="soft"] .card-upcoming .row .amount { background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 12px; padding: 4px 9px; white-space: nowrap; }
 
-  :root[data-skin="soft"][data-theme="dark"] .trend-bar-slot { height: 108px; width: 24px; padding: 3px; box-sizing: border-box; border-radius: 999px; background: var(--page); box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"][data-theme="dark"] .trend-bar-overlay { width: 18px; }
-  :root[data-skin="soft"][data-theme="dark"] .trend-bar-fill.actual { width: 12px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent)); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); }
-  :root[data-skin="soft"][data-theme="dark"] .trend-bar-fill.forecast { width: 18px; border-radius: 999px; border-bottom: 1px solid color-mix(in srgb, var(--accent-warm) 55%, transparent); background: color-mix(in srgb, var(--accent-warm) 18%, transparent); }
+  :root[data-skin="soft"] .trend-bar-slot { height: 108px; width: 24px; padding: 3px; box-sizing: border-box; border-radius: 999px; background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .trend-bar-overlay { width: 18px; }
+  :root[data-skin="soft"] .trend-bar-fill.actual { width: 12px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent)); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); }
+  :root[data-skin="soft"] .trend-bar-fill.forecast { width: 18px; border-radius: 999px; border-bottom: 1px solid color-mix(in srgb, var(--accent-warm) 55%, transparent); background: color-mix(in srgb, var(--accent-warm) 18%, transparent); }
 
   /* the ring around the selected month needs room: the strip scrolls
      sideways, which clips anything outside its box, so pad it and pull the
      padding back out with negative margins */
-  :root[data-skin="soft"][data-theme="dark"] .month-picker { padding: 10px 10px; margin-top: -10px; margin-bottom: -10px; }
-  :root[data-skin="soft"][data-theme="dark"] .month-picker-row { margin-top: 14px; }
-  :root[data-skin="soft"][data-theme="dark"] .month-picker-row .month-picker { margin-top: -10px; }
+  :root[data-skin="soft"] .month-picker { padding: 10px 10px; margin-top: -10px; margin-bottom: -10px; }
+  :root[data-skin="soft"] .month-picker-row { margin-top: 14px; }
+  :root[data-skin="soft"] .month-picker-row .month-picker { margin-top: -10px; }
 
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn.tick-btn { color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
-  :root[data-skin="soft"][data-theme="dark"] .icon-btn.tick-btn:active { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
-  @media (prefers-color-scheme: dark) {
-
-  /* Soft skin, round 2: readouts pressed in, bars in slots, glowing ticks. */
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .hero-num { display: block; background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 12px 16px; text-align: center; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .disclosure > .num { background: var(--page); box-shadow: var(--soft-inset); border-radius: 12px; padding: 5px 12px; white-space: nowrap; flex-shrink: 0; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .disclosure { gap: 10px; }
-
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row, :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row:last-child { background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 10px 14px; margin-bottom: 12px; border-bottom: none; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row:last-child { margin-bottom: 0; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row .amount { background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 12px; padding: 4px 9px; white-space: nowrap; }
-
-  :root[data-skin="soft"]:not([data-theme="light"]) .trend-bar-slot { height: 108px; width: 24px; padding: 3px; box-sizing: border-box; border-radius: 999px; background: var(--page); box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .trend-bar-overlay { width: 18px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .trend-bar-fill.actual { width: 12px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent)); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .trend-bar-fill.forecast { width: 18px; border-radius: 999px; border-bottom: 1px solid color-mix(in srgb, var(--accent-warm) 55%, transparent); background: color-mix(in srgb, var(--accent-warm) 18%, transparent); }
-
-  /* the ring around the selected month needs room: the strip scrolls
-     sideways, which clips anything outside its box, so pad it and pull the
-     padding back out with negative margins */
-  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker { padding: 10px 10px; margin-top: -10px; margin-bottom: -10px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-row { margin-top: 14px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-row .month-picker { margin-top: -10px; }
-
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.tick-btn { color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.tick-btn:active { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
-  }
+  :root[data-skin="soft"] .icon-btn.tick-btn { color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
+  :root[data-skin="soft"] .icon-btn.tick-btn:active { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
 
   /* Soft skin, round 3: one shared readout column. Every figure in these cards
      sits in an equally wide pressed panel, so the left edge lines up whatever
      the number's length; labels get the rest of the row. */
-  :root[data-skin="soft"][data-theme="dark"] .card-ledger .disclosure > :first-child { flex: 1 1 auto; min-width: 0; }
-  :root[data-skin="soft"][data-theme="dark"] .card-ledger .disclosure > .num { flex: 0 0 auto; min-width: 46%; box-sizing: border-box; text-align: right; padding: 6px 12px; }
-  :root[data-skin="soft"][data-theme="dark"] .loan-detail-row { position: relative; padding-right: 48px; }
-  :root[data-skin="soft"][data-theme="dark"] .loan-detail-row .value-wrap { margin-left: auto; }
-  :root[data-skin="soft"][data-theme="dark"] .loan-detail-row .value { width: 150px; box-sizing: border-box; background: var(--page); box-shadow: var(--soft-inset); border-radius: 14px; padding: 6px 12px; }
-  :root[data-skin="soft"][data-theme="dark"] .loan-detail-row .value-wrap > button { position: absolute; right: 0; top: 0; bottom: 0; margin: auto 0; }
-  :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row .meta { overflow: visible; text-overflow: clip; white-space: normal; }
-  @media (prefers-color-scheme: dark) {
+  :root[data-skin="soft"] .card-ledger .disclosure > :first-child { flex: 1 1 auto; min-width: 0; }
+  :root[data-skin="soft"] .card-ledger .disclosure > .num { flex: 0 0 auto; min-width: 46%; box-sizing: border-box; text-align: right; padding: 6px 12px; }
+  :root[data-skin="soft"] .loan-detail-row { position: relative; padding-right: 48px; }
+  :root[data-skin="soft"] .loan-detail-row .value-wrap { margin-left: auto; }
+  :root[data-skin="soft"] .loan-detail-row .value { width: 150px; box-sizing: border-box; background: var(--page); box-shadow: var(--soft-inset); border-radius: 14px; padding: 6px 12px; }
+  :root[data-skin="soft"] .loan-detail-row .value-wrap > button { position: absolute; right: 0; top: 0; bottom: 0; margin: auto 0; }
+  :root[data-skin="soft"] .card-upcoming .row .meta { overflow: visible; text-overflow: clip; white-space: normal; }
 
-  /* Soft skin, round 3: one shared readout column. Every figure in these cards
-     sits in an equally wide pressed panel, so the left edge lines up whatever
-     the number's length; labels get the rest of the row. */
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .disclosure > :first-child { flex: 1 1 auto; min-width: 0; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .disclosure > .num { flex: 0 0 auto; min-width: 46%; box-sizing: border-box; text-align: right; padding: 6px 12px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .loan-detail-row { position: relative; padding-right: 48px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .loan-detail-row .value-wrap { margin-left: auto; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .loan-detail-row .value { width: 150px; box-sizing: border-box; background: var(--page); box-shadow: var(--soft-inset); border-radius: 14px; padding: 6px 12px; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .loan-detail-row .value-wrap > button { position: absolute; right: 0; top: 0; bottom: 0; margin: auto 0; }
-  :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row .meta { overflow: visible; text-overflow: clip; white-space: normal; }
+  /* Drop-downs: iPhones (and other mobile browsers) draw a <select> with their
+     own built-in style, which ignores the pressed-in shadow - so the native
+     look is switched off here and the arrow is drawn by us instead. */
+  :root[data-skin="soft"] select {
+    -webkit-appearance: none; appearance: none;
+    background-image: var(--soft-chevron); background-repeat: no-repeat;
+    background-position: right 14px center; background-size: 16px;
+    padding-right: 42px; text-overflow: ellipsis;
   }
 </style>
 
@@ -1522,7 +1411,8 @@
     { key: "indigo", name: "Indigo", hex: "#3452D9" },
     { key: "violet", name: "Violet", hex: "#7A42E0" },
     { key: "rose", name: "Rose", hex: "#C22E72" },
-    { key: "forest", name: "Forest", hex: "#1E8A54" }
+    { key: "forest", name: "Forest", hex: "#1E8A54" },
+    { key: "orange", name: "Orange", hex: "#E5622F" }
   ];
 
   var BANK_CARDS = [
@@ -3254,15 +3144,10 @@
      Only genuinely uncategorized spend (no categoryId at all) is ever
      labeled "Uncategorized" - a category without a color slot is never
      mistaken for one. */
-  // The opt-in dark "soft" skin (see the data-skin CSS) draws the chart as a
+  // The opt-in "soft" skin (see the data-skin CSS) draws the chart as a
   // flat ring in a pressed dish instead of the tilted, extruded pie.
   function isSoftSkin() {
-    var root = document.documentElement;
-    if (root.getAttribute("data-skin") !== "soft") return false;
-    var t = root.getAttribute("data-theme");
-    if (t === "light") return false;
-    if (t === "dark") return true;
-    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    return document.documentElement.getAttribute("data-skin") === "soft";
   }
 
   function renderDonut(byCat, total) {
@@ -5188,7 +5073,7 @@
 
     html += '<div class="card"><h2>Appearance</h2>';
     html += '<div class="toggle-row"><span>Soft look <span class="footnote" style="margin:0">(beta)</span></span><label class="switch"><input type="checkbox" id="soft-skin-toggle" ' + (document.documentElement.getAttribute("data-skin") === "soft" ? "checked" : "") + ' /><span class="track"></span><span class="thumb"></span></label></div>';
-    html += '<p class="footnote" style="margin-top:0;margin-bottom:0">Raised and pressed surfaces with a glowing accent. Shows in dark mode only for now; light mode looks the same as before.</p>';
+    html += '<p class="footnote" style="margin-top:0;margin-bottom:0">Raised and pressed surfaces with a glowing accent. Works in light and dark, and follows the Theme Color you pick above.</p>';
     html += '</div>';
 
     html += '<div class="card"><h2>Account</h2>';
