@@ -793,6 +793,18 @@
     transition: transform .18s cubic-bezier(.34,1.5,.4,1), box-shadow .15s ease;
   }
   .shortcut-fab:active { transform: scale(.88); }
+  /* The "+" (add) button lives directly under the menu button, a size up
+     from it since adding is the screen's primary action. Its space is always
+     reserved (the button just turns visibility:hidden on screens with no add
+     action, see setTab) so the menu button never jumps between screens. */
+  .add-fab {
+    width: 64px; height: 64px; margin-top: 14px; flex-shrink: 0;
+    pointer-events: auto;
+    box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 38%, transparent), 0 2px 6px rgba(0,0,0,.16);
+    transition: transform .18s cubic-bezier(.34,1.5,.4,1), box-shadow .15s ease;
+  }
+  .add-fab svg { width: 28px; height: 28px; }
+  .add-fab:active { transform: scale(.88); }
   .fab-icon {
     position: absolute; width: 24px; height: 24px;
     transition: opacity .18s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
@@ -1287,9 +1299,6 @@
       <button class="icon-btn ghost" id="appbar-refresh" aria-label="Refresh">
         <svg><use href="#i-refresh"/></svg>
       </button>
-      <button class="icon-btn" id="appbar-action" aria-label="Add">
-        <svg><use href="#i-plus"/></svg>
-      </button>
     </div>
   </header>
 
@@ -1319,6 +1328,9 @@
       <button class="shortcut-fab" id="shortcut-fab" aria-label="Shortcuts">
         <svg class="fab-icon fab-icon-menu"><use href="#i-menu"/></svg>
         <svg class="fab-icon fab-icon-close"><use href="#i-x"/></svg>
+      </button>
+      <button class="icon-btn add-fab" id="appbar-action" aria-label="Add">
+        <svg><use href="#i-plus"/></svg>
       </button>
     </div>
   </div>
@@ -2259,6 +2271,7 @@
   });
 
   document.getElementById("appbar-action").addEventListener("click", function () {
+    setSpeedDialOpen(false);
     if (currentTab === "dashboard" || currentTab === "transactions") openTransactionForm(null);
     else if (currentTab === "recurring") openRecurringForm(null);
     else if (currentTab === "loans") openLoanForm(null);
