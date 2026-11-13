@@ -511,6 +511,9 @@
   .chip.critical { background: color-mix(in srgb, var(--critical) 16%, transparent); color: var(--critical); }
   .chip.milestone { background: var(--accent-warm-soft); color: var(--accent-warm); }
   .chip svg { width: 11px; height: 11px; }
+  /* Smaller variant that sits inline after a row's date on its second line. */
+  .chip.chip-sm { font-size: 8.5px; padding: 2px 6px; margin-left: 6px; vertical-align: middle; gap: 3px; }
+  .chip.chip-sm svg { width: 9px; height: 9px; }
 
   /* Gauge-tick track: graduation marks read through the untouched portion,
      covered by the fill as it advances - like a real dial's calibration. */
@@ -931,6 +934,7 @@
     --soft-raise-sm: 3px 3px 8px rgba(0,0,0,0.5), -3px -3px 7px rgba(255,255,255,0.035);
     --soft-inset: inset 3px 3px 7px rgba(0,0,0,0.55), inset -2px -2px 6px rgba(255,255,255,0.03);
     --soft-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
+    --soft-ring-flat: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent);
     --shadow-1: var(--soft-raise-sm);
   }
   :root[data-skin="soft"][data-theme="dark"][data-accent="teal"] { --accent: #38E3CE; --accent-soft: #1b3a38; --accent-ink: #06201d; }
@@ -1012,8 +1016,10 @@
   /* sheets and the shortcut menu */
   :root[data-skin="soft"][data-theme="dark"] .modal-overlay { background: rgba(10,12,14,0.55); }
   :root[data-skin="soft"][data-theme="dark"] .modal-sheet { background: var(--page); border-top: none; border-radius: 28px 28px 0 0; box-shadow: 0 -10px 34px rgba(0,0,0,0.5); }
-  :root[data-skin="soft"][data-theme="dark"] .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring); }
-  :root[data-skin="soft"][data-theme="dark"] .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring); }
+  :root[data-skin="soft"][data-theme="dark"] .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring-flat); }
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn.add-fab { box-shadow: var(--soft-raise), var(--soft-ring-flat); }
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn.add-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
+  :root[data-skin="soft"][data-theme="dark"] .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
   :root[data-skin="soft"][data-theme="dark"] .speed-dial-btn { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
   :root[data-skin="soft"][data-theme="dark"] .speed-dial-label { background: var(--page); color: var(--ink); box-shadow: var(--soft-raise-sm); }
 
@@ -1055,6 +1061,7 @@
     --soft-raise-sm: 3px 3px 8px rgba(0,0,0,0.5), -3px -3px 7px rgba(255,255,255,0.035);
     --soft-inset: inset 3px 3px 7px rgba(0,0,0,0.55), inset -2px -2px 6px rgba(255,255,255,0.03);
     --soft-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
+    --soft-ring-flat: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent);
     --shadow-1: var(--soft-raise-sm);
   }
   :root[data-skin="soft"]:not([data-theme="light"])[data-accent="teal"] { --accent: #38E3CE; --accent-soft: #1b3a38; --accent-ink: #06201d; }
@@ -1136,8 +1143,10 @@
   /* sheets and the shortcut menu */
   :root[data-skin="soft"]:not([data-theme="light"]) .modal-overlay { background: rgba(10,12,14,0.55); }
   :root[data-skin="soft"]:not([data-theme="light"]) .modal-sheet { background: var(--page); border-top: none; border-radius: 28px 28px 0 0; box-shadow: 0 -10px 34px rgba(0,0,0,0.5); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring); }
-  :root[data-skin="soft"]:not([data-theme="light"]) .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring-flat); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.add-fab { box-shadow: var(--soft-raise), var(--soft-ring-flat); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.add-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
   :root[data-skin="soft"]:not([data-theme="light"]) .speed-dial-btn { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
   :root[data-skin="soft"]:not([data-theme="light"]) .speed-dial-label { background: var(--page); color: var(--ink); box-shadow: var(--soft-raise-sm); }
 
@@ -1230,6 +1239,30 @@
 
   :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.tick-btn { color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
   :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.tick-btn:active { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
+  }
+
+  /* Soft skin, round 3: one shared readout column. Every figure in these cards
+     sits in an equally wide pressed panel, so the left edge lines up whatever
+     the number's length; labels get the rest of the row. */
+  :root[data-skin="soft"][data-theme="dark"] .card-ledger .disclosure > :first-child { flex: 1 1 auto; min-width: 0; }
+  :root[data-skin="soft"][data-theme="dark"] .card-ledger .disclosure > .num { flex: 0 0 auto; min-width: 46%; box-sizing: border-box; text-align: right; padding: 6px 12px; }
+  :root[data-skin="soft"][data-theme="dark"] .loan-detail-row { position: relative; padding-right: 48px; }
+  :root[data-skin="soft"][data-theme="dark"] .loan-detail-row .value-wrap { margin-left: auto; }
+  :root[data-skin="soft"][data-theme="dark"] .loan-detail-row .value { width: 150px; box-sizing: border-box; background: var(--page); box-shadow: var(--soft-inset); border-radius: 14px; padding: 6px 12px; }
+  :root[data-skin="soft"][data-theme="dark"] .loan-detail-row .value-wrap > button { position: absolute; right: 0; top: 0; bottom: 0; margin: auto 0; }
+  :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row .meta { overflow: visible; text-overflow: clip; white-space: normal; }
+  @media (prefers-color-scheme: dark) {
+
+  /* Soft skin, round 3: one shared readout column. Every figure in these cards
+     sits in an equally wide pressed panel, so the left edge lines up whatever
+     the number's length; labels get the rest of the row. */
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .disclosure > :first-child { flex: 1 1 auto; min-width: 0; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .disclosure > .num { flex: 0 0 auto; min-width: 46%; box-sizing: border-box; text-align: right; padding: 6px 12px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .loan-detail-row { position: relative; padding-right: 48px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .loan-detail-row .value-wrap { margin-left: auto; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .loan-detail-row .value { width: 150px; box-sizing: border-box; background: var(--page); box-shadow: var(--soft-inset); border-radius: 14px; padding: 6px 12px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .loan-detail-row .value-wrap > button { position: absolute; right: 0; top: 0; bottom: 0; margin: auto 0; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row .meta { overflow: visible; text-overflow: clip; white-space: normal; }
   }
 </style>
 
@@ -2911,8 +2944,7 @@
           var d = daysUntil(item.dueDate);
           html += '<div class="row" data-open-' + item.kind + '="' + item.id + '">';
           html += badgeHtml(cat, 30);
-          html += '<div class="main"><div class="title">' + escapeHtml(item.name) + '</div><div class="meta">' + fmtDateShort(item.dueDate) + (item.kind === "loan" ? " · Loan" : "") + '</div></div>';
-          if (d <= 3) html += dueChip(d);
+          html += '<div class="main"><div class="title">' + escapeHtml(item.name) + '</div><div class="meta">' + fmtDateShort(item.dueDate) + (item.kind === "loan" ? " · Loan" : "") + (d <= 3 ? dueChip(d, true) : "") + '</div></div>';
           html += '<div class="amount num">' + fmtMoney(item.amount) + '</div>';
           html += '</div>';
         });
@@ -2965,10 +2997,10 @@
     });
   }
 
-  function dueChip(d) {
+  function dueChip(d, small) {
     var label = d <= 0 ? "Due today" : "Due in " + d + "d";
     var cls = d <= 1 ? "critical" : "warning";
-    return '<span class="chip ' + cls + '">' + icon("alert") + label + '</span>';
+    return '<span class="chip ' + cls + (small ? " chip-sm" : "") + '">' + icon("alert") + label + '</span>';
   }
 
   /* Budgets are set per category (Settings > Categories > edit a category)
@@ -3613,7 +3645,7 @@
   function renderGoalsDashboardCard() {
     if (!state.goals.length) return "";
     var totalSaved = state.goals.reduce(function (s, g) { return s + goalProgress(g).saved; }, 0);
-    var html = '<div class="card"><h2>Savings Goals</h2>';
+    var html = '<div class="card card-ledger"><h2>Savings Goals</h2>';
     html += '<div class="disclosure" style="margin-bottom:14px"><span class="footnote" style="display:inline">Saved across ' + state.goals.length + (state.goals.length === 1 ? " goal" : " goals") + '</span><span class="num" style="font-size:16px;font-weight:700;color:var(--accent)">' + fmtMoney(totalSaved) + '</span></div>';
     state.goals.slice(0, 2).forEach(function (goal) {
       var p = goalProgress(goal);
@@ -3865,7 +3897,7 @@
     var monthlyOut = active.filter(function (r) { return r.kind !== "income"; }).reduce(function (s, r) { return s + monthlyEquivalent(r); }, 0);
     var monthlyIn = active.filter(function (r) { return r.kind === "income"; }).reduce(function (s, r) { return s + monthlyEquivalent(r); }, 0);
 
-    var html = '<div class="card"><div class="disclosure"' + (income.length ? ' style="margin-bottom:8px"' : '') + '><span style="font-weight:600">Monthly total</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(monthlyOut) + '</span></div>';
+    var html = '<div class="card card-ledger"><div class="disclosure"' + (income.length ? ' style="margin-bottom:8px"' : '') + '><span style="font-weight:600">Monthly total</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(monthlyOut) + '</span></div>';
     if (income.length) html += '<div class="disclosure"><span style="font-weight:600">Monthly income</span><span class="num" style="font-size:18px;font-weight:700;color:var(--good)">+' + fmtMoney(monthlyIn) + '</span></div>';
     html += '</div>';
 
@@ -4031,7 +4063,7 @@
       // toggling Active off for - a loan with nothing left to pay has no
       // ongoing monthly obligation regardless of that flag.
       var totalMonthly = state.loans.filter(function (l) { return l.isActive && !loanProgress(l).isPaidOff; }).reduce(function (s, l) { return s + l.monthlyPayment; }, 0);
-      html += '<div class="card"><div class="disclosure" style="margin-bottom:8px"><span style="font-weight:600">Total balance remaining</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalBalance) + '</span></div>';
+      html += '<div class="card card-ledger"><div class="disclosure" style="margin-bottom:8px"><span style="font-weight:600">Total balance remaining</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalBalance) + '</span></div>';
       html += '<div class="disclosure"><span style="font-weight:600">Monthly total</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalMonthly) + '</span></div></div>';
       html += '<div class="card" style="padding:4px 16px">';
       state.loans.forEach(function (loan) { html += loanCard(loan); });
@@ -4230,7 +4262,7 @@
     } else {
       var totalGoal = state.goals.reduce(function (s, g) { return s + g.targetAmount; }, 0);
       var totalSaved = state.goals.reduce(function (s, g) { return s + goalProgress(g).saved; }, 0);
-      html += '<div class="card"><div class="disclosure" style="margin-bottom:8px"><span style="font-weight:600">Goal</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalGoal) + '</span></div>';
+      html += '<div class="card card-ledger"><div class="disclosure" style="margin-bottom:8px"><span style="font-weight:600">Goal</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalGoal) + '</span></div>';
       html += '<div class="disclosure"><span style="font-weight:600">Total saved</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(totalSaved) + '</span></div></div>';
       html += '<div class="card" style="padding:4px 16px">';
       state.goals.forEach(function (goal) { html += goalCard(goal); });
