@@ -200,6 +200,8 @@
     touch-action: manipulation;
   }
   button, input, select { font-family: inherit; }
+  /* No native tap flash on buttons (iOS grey / Android blue); every control has its own :active press state. */
+  * { -webkit-tap-highlight-color: transparent; }
 
   /* Calibrated-readout numerals: every currency/count value in the app uses
      this class, so this one rule carries the "instrument panel" identity
