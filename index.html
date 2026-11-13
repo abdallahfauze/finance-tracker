@@ -5056,6 +5056,11 @@
     html += '<p class="footnote" style="margin-top:14px;margin-bottom:0">Curated presets rather than a full color wheel, so button text and the paid/overdue/warning colors stay legible against whatever you pick.</p>';
     html += '</div>';
 
+    html += '<div class="card"><h2>Appearance</h2>';
+    html += '<div class="toggle-row"><span>Soft look <span class="footnote" style="margin:0">(beta)</span></span><label class="switch"><input type="checkbox" id="soft-skin-toggle" ' + (document.documentElement.getAttribute("data-skin") === "soft" ? "checked" : "") + ' /><span class="track"></span><span class="thumb"></span></label></div>';
+    html += '<p class="footnote" style="margin-top:0;margin-bottom:0">Raised and pressed surfaces with a glowing accent. Shows in dark mode only for now; light mode looks the same as before.</p>';
+    html += '</div>';
+
     html += '<div class="card"><h2>Account</h2>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in as " + escapeHtml(auth.currentUser.email) + " — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
     if (cloudEnabled && auth && auth.currentUser) html += '<button class="btn plain" id="change-pin" style="margin-bottom:10px">Change PIN</button>';
@@ -5093,6 +5098,16 @@
         applyAccentColor();
         save(); renderSettings();
       });
+    });
+    var softToggle = document.getElementById("soft-skin-toggle");
+    if (softToggle) softToggle.addEventListener("change", function (e) {
+      try {
+        if (e.target.checked) localStorage.setItem("ledger.financeTracker.skin", "soft");
+        else localStorage.removeItem("ledger.financeTracker.skin");
+      } catch (err) {}
+      if (e.target.checked) document.documentElement.setAttribute("data-skin", "soft");
+      else document.documentElement.removeAttribute("data-skin");
+      renderAll();
     });
     var changePinBtn = document.getElementById("change-pin");
     if (changePinBtn) changePinBtn.addEventListener("click", openChangePinForm);
