@@ -20,7 +20,7 @@
     var __raw = localStorage.getItem("ledger.financeTracker.v1");
     var __parsed = __raw && JSON.parse(__raw);
     var __accent = __parsed && __parsed.settings && __parsed.settings.accentColor;
-    if (__accent) document.documentElement.setAttribute("data-accent", __accent);
+    if (__accent && ["teal", "sky", "indigo", "violet", "rose", "orange"].indexOf(__accent) !== -1) document.documentElement.setAttribute("data-accent", __accent);
   } catch (e) {}
 </script>
 <title>Finance Tracker</title>
@@ -137,7 +137,6 @@
   :root[data-accent="indigo"] { --accent: #3452D9; --accent-soft: #E1E5FB; --accent-ink: #ffffff; }
   :root[data-accent="violet"] { --accent: #7A42E0; --accent-soft: #EEE3FB; --accent-ink: #ffffff; }
   :root[data-accent="rose"] { --accent: #C22E72; --accent-soft: #FAE1EC; --accent-ink: #ffffff; }
-  :root[data-accent="forest"] { --accent: #1E8A54; --accent-soft: #DEF2E6; --accent-ink: #ffffff; }
   :root[data-accent="orange"] { --accent: #C84B1B; --accent-soft: #FBE4DA; --accent-ink: #ffffff; }
   @media (prefers-color-scheme: dark) {
     :root[data-accent="teal"]:not([data-theme="light"]) { --accent: #3DD9C4; --accent-soft: #16302C; --accent-ink: #0B1413; }
@@ -145,7 +144,6 @@
     :root[data-accent="indigo"]:not([data-theme="light"]) { --accent: #7C9BFF; --accent-soft: #1C2340; --accent-ink: #0A0E1F; }
     :root[data-accent="violet"]:not([data-theme="light"]) { --accent: #B79CFF; --accent-soft: #271C40; --accent-ink: #120D1F; }
     :root[data-accent="rose"]:not([data-theme="light"]) { --accent: #F080B8; --accent-soft: #3A1A28; --accent-ink: #1F0D14; }
-    :root[data-accent="forest"]:not([data-theme="light"]) { --accent: #4ADE80; --accent-soft: #15301F; --accent-ink: #0A1710; }
     :root[data-accent="orange"]:not([data-theme="light"]) { --accent: #FF8A5C; --accent-soft: #3A2216; --accent-ink: #1F0E06; }
   }
   :root[data-accent="teal"][data-theme="dark"] { --accent: #3DD9C4; --accent-soft: #16302C; --accent-ink: #0B1413; }
@@ -153,7 +151,6 @@
   :root[data-accent="indigo"][data-theme="dark"] { --accent: #7C9BFF; --accent-soft: #1C2340; --accent-ink: #0A0E1F; }
   :root[data-accent="violet"][data-theme="dark"] { --accent: #B79CFF; --accent-soft: #271C40; --accent-ink: #120D1F; }
   :root[data-accent="rose"][data-theme="dark"] { --accent: #F080B8; --accent-soft: #3A1A28; --accent-ink: #1F0D14; }
-  :root[data-accent="forest"][data-theme="dark"] { --accent: #4ADE80; --accent-soft: #15301F; --accent-ink: #0A1710; }
   :root[data-accent="orange"][data-theme="dark"] { --accent: #FF8A5C; --accent-soft: #3A2216; --accent-ink: #1F0E06; }
 
   /* Official Saudi Riyal currency sign (U+20C1), SIL OFL 1.1 licensed font by Emran Alhaddad
@@ -1440,7 +1437,6 @@
     { key: "indigo", name: "Indigo", hex: "#3452D9" },
     { key: "violet", name: "Violet", hex: "#7A42E0" },
     { key: "rose", name: "Rose", hex: "#C22E72" },
-    { key: "forest", name: "Forest", hex: "#1E8A54" },
     { key: "orange", name: "Orange", hex: "#E5622F" }
   ];
 
@@ -1523,7 +1519,8 @@
     });
     if (!parsed.settings) parsed.settings = { currency: guessCurrency() };
     if (parsed.settings.currency === "USD") parsed.settings.currency = "SAR";
-    if (!parsed.settings.accentColor) parsed.settings.accentColor = "teal";
+    // Anything unknown (e.g. the removed "forest" preset) falls back to Teal.
+    if (!ACCENT_PRESETS.some(function (p) { return p.key === parsed.settings.accentColor; })) parsed.settings.accentColor = "teal";
     // One-time migration: chart color slots used to be permanently baked into
     // the 8 original default categories regardless of use, which starved any
     // custom category of ever getting a real color. Clear that out once so
