@@ -64,6 +64,10 @@
     --critical: #d03b3b;
     --cat0: #2a78d6; --cat1: #eb6834; --cat2: #1baf7a; --cat3: #eda100;
     --cat4: #e87ba4; --cat5: #008300; --cat6: #4a3aa7; --cat7: #e34948;
+    --cat8: #d03fd0; --cat9: #5aa6e8; --cat10: #8f8750; --cat11: #4b5563;
+    --cat12: #86a800; --cat13: #6a2c6b; --cat14: #b27ad0; --cat15: #66742a;
+    --cat16: #0f7a72; --cat17: #9b3fb8; --cat18: #0aa5bd; --cat19: #c2318f;
+    --cat20: #7a1f2b; --cat21: #2f5f9e; --cat22: #e0894a; --cat23: #a89200;
     --cat-other: var(--ink-muted);
     --radius-lg: 12px;
     --radius-md: 8px;
@@ -80,6 +84,10 @@
       --warning: #d99a3b;
       --cat0: #3987e5; --cat1: #d95926; --cat2: #199e70; --cat3: #c98500;
       --cat4: #d55181; --cat5: #1f9e1f; --cat6: #9085e9; --cat7: #e66767;
+      --cat8: #e276e2; --cat9: #7fb8ee; --cat10: #b8b088; --cat11: #8b94a3;
+      --cat12: #a9c92b; --cat13: #a46aa5; --cat14: #c79be0; --cat15: #97a64f;
+      --cat16: #3bb0a5; --cat17: #b872d3; --cat18: #2cc6dd; --cat19: #e25cb2;
+      --cat20: #b9505d; --cat21: #6d96d4; --cat22: #f4a56b; --cat23: #d1bb35;
       --shadow-1: 0 1px 2px rgba(0,0,0,0.3);
       color-scheme: dark;
     }
@@ -92,6 +100,10 @@
     --warning: #d99a3b;
     --cat0: #3987e5; --cat1: #d95926; --cat2: #199e70; --cat3: #c98500;
     --cat4: #d55181; --cat5: #1f9e1f; --cat6: #9085e9; --cat7: #e66767;
+    --cat8: #e276e2; --cat9: #7fb8ee; --cat10: #b8b088; --cat11: #8b94a3;
+    --cat12: #a9c92b; --cat13: #a46aa5; --cat14: #c79be0; --cat15: #97a64f;
+    --cat16: #3bb0a5; --cat17: #b872d3; --cat18: #2cc6dd; --cat19: #e25cb2;
+    --cat20: #b9505d; --cat21: #6d96d4; --cat22: #f4a56b; --cat23: #d1bb35;
     --shadow-1: 0 1px 2px rgba(0,0,0,0.3);
     color-scheme: dark;
   }
@@ -103,6 +115,10 @@
     --warning: #b9791f;
     --cat0: #2a78d6; --cat1: #eb6834; --cat2: #1baf7a; --cat3: #eda100;
     --cat4: #e87ba4; --cat5: #008300; --cat6: #4a3aa7; --cat7: #e34948;
+    --cat8: #d03fd0; --cat9: #5aa6e8; --cat10: #8f8750; --cat11: #4b5563;
+    --cat12: #86a800; --cat13: #6a2c6b; --cat14: #b27ad0; --cat15: #66742a;
+    --cat16: #0f7a72; --cat17: #9b3fb8; --cat18: #0aa5bd; --cat19: #c2318f;
+    --cat20: #7a1f2b; --cat21: #2f5f9e; --cat22: #e0894a; --cat23: #a89200;
     --shadow-1: 0 1px 2px rgba(15,23,26,0.05), 0 1px 1px rgba(15,23,26,0.03);
     color-scheme: light;
   }
@@ -1344,7 +1360,13 @@
 
   /* ---------- constants ---------- */
 
-  var CAT_COLORS = ["var(--cat0)","var(--cat1)","var(--cat2)","var(--cat3)","var(--cat4)","var(--cat5)","var(--cat6)","var(--cat7)"];
+  /* 24 chart colors, assigned automatically so a new category never starts
+     grey. Slots 0-7 are the original eight (unchanged, so existing categories
+     keep the color they already have); 8-23 were chosen to stay clearly apart
+     from each other and from those eight, in both light and dark mode. The
+     values themselves live in the --catN tokens in the stylesheet. */
+  var CAT_COLORS = [];
+  for (var ci = 0; ci < 24; ci++) CAT_COLORS.push("var(--cat" + ci + ")");
   var OTHER_COLOR = "var(--cat-other)";
 
   var DEFAULT_CATEGORIES = [
@@ -1362,37 +1384,44 @@
     { id: "other", name: "Other", slot: null, isSystem: true, keywords: [] }
   ];
 
-  /* Chart colors are earned, not pre-assigned: the 8 categories with the
-     highest lifetime expense total get a real color slot; everything else
-     stays grey and folds into "Other / Uncategorized" on the donut. This is
-     recomputed (not just appended to) on every call, so a category that
-     used to be top-8 but has since been overtaken loses its slot to make
-     room - otherwise whichever categories happened to be used *first* would
-     permanently hog colors even after a heavier-spend category showed up. */
+  /* Every category gets a color slot automatically, first come first served,
+     and keeps it from then on - so a category's color never shifts under the
+     user when something else is added. "Income" and "Other" deliberately stay
+     grey (they are not spending categories). Only when there are more
+     categories than colors (24) does the ranking matter: the ones with the
+     highest lifetime expense total keep a color, and the rest stay grey and
+     fold into "Other / Uncategorized" on the donut. A category that loses its
+     slot that way is recomputed here too, not just appended to, so a heavy
+     spender that shows up late is never stuck without one. */
+  var NEUTRAL_CATEGORY_IDS = { income: true, other: true };
+
   function assignCategorySlots() {
     var totals = {};
     state.transactions.forEach(function (t) {
       if (t.type !== "expense" || !t.categoryId || t.isGoalContribution) return;
       totals[t.categoryId] = (totals[t.categoryId] || 0) + t.amount;
     });
-    var eligible = state.categories.filter(function (c) { return (totals[c.id] || 0) > 0; });
+    var order = {};
+    state.categories.forEach(function (c, i) { order[c.id] = i; });
+    var eligible = state.categories.filter(function (c) { return !NEUTRAL_CATEGORY_IDS[c.id]; });
     eligible.sort(function (a, b) {
       var diff = (totals[b.id] || 0) - (totals[a.id] || 0);
-      return diff !== 0 ? diff : (a.id < b.id ? -1 : 1);
+      return diff !== 0 ? diff : order[a.id] - order[b.id];
     });
-    var top8Ids = {};
-    eligible.slice(0, 8).forEach(function (c) { top8Ids[c.id] = true; });
+    var keep = {};
+    eligible.slice(0, CAT_COLORS.length).forEach(function (c) { keep[c.id] = true; });
 
     var changed = false;
+    var used = {};
     state.categories.forEach(function (c) {
-      if (typeof c.slot === "number" && !top8Ids[c.id]) { c.slot = null; changed = true; }
+      if (typeof c.slot !== "number") return;
+      if (!keep[c.id] || c.slot >= CAT_COLORS.length || used[c.slot]) { c.slot = null; changed = true; }
+      else used[c.slot] = true;
     });
-    eligible.slice(0, 8).forEach(function (c) {
+    eligible.slice(0, CAT_COLORS.length).forEach(function (c) {
       if (typeof c.slot === "number") return;
-      var used = {};
-      state.categories.forEach(function (x) { if (typeof x.slot === "number") used[x.slot] = true; });
-      for (var i = 0; i < 8; i++) {
-        if (!used[i]) { c.slot = i; changed = true; break; }
+      for (var i = 0; i < CAT_COLORS.length; i++) {
+        if (!used[i]) { c.slot = i; used[i] = true; changed = true; break; }
       }
     });
     return changed;
@@ -3135,10 +3164,10 @@
     return "rgb(" + mr + ", " + mg + ", " + mb + ")";
   }
 
-  /* The ring itself is capped at the validated 8-hue categorical palette
-     (see assignCategorySlots) - a 9th distinct category folds its arc into
+  /* The ring itself is capped at the 24-color palette (see
+     assignCategorySlots) - a 25th distinct category folds its arc into
      one shared grey "Other" slice rather than generating an unvalidated
-     9th hue. But that's purely a ring-color limitation, not a categorization
+     extra hue. But that's purely a ring-color limitation, not a categorization
      one: every category the user actually assigned still gets its own named
      row in the legend below, each keeping its real name and exact amount.
      Only genuinely uncategorized spend (no categoryId at all) is ever
@@ -4882,6 +4911,7 @@
       } else {
         state.categories.push({ id: uid(), name: name, slot: null, isSystem: false, keywords: keywords, budget: budget });
       }
+      assignCategorySlots();
       save(); closeModal(); renderAll();
     });
   }
