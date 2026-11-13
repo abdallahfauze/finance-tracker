@@ -1135,6 +1135,36 @@
   :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-btn:active, :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-text-btn:active { box-shadow: var(--soft-inset) !important; }
   :root[data-skin="soft"]:not([data-theme="light"]) .card:not(:last-child) { margin-bottom: 16px; }
   }
+
+  /* Soft skin: the pie becomes a ring sitting in a pressed dish, with the
+     grand total on a raised disc in the middle. */
+  :root[data-skin="soft"][data-theme="dark"] .donut-wrap.donut-soft { width: 196px; height: 196px; border-radius: 50%; background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] .donut-soft .donut-seg { stroke: rgba(255,255,255,0.14); stroke-width: 0.7; stroke-linejoin: round; filter: drop-shadow(3px 4px 4px rgba(0,0,0,0.6)) drop-shadow(-2px -2px 3px rgba(255,255,255,0.05)); }
+  :root[data-skin="soft"][data-theme="dark"] .donut-soft .donut-seg-label { font-size: 9.5px; }
+  :root[data-skin="soft"][data-theme="dark"] .donut-core {
+    position: absolute; left: 50%; top: 50%; width: 100px; height: 100px; transform: translate(-50%, -50%);
+    border-radius: 50%; background: var(--page); box-shadow: var(--soft-raise);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    pointer-events: none;
+  }
+  :root[data-skin="soft"][data-theme="dark"] .donut-core .amt { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; max-width: 88px; }
+  :root[data-skin="soft"][data-theme="dark"] .donut-core .lbl { font-size: 9.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+  @media (prefers-color-scheme: dark) {
+
+  /* Soft skin: the pie becomes a ring sitting in a pressed dish, with the
+     grand total on a raised disc in the middle. */
+  :root[data-skin="soft"]:not([data-theme="light"]) .donut-wrap.donut-soft { width: 196px; height: 196px; border-radius: 50%; background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .donut-soft .donut-seg { stroke: rgba(255,255,255,0.14); stroke-width: 0.7; stroke-linejoin: round; filter: drop-shadow(3px 4px 4px rgba(0,0,0,0.6)) drop-shadow(-2px -2px 3px rgba(255,255,255,0.05)); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .donut-soft .donut-seg-label { font-size: 9.5px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .donut-core {
+    position: absolute; left: 50%; top: 50%; width: 100px; height: 100px; transform: translate(-50%, -50%);
+    border-radius: 50%; background: var(--page); box-shadow: var(--soft-raise);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    pointer-events: none;
+  }
+  :root[data-skin="soft"]:not([data-theme="light"]) .donut-core .amt { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; max-width: 88px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .donut-core .lbl { font-size: 9.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+  }
 </style>
 
 <svg width="0" height="0" style="position:absolute">
@@ -2325,6 +2355,8 @@
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem(THEME_KEY, theme);
     updateThemeToggleIcon(theme);
+    // The soft skin draws the pie differently in dark vs light, so redraw.
+    if (document.documentElement.getAttribute("data-skin") === "soft") { try { renderAll(); } catch (e) {} }
   }
 
   updateThemeToggleIcon(currentTheme());
@@ -3122,10 +3154,22 @@
      Only genuinely uncategorized spend (no categoryId at all) is ever
      labeled "Uncategorized" - a category without a color slot is never
      mistaken for one. */
+  // The opt-in dark "soft" skin (see the data-skin CSS) draws the chart as a
+  // flat ring in a pressed dish instead of the tilted, extruded pie.
+  function isSoftSkin() {
+    var root = document.documentElement;
+    if (root.getAttribute("data-skin") !== "soft") return false;
+    var t = root.getAttribute("data-theme");
+    if (t === "light") return false;
+    if (t === "dark") return true;
+    return !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  }
+
   function renderDonut(byCat, total) {
-    var SQUASH_Y = 0.6, WALL_DEPTH = 14;
-    var cx = 88, cy = 88 - WALL_DEPTH / 2, rOuter = 74, rInner = 0, rLabel = rOuter * 0.6;
-    var gapRad = 0.045, explodeDist = 3;
+    var soft = isSoftSkin();
+    var SQUASH_Y = soft ? 1 : 0.6, WALL_DEPTH = soft ? 0 : 14;
+    var cx = 88, cy = 88 - WALL_DEPTH / 2, rOuter = 74, rInner = soft ? 50 : 0, rLabel = soft ? (rOuter + rInner) / 2 : rOuter * 0.6;
+    var gapRad = soft ? 0.07 : 0.045, explodeDist = soft ? 0 : 3;
 
     var ordered = state.categories.filter(function (c) { return c.slot !== null && c.slot !== undefined; })
       .sort(function (a, b) { return a.slot - b.slot; });
@@ -3190,6 +3234,9 @@
       var frac = seg.amt / total;
       var a0 = startAngle + cum * 2 * Math.PI;
       var a1 = startAngle + (cum + frac) * 2 * Math.PI;
+      // A lone full-circle arc has identical start and end points, which SVG
+      // draws as nothing - stop a hair short so a single category still shows.
+      if (soft && frac > 0.9999) a1 = a0 + 2 * Math.PI * 0.9999;
       cum += frac;
       var pad = n > 1 ? Math.min(gapRad / 2, ((a1 - a0) / 2) * 0.9) : 0;
       var pa0 = a0 + pad, pa1 = a1 - pad;
@@ -3197,7 +3244,7 @@
       var tx = (Math.cos(mid) * explodeDist).toFixed(2);
       var ty = (Math.sin(mid) * explodeDist * SQUASH_Y).toFixed(2);
       var d = donutWedgePath(cx, cy, rInner, rOuter, pa0, pa1, SQUASH_Y);
-      var wallD = wedgeWallPath(cx, cy, rOuter, pa0, pa1, SQUASH_Y, WALL_DEPTH);
+      var wallD = soft ? "" : wedgeWallPath(cx, cy, rOuter, pa0, pa1, SQUASH_Y, WALL_DEPTH);
       var styleVars = "--tx:" + tx + "px;--ty:" + ty + "px;--i:" + i;
 
       // A radial highlight (light near the center, true color at the rim)
@@ -3209,17 +3256,17 @@
       // keeps that highlight at one fixed spot on the disc for every wedge.
       var gradId = "donut-grad-" + i;
       var gradStart = mixColor(seg.color, 0.55, [255, 255, 255]);
-      defsSvg += '<radialGradient id="' + gradId + '" gradientUnits="userSpaceOnUse" cx="' + lightCx.toFixed(2) + '" cy="' + lightCy.toFixed(2) + '" r="' + lightR.toFixed(2) + '">' +
+      if (!soft) defsSvg += '<radialGradient id="' + gradId + '" gradientUnits="userSpaceOnUse" cx="' + lightCx.toFixed(2) + '" cy="' + lightCy.toFixed(2) + '" r="' + lightR.toFixed(2) + '">' +
         '<stop offset="0%" stop-color="' + gradStart + '" />' +
         '<stop offset="100%" stop-color="' + seg.color + '" />' +
         '</radialGradient>';
       var wallGradId = "donut-wallgrad-" + i;
-      defsSvg += '<linearGradient id="' + wallGradId + '" gradientUnits="userSpaceOnUse" x1="0" y1="' + wallGradTopY.toFixed(2) + '" x2="0" y2="' + wallGradBottomY.toFixed(2) + '">' +
+      if (!soft) defsSvg += '<linearGradient id="' + wallGradId + '" gradientUnits="userSpaceOnUse" x1="0" y1="' + wallGradTopY.toFixed(2) + '" x2="0" y2="' + wallGradBottomY.toFixed(2) + '">' +
         '<stop offset="0%" stop-color="' + seg.color + '" />' +
         '<stop offset="100%" stop-color="' + mixColor(seg.color, 0.45, [0, 0, 0]) + '" />' +
         '</linearGradient>';
-      shadowsSvg += '<path class="donut-seg-shadow" data-seg="' + i + '" d="' + wallD + '" fill="url(#' + wallGradId + ')" style="' + styleVars + '"></path>';
-      wedgesSvg += '<path class="donut-seg" data-seg="' + i + '" d="' + d + '" fill="url(#' + gradId + ')" style="' + styleVars + '"></path>';
+      if (!soft) shadowsSvg += '<path class="donut-seg-shadow" data-seg="' + i + '" d="' + wallD + '" fill="url(#' + wallGradId + ')" style="' + styleVars + '"></path>';
+      wedgesSvg += '<path class="donut-seg" data-seg="' + i + '" d="' + d + '" fill="' + (soft ? seg.color : 'url(#' + gradId + ')') + '" style="' + styleVars + '"></path>';
 
       var pct = Math.round(frac * 100);
       if (pct >= 6) {
@@ -3236,10 +3283,12 @@
     var groundShadowD = '<ellipse cx="' + cx + '" cy="' + (cy + rOuter * SQUASH_Y + WALL_DEPTH + 5).toFixed(2) + '" rx="' + (rOuter * 0.94).toFixed(2) + '" ry="' + (rOuter * SQUASH_Y * 0.24).toFixed(2) + '" fill="rgba(0,0,0,0.18)" filter="url(#donut-ground-blur)"></ellipse>';
     var groundFilter = '<filter id="donut-ground-blur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.5" /></filter>';
 
-    var svg = '<svg viewBox="0 0 176 176" class="donut-svg"><defs>' + groundFilter + defsSvg + '</defs>' + groundShadowD + shadowsSvg + wedgesSvg + labelsSvg + '</svg>';
+    var svg = '<svg viewBox="0 0 176 176" class="donut-svg"><defs>' + (soft ? "" : groundFilter) + defsSvg + '</defs>' + (soft ? "" : groundShadowD) + shadowsSvg + wedgesSvg + labelsSvg + '</svg>';
 
-    var html = '<div class="donut-wrap">' + svg + '</div>' +
-      '<div class="donut-total"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div>';
+    var html = soft
+      ? '<div class="donut-wrap donut-soft">' + svg + '<div class="donut-core"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div></div>'
+      : '<div class="donut-wrap">' + svg + '</div>' +
+        '<div class="donut-total"><div class="amt num">' + fmtMoney(total) + '</div><div class="lbl">Total spent</div></div>';
 
     var sortedLegend = legendRows.slice().sort(function (a, b) { return b.amt - a.amt; });
     html += '<div class="legend">';
