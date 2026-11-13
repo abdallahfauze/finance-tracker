@@ -590,6 +590,10 @@
     overflow-x: auto; scrollbar-width: none;
   }
   .month-picker::-webkit-scrollbar { display: none; }
+  .trend-bar-slot { display: flex; align-items: flex-end; justify-content: center; }
+  .month-picker-row { display: flex; align-items: center; gap: 6px; margin-top: 14px; }
+  .month-picker-row .month-picker { flex: 1; min-width: 0; margin-top: 0; }
+  .month-picker-row .month-scroll { flex-shrink: 0; }
   .month-picker-btn {
     flex-shrink: 0;
     padding: 6px 13px;
@@ -1176,6 +1180,56 @@
   }
   :root[data-skin="soft"]:not([data-theme="light"]) .donut-core .amt { font-size: 14px; font-weight: 700; letter-spacing: -0.01em; max-width: 88px; }
   :root[data-skin="soft"]:not([data-theme="light"]) .donut-core .lbl { font-size: 9.5px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+  }
+
+  /* Soft skin, round 2: readouts pressed in, bars in slots, glowing ticks. */
+  :root[data-skin="soft"][data-theme="dark"] .card-ledger .hero-num { display: block; background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 12px 16px; }
+  :root[data-skin="soft"][data-theme="dark"] .card-ledger .disclosure > .num { background: var(--page); box-shadow: var(--soft-inset); border-radius: 12px; padding: 5px 12px; white-space: nowrap; flex-shrink: 0; }
+  :root[data-skin="soft"][data-theme="dark"] .card-ledger .disclosure { gap: 10px; }
+
+  :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row, :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row:last-child { background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 10px 14px; margin-bottom: 12px; border-bottom: none; }
+  :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row:last-child { margin-bottom: 0; }
+  :root[data-skin="soft"][data-theme="dark"] .card-upcoming .row .amount { background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 12px; padding: 4px 9px; white-space: nowrap; }
+
+  :root[data-skin="soft"][data-theme="dark"] .trend-bar-slot { height: 108px; width: 24px; padding: 3px; box-sizing: border-box; border-radius: 999px; background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] .trend-bar-overlay { width: 18px; }
+  :root[data-skin="soft"][data-theme="dark"] .trend-bar-fill.actual { width: 12px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent)); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); }
+  :root[data-skin="soft"][data-theme="dark"] .trend-bar-fill.forecast { width: 18px; border-radius: 999px; border-bottom: 1px solid color-mix(in srgb, var(--accent-warm) 55%, transparent); background: color-mix(in srgb, var(--accent-warm) 18%, transparent); }
+
+  /* the ring around the selected month needs room: the strip scrolls
+     sideways, which clips anything outside its box, so pad it and pull the
+     padding back out with negative margins */
+  :root[data-skin="soft"][data-theme="dark"] .month-picker { padding: 10px 10px; margin-top: -10px; margin-bottom: -10px; }
+  :root[data-skin="soft"][data-theme="dark"] .month-picker-row { margin-top: 14px; }
+  :root[data-skin="soft"][data-theme="dark"] .month-picker-row .month-picker { margin-top: -10px; }
+
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn.tick-btn { color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn.tick-btn:active { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
+  @media (prefers-color-scheme: dark) {
+
+  /* Soft skin, round 2: readouts pressed in, bars in slots, glowing ticks. */
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .hero-num { display: block; background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 12px 16px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .disclosure > .num { background: var(--page); box-shadow: var(--soft-inset); border-radius: 12px; padding: 5px 12px; white-space: nowrap; flex-shrink: 0; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-ledger .disclosure { gap: 10px; }
+
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row, :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row:last-child { background: var(--page); box-shadow: var(--soft-inset); border-radius: 18px; padding: 10px 14px; margin-bottom: 12px; border-bottom: none; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row:last-child { margin-bottom: 0; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card-upcoming .row .amount { background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 12px; padding: 4px 9px; white-space: nowrap; }
+
+  :root[data-skin="soft"]:not([data-theme="light"]) .trend-bar-slot { height: 108px; width: 24px; padding: 3px; box-sizing: border-box; border-radius: 999px; background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .trend-bar-overlay { width: 18px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .trend-bar-fill.actual { width: 12px; border-radius: 999px; background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent)); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .trend-bar-fill.forecast { width: 18px; border-radius: 999px; border-bottom: 1px solid color-mix(in srgb, var(--accent-warm) 55%, transparent); background: color-mix(in srgb, var(--accent-warm) 18%, transparent); }
+
+  /* the ring around the selected month needs room: the strip scrolls
+     sideways, which clips anything outside its box, so pad it and pull the
+     padding back out with negative margins */
+  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker { padding: 10px 10px; margin-top: -10px; margin-bottom: -10px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-row { margin-top: 14px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-row .month-picker { margin-top: -10px; }
+
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.tick-btn { color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.tick-btn:active { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
   }
 </style>
 
@@ -2851,7 +2905,7 @@
       var upcoming = upcomingBills.concat(upcomingLoans)
         .sort(function (a, b) { return a.dueDate < b.dueDate ? -1 : 1; });
       if (upcoming.length) {
-        html += '<div class="card"><h2>Upcoming Bills</h2>';
+        html += '<div class="card card-upcoming"><h2>Upcoming Bills</h2>';
         upcoming.forEach(function (item) {
           var cat = byId(state.categories, item.categoryId);
           var d = daysUntil(item.dueDate);
@@ -2878,6 +2932,7 @@
       var newMonthPicker = document.querySelector("#tab-dashboard .month-picker");
       if (newMonthPicker) newMonthPicker.scrollLeft = monthPickerScroll;
     }
+    wireMonthScroll();
   }
 
   /* Counts the three headline stats up/down from their last-rendered value
@@ -3416,7 +3471,7 @@
     var forecasts = months.map(function (m) { return forecastTotalForRange(m.start, m.end); });
 
     var max = Math.max.apply(null, totals.concat(forecasts).concat([1]));
-    var html = '<div class="card"><h2>Spending Trend</h2>';
+    var html = '<div class="card card-trend"><h2>Spending Trend</h2>';
     html += '<div class="trend-legend">' +
       '<span class="trend-legend-item"><span class="trend-swatch actual"></span>Actual</span>' +
       '<span class="trend-legend-item"><span class="trend-swatch forecast"></span>Forecast</span>' +
@@ -3430,10 +3485,10 @@
       html += '<div class="actual num">' + fmtCompact(totals[i]) + '</div>';
       if (forecasts[i] > 0) html += '<div class="forecast num">' + fmtCompact(forecasts[i]) + '</div>';
       html += '</div>';
-      html += '<div class="trend-bar-overlay" style="height:' + Math.max(actualH, forecastH).toFixed(0) + 'px">';
+      html += '<div class="trend-bar-slot"><div class="trend-bar-overlay" style="height:' + Math.max(actualH, forecastH).toFixed(0) + 'px">';
       if (forecastH > 0) html += '<div class="trend-bar-fill forecast" style="height:' + forecastH.toFixed(0) + 'px"></div>';
       html += '<div class="trend-bar-fill actual" style="height:' + actualH.toFixed(0) + 'px"></div>';
-      html += '</div>';
+      html += '</div></div>';
       html += '<div class="trend-bar-label">' + m.label + '</div>';
       html += '</div>';
     });
@@ -3494,7 +3549,7 @@
     var liabilities = creditOwed + loanBalance;
     var netWorth = availableFunds - liabilities;
 
-    var html = '<div class="card"><h2>Net Worth</h2>';
+    var html = '<div class="card card-ledger"><h2>Net Worth</h2>';
     html += '<p class="hero-num num" style="font-size:28px;margin:0 0 14px;color:' + (netWorth < 0 ? "var(--critical)" : "var(--ink)") + '">' + fmtMoney(netWorth) + '</p>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Available Funds</span><span class="num">' + fmtMoney(availableFunds) + '</span></div>';
     html += '<div class="disclosure"><span>Liabilities</span><span class="num">' + (liabilities > 0 ? "-" : "") + fmtMoney(liabilities) + '</span></div>';
@@ -3531,18 +3586,22 @@
     var isCurrentMonth = activeKey === (now.getFullYear() + "-" + pad(now.getMonth() + 1));
     var balanceLabel = isCurrentMonth ? "Current Balance" : "Available Balance at End of Month";
 
-    var html = '<div class="card"><h2>Total Available Funds</h2>';
+    var html = '<div class="card card-ledger"><h2>Total Available Funds</h2>';
     html += '<div class="footnote" style="margin:0 0 10px">' + monthLabel + '</div>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Total available funds <span class="footnote" style="display:inline">(at start of month)</span></span><span class="num">' + fmtMoney(opening) + '</span></div>';
     html += '<div class="disclosure" style="margin-bottom:8px"><span>Income <span class="footnote" style="display:inline">(during month)</span></span><span class="num">+' + fmtMoney(income) + '</span></div>';
     html += '<div class="disclosure" style="margin-bottom:10px"><span>Expenses <span class="footnote" style="display:inline">(during month)</span></span><span class="num">-' + fmtMoney(expenses) + '</span></div>';
     html += '<div class="disclosure" style="padding-top:10px;border-top:1px solid var(--line)"><span style="font-weight:600">' + balanceLabel + '</span><span class="num" style="font-size:18px;font-weight:700">' + fmtMoney(available) + '</span></div>';
+    html += '<div class="month-picker-row">';
+    html += '<button type="button" class="icon-btn accent-ghost month-scroll" data-month-scroll="-1" aria-label="Earlier months" style="width:32px;height:32px">' + icon("chevron", "chevron-flip") + '</button>';
     html += '<div class="month-picker">';
     for (var m = 1; m <= 12; m++) {
       var key = year + "-" + pad(m);
       var mLabel = new Date(key + "-01T00:00:00").toLocaleDateString(undefined, { month: "short" });
       html += '<button type="button" class="month-picker-btn' + (key === activeKey ? " active" : "") + '" data-month="' + key + '">' + mLabel + '</button>';
     }
+    html += '</div>';
+    html += '<button type="button" class="icon-btn accent-ghost month-scroll" data-month-scroll="1" aria-label="Later months" style="width:32px;height:32px">' + icon("chevron") + '</button>';
     html += '</div></div>';
     return html;
   }
@@ -3563,6 +3622,32 @@
     });
     html += '<button type="button" class="btn plain" data-go-goals>View All Goals</button></div>';
     return html;
+  }
+
+  // The month strip in Total Available Funds scrolls sideways; these arrows
+  // page it left/right (and grey out at either end) so every month is
+  // reachable without a swipe.
+  function wireMonthScroll() {
+    var picker = document.querySelector("#tab-dashboard .month-picker");
+    var arrows = document.querySelectorAll("#tab-dashboard [data-month-scroll]");
+    if (!picker || !arrows.length) return;
+    function update() {
+      var max = picker.scrollWidth - picker.clientWidth;
+      arrows.forEach(function (a) {
+        var dir = parseInt(a.getAttribute("data-month-scroll"), 10);
+        var off = dir < 0 ? picker.scrollLeft <= 1 : picker.scrollLeft >= max - 1;
+        a.disabled = off;
+        a.style.opacity = off ? "0.35" : "";
+      });
+    }
+    arrows.forEach(function (a) {
+      a.addEventListener("click", function () {
+        var dir = parseInt(a.getAttribute("data-month-scroll"), 10);
+        picker.scrollBy({ left: dir * Math.max(120, picker.clientWidth * 0.7), behavior: reduceMotion ? "auto" : "smooth" });
+      });
+    });
+    picker.addEventListener("scroll", update, { passive: true });
+    update();
   }
 
   function wireDashboardEvents() {
@@ -3894,7 +3979,7 @@
         (r.bankCard ? ' · ' + escapeHtml(r.bankCard) : '') + '</div></div>';
       html += '<div class="amount num' + (isIncome ? " income" : "") + '">' + (isIncome ? "+" : "") + fmtMoney(r.amount) + '</div>';
       if (archived) html += '<button class="icon-btn ghost" data-delete-archived="' + r.id + '" aria-label="Delete" style="width:30px;height:30px">' + icon("trash") + '</button>';
-      else html += '<button class="icon-btn ghost" data-mark-paid="' + r.id + '" aria-label="' + (isIncome ? "Mark as received" : "Mark as paid") + '" style="width:30px;height:30px">' + icon("check") + '</button>';
+      else html += '<button class="icon-btn ghost tick-btn" data-mark-paid="' + r.id + '" aria-label="' + (isIncome ? "Mark as received" : "Mark as paid") + '" style="width:30px;height:30px">' + icon("check") + '</button>';
       html += '</div>';
     });
     html += '</div>';
@@ -3998,7 +4083,7 @@
     html += loanDetailRow("Paid", p.amountPaid, loan.paymentsMade + (loan.paymentsMade === 1 ? " installment" : " installments"));
     html += loanDetailRow("Balance", p.balance, remainingInstallments + (remainingInstallments === 1 ? " installment left" : " installments left"));
     if (!p.isPaidOff) {
-      var markPaidBtn = '<button class="icon-btn ghost" data-mark-loan-paid="' + loan.id + '" aria-label="Mark payment paid" style="flex-shrink:0;margin-left:10px">' + icon("check") + '</button>';
+      var markPaidBtn = '<button class="icon-btn ghost tick-btn" data-mark-loan-paid="' + loan.id + '" aria-label="Mark payment paid" style="flex-shrink:0;margin-left:10px">' + icon("check") + '</button>';
       html += loanDetailRow("Next installment", loan.monthlyPayment, fmtDateLong(loan.nextPaymentDate), markPaidBtn);
     }
     html += '</div>';
