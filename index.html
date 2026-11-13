@@ -8,6 +8,14 @@
   } catch (e) {}
   // Same early-paint reasoning as the theme choice above, but the accent
   // color lives inside the synced app state rather than its own key.
+  // Opt-in "soft" skin: ?skin=soft turns it on (and remembers it on this
+  // device), ?skin=off turns it back off.
+  try {
+    var __q = new URLSearchParams(location.search).get("skin");
+    if (__q === "soft") localStorage.setItem("ledger.financeTracker.skin", "soft");
+    if (__q === "off") localStorage.removeItem("ledger.financeTracker.skin");
+    if (localStorage.getItem("ledger.financeTracker.skin") === "soft") document.documentElement.setAttribute("data-skin", "soft");
+  } catch (e) {}
   try {
     var __raw = localStorage.getItem("ledger.financeTracker.v1");
     var __parsed = __raw && JSON.parse(__raw);
@@ -879,6 +887,254 @@
   .calc-history-row .calc-history-expr { font-size: 12.5px; color: var(--ink-muted); }
   .calc-history-row .calc-history-result { font-size: 17px; font-weight: 700; }
   .calc-history-empty { text-align: center; color: var(--ink-muted); font-size: 13px; padding: 30px 0; }
+
+  /* ================= "Soft" skin (opt-in, dark only for now) =================
+     Neumorphic look: surfaces are cut from the same material as the page and
+     read as raised or pressed purely through paired light/dark shadows, with
+     the teal accent used as a glowing ring on whatever is active. Switched on
+     with data-skin="soft" on <html> (?skin=soft in the URL, remembered; ?skin=off
+     turns it back off). Nothing above this block is changed, so removing the
+     block - or the attribute - restores the original design. In light mode
+     the skin does nothing yet.
+     ":root[data-skin="soft"][data-theme="dark"]" below is expanded at build time to the two dark-mode selector forms
+     (explicit data-theme="dark", or system dark with no explicit light). */
+  :root[data-skin="soft"][data-theme="dark"] {
+    --page: #25292d;
+    --surface: #25292d;
+    --surface-2: #1f2326;
+    --line: rgba(255,255,255,0.05);
+    --ink: #EEF2F3;
+    --ink-2: #B3BCC1;
+    --ink-muted: #8A949B;
+    --pill-mint: #25292d;
+    --pill-mint-ink: #EEF2F3;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 8px;
+    --soft-raise: 6px 6px 14px rgba(0,0,0,0.5), -5px -5px 12px rgba(255,255,255,0.035);
+    --soft-raise-sm: 3px 3px 8px rgba(0,0,0,0.5), -3px -3px 7px rgba(255,255,255,0.035);
+    --soft-inset: inset 3px 3px 7px rgba(0,0,0,0.55), inset -2px -2px 6px rgba(255,255,255,0.03);
+    --soft-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
+    --shadow-1: var(--soft-raise-sm);
+  }
+  :root[data-skin="soft"][data-theme="dark"][data-accent="teal"] { --accent: #38E3CE; --accent-soft: #1b3a38; --accent-ink: #06201d; }
+  :root[data-skin="soft"][data-theme="dark"] body { background-image: none; }
+  :root[data-skin="soft"][data-theme="dark"] .app { background: var(--page); }
+  :root[data-skin="soft"][data-theme="dark"] .appbar { background: var(--page); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: none; }
+
+  /* round buttons: accent-ringed, raised */
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn:not(.ghost) {
+    background: var(--page); color: var(--accent);
+    box-shadow: var(--soft-raise-sm), var(--soft-ring);
+  }
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn:active { box-shadow: var(--soft-inset), var(--soft-ring); opacity: 1; }
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn.ghost { background: var(--page); color: var(--ink-2); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn.ghost:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] .icon-btn.accent-ghost { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset); }
+
+  /* floating pill tab bar */
+  :root[data-skin="soft"][data-theme="dark"] nav.tabbar {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: calc(100% - 28px); max-width: 452px;
+    padding-bottom: 0;
+    border-top: none; border-radius: 28px;
+    background: var(--page);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    box-shadow: var(--soft-raise);
+    padding: 6px;
+    gap: 4px;
+  }
+  :root[data-skin="soft"][data-theme="dark"] nav.tabbar button { border-radius: 22px; padding: 8px 2px 7px; transition: box-shadow .15s ease, color .15s ease; }
+  :root[data-skin="soft"][data-theme="dark"] nav.tabbar button.active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] nav.tabbar button.active::before { display: none; }
+  :root[data-skin="soft"][data-theme="dark"] nav.tabbar button.active svg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 70%, transparent)); }
+
+  /* panels */
+  :root[data-skin="soft"][data-theme="dark"] .card { border: none; box-shadow: var(--soft-raise); padding: 18px; }
+  :root[data-skin="soft"][data-theme="dark"] .card + .card { margin-top: 20px; }
+  :root[data-skin="soft"][data-theme="dark"] .card h2 { color: var(--ink-2); }
+  :root[data-skin="soft"][data-theme="dark"] .stat { background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] .row { border-bottom: 1px solid rgba(0,0,0,0.28); box-shadow: 0 1px 0 rgba(255,255,255,0.03); }
+  :root[data-skin="soft"][data-theme="dark"] .row:last-child { box-shadow: none; }
+  :root[data-skin="soft"][data-theme="dark"] .row:active { background: transparent; box-shadow: var(--soft-inset); border-radius: 12px; }
+  :root[data-skin="soft"][data-theme="dark"] .badge { box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"][data-theme="dark"] .legend-row:hover, :root[data-skin="soft"][data-theme="dark"] .legend-row:active { background: transparent; }
+  :root[data-skin="soft"][data-theme="dark"] .chip { background: var(--page); box-shadow: var(--soft-inset); border-radius: 999px; padding: 4px 10px; }
+  :root[data-skin="soft"][data-theme="dark"] .chip.good { background: var(--page); color: var(--accent); }
+  :root[data-skin="soft"][data-theme="dark"] .chip.warning, :root[data-skin="soft"][data-theme="dark"] .chip.critical, :root[data-skin="soft"][data-theme="dark"] .chip.milestone { background: var(--page); }
+
+  /* gauges: a pressed groove with a glowing fill */
+  :root[data-skin="soft"][data-theme="dark"] .bar-track { height: 10px; border-radius: 999px; background: var(--page); background-image: none; box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] .bar-fill { border-radius: 999px; }
+  :root[data-skin="soft"][data-theme="dark"] .bar-fill.good { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+  :root[data-skin="soft"][data-theme="dark"] .bar-fill.warning { box-shadow: 0 0 10px color-mix(in srgb, var(--warning) 55%, transparent); }
+  :root[data-skin="soft"][data-theme="dark"] .bar-fill.critical { box-shadow: 0 0 10px color-mix(in srgb, var(--critical) 55%, transparent); }
+  :root[data-skin="soft"][data-theme="dark"] .legend-bar-track { background: var(--page); box-shadow: var(--soft-inset); height: 5px; }
+
+  /* inputs are pressed in */
+  :root[data-skin="soft"][data-theme="dark"] input[type="text"], :root[data-skin="soft"][data-theme="dark"] input[type="number"], :root[data-skin="soft"][data-theme="dark"] input[type="date"], :root[data-skin="soft"][data-theme="dark"] select, :root[data-skin="soft"][data-theme="dark"] textarea {
+    border: none; background: var(--page); box-shadow: var(--soft-inset); padding: 13px 15px;
+  }
+  :root[data-skin="soft"][data-theme="dark"] input:focus, :root[data-skin="soft"][data-theme="dark"] select:focus, :root[data-skin="soft"][data-theme="dark"] textarea:focus { outline: none; box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+
+  :root[data-skin="soft"][data-theme="dark"] .segmented { background: var(--page); box-shadow: var(--soft-inset); padding: 4px; border-radius: 16px; }
+  :root[data-skin="soft"][data-theme="dark"] .segmented button { border-radius: 12px; }
+  :root[data-skin="soft"][data-theme="dark"] .segmented button.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"][data-theme="dark"] .month-picker-btn { border: none; background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"][data-theme="dark"] .month-picker-btn:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] .month-picker-btn.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
+
+  /* buttons */
+  :root[data-skin="soft"][data-theme="dark"] .btn { border-radius: 16px; }
+  :root[data-skin="soft"][data-theme="dark"] .btn.primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent), var(--soft-raise-sm); }
+  :root[data-skin="soft"][data-theme="dark"] .btn.primary:active { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent), inset 2px 2px 6px rgba(0,0,0,0.25); }
+  :root[data-skin="soft"][data-theme="dark"] .btn.plain { background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"][data-theme="dark"] .btn.plain:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] .btn.danger { background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"][data-theme="dark"] .btn.danger:active { box-shadow: var(--soft-inset); }
+
+  /* sheets and the shortcut menu */
+  :root[data-skin="soft"][data-theme="dark"] .modal-overlay { background: rgba(10,12,14,0.55); }
+  :root[data-skin="soft"][data-theme="dark"] .modal-sheet { background: var(--page); border-top: none; border-radius: 28px 28px 0 0; box-shadow: 0 -10px 34px rgba(0,0,0,0.5); }
+  :root[data-skin="soft"][data-theme="dark"] .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring); }
+  :root[data-skin="soft"][data-theme="dark"] .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring); }
+  :root[data-skin="soft"][data-theme="dark"] .speed-dial-btn { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
+  :root[data-skin="soft"][data-theme="dark"] .speed-dial-label { background: var(--page); color: var(--ink); box-shadow: var(--soft-raise-sm); }
+
+  /* switches: pressed track, glowing teal when on */
+  :root[data-skin="soft"][data-theme="dark"] .switch .track { background: var(--page); border: none; box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"][data-theme="dark"] .switch .thumb { background: #4a5258; box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"][data-theme="dark"] .switch input:checked + .track { background: var(--page); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+  :root[data-skin="soft"][data-theme="dark"] .switch input:checked ~ .thumb { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 75%, transparent); }
+  :root[data-skin="soft"][data-theme="dark"] .search-wrap input { padding-left: 42px; }
+  :root[data-skin="soft"][data-theme="dark"] #tx-import-btn, :root[data-skin="soft"][data-theme="dark"] #tx-import-text-btn { background: var(--page) !important; border: none !important; box-shadow: var(--soft-raise-sm) !important; color: var(--accent) !important; border-radius: 999px !important; }
+  :root[data-skin="soft"][data-theme="dark"] #tx-import-btn:active, :root[data-skin="soft"][data-theme="dark"] #tx-import-text-btn:active { box-shadow: var(--soft-inset) !important; }
+  :root[data-skin="soft"][data-theme="dark"] .card:not(:last-child) { margin-bottom: 16px; }
+  @media (prefers-color-scheme: dark) {
+
+  /* ================= "Soft" skin (opt-in, dark only for now) =================
+     Neumorphic look: surfaces are cut from the same material as the page and
+     read as raised or pressed purely through paired light/dark shadows, with
+     the teal accent used as a glowing ring on whatever is active. Switched on
+     with data-skin="soft" on <html> (?skin=soft in the URL, remembered; ?skin=off
+     turns it back off). Nothing above this block is changed, so removing the
+     block - or the attribute - restores the original design. In light mode
+     the skin does nothing yet.
+     ":root[data-skin="soft"]:not([data-theme="light"])" below is expanded at build time to the two dark-mode selector forms
+     (explicit data-theme="dark", or system dark with no explicit light). */
+  :root[data-skin="soft"]:not([data-theme="light"]) {
+    --page: #25292d;
+    --surface: #25292d;
+    --surface-2: #1f2326;
+    --line: rgba(255,255,255,0.05);
+    --ink: #EEF2F3;
+    --ink-2: #B3BCC1;
+    --ink-muted: #8A949B;
+    --pill-mint: #25292d;
+    --pill-mint-ink: #EEF2F3;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 8px;
+    --soft-raise: 6px 6px 14px rgba(0,0,0,0.5), -5px -5px 12px rgba(255,255,255,0.035);
+    --soft-raise-sm: 3px 3px 8px rgba(0,0,0,0.5), -3px -3px 7px rgba(255,255,255,0.035);
+    --soft-inset: inset 3px 3px 7px rgba(0,0,0,0.55), inset -2px -2px 6px rgba(255,255,255,0.03);
+    --soft-ring: 0 0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent);
+    --shadow-1: var(--soft-raise-sm);
+  }
+  :root[data-skin="soft"]:not([data-theme="light"])[data-accent="teal"] { --accent: #38E3CE; --accent-soft: #1b3a38; --accent-ink: #06201d; }
+  :root[data-skin="soft"]:not([data-theme="light"]) body { background-image: none; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .app { background: var(--page); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .appbar { background: var(--page); backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: none; }
+
+  /* round buttons: accent-ringed, raised */
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn:not(.ghost) {
+    background: var(--page); color: var(--accent);
+    box-shadow: var(--soft-raise-sm), var(--soft-ring);
+  }
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn:active { box-shadow: var(--soft-inset), var(--soft-ring); opacity: 1; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.ghost { background: var(--page); color: var(--ink-2); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.ghost:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .icon-btn.accent-ghost { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset); }
+
+  /* floating pill tab bar */
+  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    width: calc(100% - 28px); max-width: 452px;
+    padding-bottom: 0;
+    border-top: none; border-radius: 28px;
+    background: var(--page);
+    backdrop-filter: none; -webkit-backdrop-filter: none;
+    box-shadow: var(--soft-raise);
+    padding: 6px;
+    gap: 4px;
+  }
+  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar button { border-radius: 22px; padding: 8px 2px 7px; transition: box-shadow .15s ease, color .15s ease; }
+  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar button.active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar button.active::before { display: none; }
+  :root[data-skin="soft"]:not([data-theme="light"]) nav.tabbar button.active svg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 70%, transparent)); }
+
+  /* panels */
+  :root[data-skin="soft"]:not([data-theme="light"]) .card { border: none; box-shadow: var(--soft-raise); padding: 18px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card + .card { margin-top: 20px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card h2 { color: var(--ink-2); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .stat { background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .row { border-bottom: 1px solid rgba(0,0,0,0.28); box-shadow: 0 1px 0 rgba(255,255,255,0.03); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .row:last-child { box-shadow: none; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .row:active { background: transparent; box-shadow: var(--soft-inset); border-radius: 12px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .badge { box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .legend-row:hover, :root[data-skin="soft"]:not([data-theme="light"]) .legend-row:active { background: transparent; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .chip { background: var(--page); box-shadow: var(--soft-inset); border-radius: 999px; padding: 4px 10px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .chip.good { background: var(--page); color: var(--accent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .chip.warning, :root[data-skin="soft"]:not([data-theme="light"]) .chip.critical, :root[data-skin="soft"]:not([data-theme="light"]) .chip.milestone { background: var(--page); }
+
+  /* gauges: a pressed groove with a glowing fill */
+  :root[data-skin="soft"]:not([data-theme="light"]) .bar-track { height: 10px; border-radius: 999px; background: var(--page); background-image: none; box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .bar-fill { border-radius: 999px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .bar-fill.good { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .bar-fill.warning { box-shadow: 0 0 10px color-mix(in srgb, var(--warning) 55%, transparent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .bar-fill.critical { box-shadow: 0 0 10px color-mix(in srgb, var(--critical) 55%, transparent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .legend-bar-track { background: var(--page); box-shadow: var(--soft-inset); height: 5px; }
+
+  /* inputs are pressed in */
+  :root[data-skin="soft"]:not([data-theme="light"]) input[type="text"], :root[data-skin="soft"]:not([data-theme="light"]) input[type="number"], :root[data-skin="soft"]:not([data-theme="light"]) input[type="date"], :root[data-skin="soft"]:not([data-theme="light"]) select, :root[data-skin="soft"]:not([data-theme="light"]) textarea {
+    border: none; background: var(--page); box-shadow: var(--soft-inset); padding: 13px 15px;
+  }
+  :root[data-skin="soft"]:not([data-theme="light"]) input:focus, :root[data-skin="soft"]:not([data-theme="light"]) select:focus, :root[data-skin="soft"]:not([data-theme="light"]) textarea:focus { outline: none; box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 75%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+
+  :root[data-skin="soft"]:not([data-theme="light"]) .segmented { background: var(--page); box-shadow: var(--soft-inset); padding: 4px; border-radius: 16px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .segmented button { border-radius: 12px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .segmented button.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-btn { border: none; background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-btn:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .month-picker-btn.active { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
+
+  /* buttons */
+  :root[data-skin="soft"]:not([data-theme="light"]) .btn { border-radius: 16px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .btn.primary { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 45%, transparent), var(--soft-raise-sm); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .btn.primary:active { box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent), inset 2px 2px 6px rgba(0,0,0,0.25); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .btn.plain { background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .btn.plain:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .btn.danger { background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .btn.danger:active { box-shadow: var(--soft-inset); }
+
+  /* sheets and the shortcut menu */
+  :root[data-skin="soft"]:not([data-theme="light"]) .modal-overlay { background: rgba(10,12,14,0.55); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .modal-sheet { background: var(--page); border-top: none; border-radius: 28px 28px 0 0; box-shadow: 0 -10px 34px rgba(0,0,0,0.5); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .speed-dial-btn { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .speed-dial-label { background: var(--page); color: var(--ink); box-shadow: var(--soft-raise-sm); }
+
+  /* switches: pressed track, glowing teal when on */
+  :root[data-skin="soft"]:not([data-theme="light"]) .switch .track { background: var(--page); border: none; box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .switch .thumb { background: #4a5258; box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .switch input:checked + .track { background: var(--page); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .switch input:checked ~ .thumb { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 75%, transparent); }
+  :root[data-skin="soft"]:not([data-theme="light"]) .search-wrap input { padding-left: 42px; }
+  :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-btn, :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-text-btn { background: var(--page) !important; border: none !important; box-shadow: var(--soft-raise-sm) !important; color: var(--accent) !important; border-radius: 999px !important; }
+  :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-btn:active, :root[data-skin="soft"]:not([data-theme="light"]) #tx-import-text-btn:active { box-shadow: var(--soft-inset) !important; }
+  :root[data-skin="soft"]:not([data-theme="light"]) .card:not(:last-child) { margin-bottom: 16px; }
+  }
 </style>
 
 <svg width="0" height="0" style="position:absolute">
