@@ -8,6 +8,10 @@
   } catch (e) {}
   // Same early-paint reasoning as the theme choice above, but the accent
   // color lives inside the synced app state rather than its own key.
+  // Floating buttons hidden via the header's eye button (remembered).
+  try {
+    if (localStorage.getItem("ledger.financeTracker.fabsHidden") === "1") document.documentElement.classList.add("fabs-hidden");
+  } catch (e) {}
   // Opt-in "soft" skin: ?skin=soft turns it on (and remembers it on this
   // device), ?skin=off turns it back off.
   try {
@@ -283,7 +287,13 @@
     outline-offset: 2px;
   }
 
-  main { flex: 1; overflow-y: auto; padding: 16px 16px calc(96px + env(safe-area-inset-bottom)); }
+  /* The floating menu + add buttons stack up to ~230px above the bottom, so
+     the last rows need that much room to scroll clear of them (otherwise the
+     tick on the final rows sits behind a button). The header's eye button
+     hides the buttons altogether (and gives the room back). */
+  main { flex: 1; overflow-y: auto; padding: 16px 16px calc(250px + env(safe-area-inset-bottom)); }
+  :root.fabs-hidden main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  :root.fabs-hidden .fab-anchor { display: none; }
   section.tab { display: none; }
   section.tab.active { display: block; animation: tab-in .25s ease; }
   @keyframes tab-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -1217,6 +1227,12 @@
   <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
   </symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+  </symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" /><line x1="1" y1="1" x2="23" y2="23" />
+  </symbol>
   <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" />
     <line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" />
@@ -1284,6 +1300,9 @@
       <h1 id="appbar-title">Dashboard</h1>
     </div>
     <div style="display:flex;gap:8px">
+      <button class="icon-btn ghost" id="fab-toggle" aria-label="Hide floating buttons" aria-pressed="false">
+        <svg><use href="#i-eye"/></svg>
+      </button>
       <button class="icon-btn ghost" id="theme-toggle" aria-label="Toggle light/dark theme">
         <svg><use href="#i-moon"/></svg>
       </button>
@@ -2376,6 +2395,26 @@
     // The soft skin draws the pie differently in dark vs light, so redraw.
     if (document.documentElement.getAttribute("data-skin") === "soft") { try { renderAll(); } catch (e) {} }
   }
+
+  /* Hide/show the floating menu and add buttons (header eye button): they sit
+     over the right edge of the content, so on a long list they can cover a
+     row's tick button. Remembered on this device. */
+  var FABS_KEY = "ledger.financeTracker.fabsHidden";
+  function syncFabToggle() {
+    var hidden = document.documentElement.classList.contains("fabs-hidden");
+    var btn = document.getElementById("fab-toggle");
+    btn.innerHTML = icon(hidden ? "eye-off" : "eye");
+    btn.setAttribute("aria-pressed", hidden ? "true" : "false");
+    btn.setAttribute("aria-label", hidden ? "Show floating buttons" : "Hide floating buttons");
+  }
+  syncFabToggle();
+  document.getElementById("fab-toggle").addEventListener("click", function () {
+    var hidden = !document.documentElement.classList.contains("fabs-hidden");
+    document.documentElement.classList.toggle("fabs-hidden", hidden);
+    if (hidden) setSpeedDialOpen(false);
+    try { if (hidden) localStorage.setItem(FABS_KEY, "1"); else localStorage.removeItem(FABS_KEY); } catch (e) {}
+    syncFabToggle();
+  });
 
   updateThemeToggleIcon(currentTheme());
   document.getElementById("theme-toggle").addEventListener("click", function () {
