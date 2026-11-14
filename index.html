@@ -12,19 +12,14 @@
   try {
     if (localStorage.getItem("ledger.financeTracker.fabsHidden") === "1") document.documentElement.classList.add("fabs-hidden");
   } catch (e) {}
-  // Opt-in "soft" skin: ?skin=soft turns it on (and remembers it on this
-  // device), ?skin=off turns it back off.
-  try {
-    var __q = new URLSearchParams(location.search).get("skin");
-    if (__q === "soft") localStorage.setItem("ledger.financeTracker.skin", "soft");
-    if (__q === "off") localStorage.removeItem("ledger.financeTracker.skin");
-    if (localStorage.getItem("ledger.financeTracker.skin") === "soft") document.documentElement.setAttribute("data-skin", "soft");
-  } catch (e) {}
+  // The soft (neumorphic) look is the only look.
+  document.documentElement.setAttribute("data-skin", "soft");
   try {
     var __raw = localStorage.getItem("ledger.financeTracker.v1");
     var __parsed = __raw && JSON.parse(__raw);
     var __accent = __parsed && __parsed.settings && __parsed.settings.accentColor;
     if (__accent && ["teal", "sky", "indigo", "violet", "rose", "orange"].indexOf(__accent) !== -1) document.documentElement.setAttribute("data-accent", __accent);
+    else if (!__parsed) document.documentElement.setAttribute("data-accent", "orange");
   } catch (e) {}
 </script>
 <title>Finance Tracker</title>
@@ -1513,7 +1508,7 @@
       customBankCards: [],
       removedBankCards: BANK_CARDS.slice(),
       bankCardConfig: defaultBankCardConfig(),
-      settings: { currency: guessCurrency(), accentColor: "teal" }
+      settings: { currency: guessCurrency(), accentColor: "orange" }
     };
   }
 
@@ -5139,10 +5134,6 @@
     html += '<p class="footnote" style="margin-top:14px;margin-bottom:0">Curated presets rather than a full color wheel, so button text and the paid/overdue/warning colors stay legible against whatever you pick.</p>';
     html += '</div>';
 
-    html += '<div class="card"><h2>Appearance</h2>';
-    html += '<div class="toggle-row"><span>Soft look <span class="footnote" style="margin:0">(beta)</span></span><label class="switch"><input type="checkbox" id="soft-skin-toggle" ' + (document.documentElement.getAttribute("data-skin") === "soft" ? "checked" : "") + ' /><span class="track"></span><span class="thumb"></span></label></div>';
-    html += '<p class="footnote" style="margin-top:0;margin-bottom:0">Raised and pressed surfaces with a glowing accent. Works in light and dark, and follows the Theme Color you pick above.</p>';
-    html += '</div>';
 
     html += '<div class="card"><h2>Account</h2>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in as " + escapeHtml(auth.currentUser.email) + " — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
@@ -5181,16 +5172,6 @@
         applyAccentColor();
         save(); renderSettings();
       });
-    });
-    var softToggle = document.getElementById("soft-skin-toggle");
-    if (softToggle) softToggle.addEventListener("change", function (e) {
-      try {
-        if (e.target.checked) localStorage.setItem("ledger.financeTracker.skin", "soft");
-        else localStorage.removeItem("ledger.financeTracker.skin");
-      } catch (err) {}
-      if (e.target.checked) document.documentElement.setAttribute("data-skin", "soft");
-      else document.documentElement.removeAttribute("data-skin");
-      renderAll();
     });
     var changePinBtn = document.getElementById("change-pin");
     if (changePinBtn) changePinBtn.addEventListener("click", openChangePinForm);
