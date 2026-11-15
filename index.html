@@ -1261,6 +1261,138 @@
   .todo-tpl .btn { width: auto; padding: 9px 18px; text-transform: none; letter-spacing: 0; }
   @media (prefers-reduced-motion: reduce) { .todo-toast, .todo-offer, .todo-streak.bump, .todo-item.flash { animation: none; } .todo-item.settle { transition: none; } }
 
+  /* ================= Grocery page ================= */
+  .gro-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 2px 14px; }
+  .gro-head .t { font-size: 15px; font-weight: 800; color: var(--ink); }
+  .gro-cmp { width: 46px; height: 46px; flex: none; border-radius: 50%; border: none; padding: 0; cursor: pointer; background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), var(--soft-ring-flat); display: grid; place-items: center; }
+  .gro-cmp:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
+  .gro-cmp svg { width: 22px; height: 22px; }
+  .gro-seg { grid-template-columns: repeat(2, 1fr); }
+  .gro-sugg { margin-top: 10px; background: var(--page); border-radius: 22px; box-shadow: var(--soft-raise-sm); padding: 6px; max-height: 330px; overflow-y: auto; }
+  .gro-sugg[hidden], .gro-draft[hidden], #gro-quick[hidden] { display: none; }
+  .gro-sg { width: 100%; display: flex; align-items: center; gap: 8px; border: none; background: none; text-align: left; padding: 9px 10px; border-radius: 16px; cursor: pointer; font-family: inherit; color: var(--ink); min-height: 44px; }
+  .gro-sg[aria-selected="true"] { box-shadow: var(--soft-inset); }
+  .gro-sg .nm { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; overflow-wrap: anywhere; }
+  .gro-sg .nm small { display: block; font-size: 11px; color: var(--ink-muted); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gro-sg .bd { color: var(--accent); font-weight: 800; }
+  .gro-cc { flex: none; font-size: 10.5px; font-weight: 800; padding: 3px 9px; border-radius: 99px; color: var(--ink-2); box-shadow: var(--soft-inset); display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .gro-cc i { width: 7px; height: 7px; border-radius: 50%; display: block; }
+  .gro-draft { margin: 10px 2px 0; display: grid; gap: 8px; }
+  .gro-brands { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 3px 3px 7px; margin: 0 -3px; align-items: center; }
+  .gro-brands::-webkit-scrollbar { display: none; }
+  .gro-brands .lbl { flex: none; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-muted); }
+  .gro-chip { flex: none; border: none; background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 99px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: var(--ink-2); cursor: pointer; font-family: inherit; }
+  .gro-chip[aria-pressed="true"] { color: var(--accent); box-shadow: var(--soft-inset); }
+  .gro-fields { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .gro-stp { display: flex; align-items: center; border-radius: 99px; box-shadow: var(--soft-inset); padding: 2px; }
+  .gro-stp button { width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--page); box-shadow: var(--soft-raise-sm); color: var(--accent); font-weight: 800; font-size: 17px; line-height: 1; cursor: pointer; padding: 0; font-family: inherit; }
+  :root[data-skin="soft"] .gro-stp input, :root[data-skin="soft"] .gro-pill { border: none; box-shadow: none; background: none; text-align: center; font-weight: 800; font-size: 13.5px; width: 46px; padding: 0; color: var(--ink); -moz-appearance: textfield; font-family: inherit; }
+  .gro-stp input::-webkit-inner-spin-button, .gro-stp input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  :root[data-skin="soft"] .gro-sel, :root[data-skin="soft"] .gro-num { border: none; background-color: var(--page); box-shadow: var(--soft-inset); border-radius: 99px; padding: 8px 12px; font-size: 13px; font-weight: 700; color: var(--ink); font-family: inherit; min-width: 0; }
+  :root[data-skin="soft"] .gro-sel { background-image: var(--soft-chevron); background-repeat: no-repeat; background-position: right 10px center; background-size: 13px; padding-right: 30px; }
+  :root[data-skin="soft"] .gro-num { width: 84px; }
+  :root[data-skin="soft"] .gro-sel { width: auto; flex: 0 0 auto; }
+  .gro-pricebox { display: inline-flex; align-items: center; gap: 6px; border-radius: 99px; box-shadow: var(--soft-inset); padding: 0 14px; background: var(--page); }
+  .gro-pricebox:focus-within { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 75%, transparent); }
+  .gro-pricebox span { font-size: 11px; font-weight: 800; color: var(--ink-muted); letter-spacing: .04em; }
+  :root[data-skin="soft"] .gro-pricebox input[type="number"] { border: none; box-shadow: none; background: none; width: 64px; padding: 8px 0; font-size: 13px; font-weight: 700; color: var(--ink); font-family: inherit; }
+  :root[data-skin="soft"] .gro-sel.cat { flex: 1 1 130px; min-width: 130px; color: var(--accent); }
+  .btn svg { width: 16px; height: 16px; flex: none; }
+  :root[data-skin="soft"] .gro-sel:focus, :root[data-skin="soft"] .gro-num:focus { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 75%, transparent); }
+  .gro-card { background: var(--page); border-radius: 22px; box-shadow: var(--soft-raise); padding: 16px; margin-bottom: 14px; }
+  .gro-sum { display: flex; gap: 12px; align-items: flex-end; justify-content: space-between; }
+  .gro-sum .big { font-size: 26px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1; margin-top: 6px; }
+  .gro-sum .big small { font-size: 13px; font-weight: 700; color: var(--ink-muted); letter-spacing: 0; }
+  .gro-lbl { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-muted); }
+  .gro-tot { text-align: right; font-variant-numeric: tabular-nums; min-width: 0; }
+  .gro-tot b { font-size: 16px; font-weight: 800; display: block; margin-top: 2px; overflow-wrap: anywhere; }
+  .gro-bar { height: 10px; border-radius: 99px; box-shadow: var(--soft-inset); margin-top: 12px; padding: 2px; overflow: hidden; }
+  .gro-bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); transition: width .35s ease; }
+  .gro-note { margin-top: 8px; font-size: 11.5px; color: var(--ink-muted); font-weight: 600; }
+  .gro-complete { margin-top: 12px; width: 100%; text-transform: none; letter-spacing: 0; }
+  .gro-grp { background: var(--page); border-radius: 22px; box-shadow: var(--soft-raise); margin-bottom: 14px; overflow: hidden; }
+  .gro-gh { width: 100%; border: none; background: none; display: flex; align-items: center; gap: 10px; padding: 13px 16px; text-align: left; cursor: pointer; font-family: inherit; color: var(--ink); }
+  .gro-gh .dotc { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+  .gro-gh .gt { flex: 1; font-size: 13.5px; font-weight: 800; min-width: 0; }
+  .gro-gh .gc { font-size: 11.5px; font-weight: 700; color: var(--ink-muted); font-variant-numeric: tabular-nums; padding: 2px 9px; border-radius: 99px; box-shadow: var(--soft-inset); }
+  .gro-gh svg { width: 16px; height: 16px; color: var(--ink-muted); transition: transform .2s; flex: none; transform: rotate(90deg); }
+  .gro-grp.shut .gro-gh svg { transform: none; }
+  .gro-grp.shut .gro-gbody { display: none; }
+  .gro-itw { position: relative; overflow: hidden; border-top: 1px solid var(--soft-groove); }
+  .gro-del { position: absolute; right: 0; top: 0; bottom: 0; width: 84px; border: none; background: var(--critical); color: #fff; font-size: 12.5px; font-weight: 800; cursor: pointer; font-family: inherit; }
+  .gro-itc { position: relative; background: var(--page); display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 12px; transform: translateX(0); transition: transform .22s ease; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .gro-itc.open { transform: translateX(-84px); }
+  .gro-itc.drag { transition: none; }
+  .gro-itc.flash { animation: gro-flash 1.4s ease; }
+  @keyframes gro-flash { 0%, 60% { background: color-mix(in srgb, var(--accent) 16%, var(--page)); } }
+  .gro-chk, .gro-ban, .gro-rcmp { flex: none; border: none; background: var(--page); display: grid; place-items: center; border-radius: 50%; color: var(--ink-muted); cursor: pointer; padding: 0; position: relative; }
+  .gro-chk::after, .gro-ban::after, .gro-rcmp::after { content: ""; position: absolute; inset: -6px; }
+  .gro-chk { width: 34px; height: 34px; box-shadow: var(--soft-raise-sm); }
+  .gro-chk svg { opacity: 0; width: 16px; height: 16px; }
+  .gro-chk[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: var(--soft-inset); }
+  .gro-chk[aria-pressed="true"] svg { opacity: 1; }
+  .gro-ban, .gro-rcmp { width: 28px; height: 28px; box-shadow: var(--soft-raise-sm); }
+  .gro-ban svg, .gro-rcmp svg { width: 15px; height: 15px; }
+  .gro-ban[aria-pressed="true"] { color: var(--critical); box-shadow: var(--soft-inset); }
+  .gro-rcmp { color: var(--accent); box-shadow: var(--soft-raise-sm), var(--soft-ring-flat); }
+  .gro-rcmp:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
+  .gro-im { flex: 1; min-width: 0; cursor: pointer; border-radius: 10px; }
+  .gro-im b { display: block; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.25; }
+  .gro-im small { display: flex; flex-wrap: wrap; gap: 2px 6px; align-items: center; font-size: 11.5px; color: var(--ink-muted); font-weight: 600; margin-top: 1px; }
+  .gro-pr { font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink-2); text-align: right; min-width: 0; max-width: 88px; overflow-wrap: anywhere; }
+  .gro-pr.none { color: var(--ink-muted); font-weight: 500; font-size: 11.5px; }
+  .st-got .gro-im b, .st-got .gro-pr { color: var(--ink-muted); }
+  .st-unavailable .gro-im b, .st-unavailable .gro-pr { text-decoration: line-through; color: var(--ink-muted); }
+  .st-unavailable { background: repeating-linear-gradient(135deg, transparent 0 7px, var(--soft-groove) 7px 8px), var(--page); }
+  .gro-tag { font-size: 10px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; padding: 2px 7px; border-radius: 99px; color: var(--critical); box-shadow: var(--soft-inset); }
+  .gro-th { display: flex; align-items: center; gap: 10px; }
+  .gro-th .m { flex: 1; min-width: 0; }
+  .gro-th .m b { font-size: 14px; font-weight: 800; display: block; }
+  .gro-th .m small { font-size: 11.5px; color: var(--ink-muted); font-weight: 600; }
+  .gro-th .a { font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; text-align: right; }
+  .gro-tbtn { border: none; background: none; color: var(--ink-muted); width: 36px; height: 36px; display: grid; place-items: center; cursor: pointer; padding: 0; border-radius: 50%; }
+  .gro-tbtn svg { width: 16px; height: 16px; transition: transform .2s; transform: rotate(90deg); }
+  .gro-tbtn[aria-expanded="true"] svg { transform: rotate(-90deg); }
+  .gro-hi { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--soft-groove); }
+  .gro-hi:first-of-type { margin-top: 12px; }
+  .gro-hi .gro-im { cursor: default; }
+  .gro-tacts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .gro-btn { border: none; background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 999px; padding: 9px 14px; font-size: 12.5px; font-weight: 800; color: var(--accent); cursor: pointer; font-family: inherit; }
+  .gro-btn:active { box-shadow: var(--soft-inset); }
+  .gro-btn.plain { color: var(--ink-2); }
+  .gro-btn.danger { color: var(--critical); }
+  .gro-logged { font-size: 12px; font-weight: 700; color: var(--ink-muted); align-self: center; }
+  .gro-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 14px; }
+  .gro-chips .gro-chip { padding: 8px 13px; font-size: 12.5px; }
+  .gro-stats { display: flex; gap: 10px; margin-bottom: 14px; }
+  .gro-stat { flex: 1; border-radius: 18px; box-shadow: var(--soft-inset); padding: 12px 6px; text-align: center; min-width: 0; }
+  .gro-stat b { display: block; font-size: 24px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .gro-stat span { font-size: 10.5px; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .05em; }
+  .gro-stat.na b { color: var(--critical); }
+  .gro-stat.ok b { color: var(--accent); }
+  /* Compare (unit-rate calculator) */
+  .gro-opt { border-radius: 20px; box-shadow: var(--soft-inset); padding: 12px; margin-bottom: 12px; display: grid; gap: 8px; }
+  .gro-opt-h { display: flex; align-items: center; gap: 8px; }
+  .gro-opt-h input { flex: 1; min-width: 0; font-weight: 700; }
+  .gro-opt-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.1fr); gap: 8px; }
+  .gro-opt-row label { display: grid; gap: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-muted); min-width: 0; }
+  :root[data-skin="soft"] .gro-opt input[type="text"], :root[data-skin="soft"] .gro-opt input[type="number"], :root[data-skin="soft"] .gro-opt select { padding: 10px 12px; font-size: 14px; width: 100%; min-width: 0; text-transform: none; letter-spacing: 0; font-family: inherit; }
+  :root[data-skin="soft"] .gro-opt select { padding-right: 30px; background-position: right 9px center; background-size: 13px; }
+  .gro-x { width: 30px; height: 30px; flex: none; border: none; border-radius: 50%; background: var(--page); box-shadow: var(--soft-raise-sm); color: var(--ink-muted); cursor: pointer; display: grid; place-items: center; padding: 0; }
+  .gro-x svg { width: 14px; height: 14px; }
+  .gro-res { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border-radius: 18px; margin-bottom: 10px; box-shadow: var(--soft-raise-sm); }
+  .gro-res.best { box-shadow: var(--soft-raise-sm), var(--soft-ring-flat); }
+  .gro-res .who { flex: 1; min-width: 0; }
+  .gro-res .who b { display: block; font-size: 13.5px; overflow-wrap: anywhere; }
+  .gro-res .who small { display: block; font-size: 11.5px; color: var(--ink-muted); font-weight: 600; margin-top: 1px; }
+  .gro-res .rt { text-align: right; font-weight: 800; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .gro-res .rt small { display: block; font-size: 11px; font-weight: 800; margin-top: 2px; color: var(--ink-muted); }
+  .gro-res.best .rt small { color: var(--accent); }
+  .gro-res.bad { box-shadow: var(--soft-inset); color: var(--ink-muted); }
+  .gro-verdict { font-size: 13px; font-weight: 700; color: var(--ink-2); line-height: 1.5; margin: 2px 2px 12px; }
+  .gro-verdict b { color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { .gro-itc, .gro-bar i, .gro-gh svg, .gro-tbtn svg { transition: none; } .gro-itc.flash { animation: none; } }
+
   /* =========================================================================
      Spaces + Home screen. Money and Lists each have their own dial; the brand
      button (logo + space + page) opens Home, and the header button beside the
@@ -1494,6 +1626,12 @@
   </symbol>
   <symbol id="i-grocery" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <path d="M3 10h18l-1.8 9a2 2 0 0 1-2 1.6H6.8a2 2 0 0 1-2-1.6z"/><path d="M8 10l3-6M16 10l-3-6"/>
+  </symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 4v16M8 20h8M5 7h14"/><path d="M5 7l-3 7a3 3 0 0 0 6 0z"/><path d="M19 7l-3 7a3 3 0 0 0 6 0z"/>
+  </symbol>
+  <symbol id="i-ban" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+    <circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/>
   </symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M5 12h14M13 6l6 6-6 6"/>
@@ -1766,6 +1904,7 @@
       loans: [],
       goals: [],
       tasks: [],
+      grocery: defaultGrocery(),
       cards: [],
       customBankCards: [],
       removedBankCards: BANK_CARDS.slice(),
@@ -1793,6 +1932,8 @@
     if (!parsed.cards) parsed.cards = [];
     // To-Do tasks arrived later: backfill for existing accounts, and drop anything malformed.
     parsed.tasks = (Array.isArray(parsed.tasks) ? parsed.tasks : []).map(normalizeTask).filter(Boolean);
+    // So did the Grocery list (items, past trips, what the autofill has learned).
+    parsed.grocery = normalizeGrocery(parsed.grocery);
     if (!parsed.customBankCards) parsed.customBankCards = [];
     if (!parsed.removedBankCards) parsed.removedBankCards = [];
     if (!parsed.bankCardConfig) parsed.bankCardConfig = defaultBankCardConfig();
@@ -2666,10 +2807,10 @@
     // Cards and Forecast have nothing to add, so the + goes away and the calculator
     // takes its place (the .solo class centres it where the + was). Settings has its
     // own Quick Calculator button, so the floating one hides there too.
-    var noAdd = (to === "settings" || to === "forecast" || to === "cards" || to === "grocery");
+    var noAdd = (to === "settings" || to === "forecast" || to === "cards");
     actionBtn.style.display = noAdd ? "none" : "";
-    document.getElementById("calc-fab").style.visibility = (to === "settings" || to === "grocery") ? "hidden" : "visible";
-    document.getElementById("fab-stack").classList.toggle("solo", noAdd && to !== "settings" && to !== "grocery");
+    document.getElementById("calc-fab").style.visibility = to === "settings" ? "hidden" : "visible";
+    document.getElementById("fab-stack").classList.toggle("solo", noAdd && to !== "settings");
   }
   function showTab(to, dir, opts) { // slide `to` in from the side `dir` (1 = from the right)
     opts = opts || {};
@@ -2912,6 +3053,7 @@
     else if (currentTab === "loans") openLoanForm(null);
     else if (currentTab === "goals") openGoalForm(null);
     else if (currentTab === "todo") openTaskForm(null);
+    else if (currentTab === "grocery") { var gq = document.getElementById("gro-q"); if (gq) gq.focus(); }
     else if (currentTab === "categories") openCategoryForm(null);
     else if (currentTab === "transfer") openTransferForm();
   });
@@ -5430,19 +5572,20 @@
 
   /* ---------- forms: transaction ---------- */
 
-  function openTransactionForm(id) {
+  function openTransactionForm(id, prefill) {
     var existing = id ? byId(state.transactions, id) : null;
+    var pre = existing || prefill || null; // prefill (e.g. from a grocery trip) fills the new-transaction form; nothing is saved until Save
     var html = '<div class="modal-head"><h3>' + (existing ? "Edit Transaction" : "Add Transaction") + '</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + '</button></div>';
     html += '<form id="tx-form">';
-    html += '<div class="field"><input class="amount-input num" type="number" step="0.01" min="0" inputmode="decimal" name="amount" placeholder="0.00" value="' + (existing ? existing.amount : "") + '" required /></div>';
+    html += '<div class="field"><input class="amount-input num" type="number" step="0.01" min="0" inputmode="decimal" name="amount" placeholder="0.00" value="' + (pre ? pre.amount : "") + '" required /></div>';
     html += '<div class="field"><div class="segmented" id="tx-type-seg">';
     html += '<button type="button" data-val="expense" class="' + (!existing || existing.type === "expense" ? "active" : "") + '">Expense</button>';
     html += '<button type="button" data-val="income" class="' + (existing && existing.type === "income" ? "active" : "") + '">Income</button>';
     html += '</div><input type="hidden" name="type" value="' + (existing ? existing.type : "expense") + '" /></div>';
-    html += '<div class="field"><label>Merchant</label><input type="text" name="merchant" placeholder="e.g. Carrefour" value="' + escapeAttr(existing ? existing.merchant : "") + '" required /></div>';
+    html += '<div class="field"><label>Merchant</label><input type="text" name="merchant" placeholder="e.g. Carrefour" value="' + escapeAttr(pre ? pre.merchant : "") + '" required /></div>';
     html += '<div class="field"><label>Category</label><select name="categoryId" id="tx-cat-select"><option value="">None</option>';
     state.categories.forEach(function (c) {
-      html += '<option value="' + c.id + '"' + (existing && existing.categoryId === c.id ? " selected" : "") + '>' + escapeHtml(c.name) + '</option>';
+      html += '<option value="' + c.id + '"' + (pre && pre.categoryId === c.id ? " selected" : "") + '>' + escapeHtml(c.name) + '</option>';
     });
     html += '</select></div>';
     // Only shown once there's a goal to contribute to - picking one is the
@@ -5461,8 +5604,8 @@
       html += '<option value="' + escapeAttr(bc) + '"' + (existing && existing.bankCard === bc ? " selected" : "") + '>' + escapeHtml(bc) + '</option>';
     });
     html += '</select></div>';
-    html += '<div class="field"><label>Date</label><input type="date" name="date" value="' + (existing ? existing.date : todayISO()) + '" required /></div>';
-    html += '<div class="field"><label>Note (optional)</label><input type="text" name="note" value="' + escapeAttr(existing ? existing.note : "") + '" /></div>';
+    html += '<div class="field"><label>Date</label><input type="date" name="date" value="' + (pre && pre.date ? pre.date : todayISO()) + '" required /></div>';
+    html += '<div class="field"><label>Note (optional)</label><input type="text" name="note" value="' + escapeAttr(pre ? pre.note : "") + '" /></div>';
     if (existing) {
       html += '<button type="submit" class="btn primary">Save</button>';
       html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
@@ -5476,7 +5619,7 @@
     document.querySelector("[data-close]").addEventListener("click", closeModal);
 
     var typeInput = document.querySelector('input[name="type"]');
-    var catManuallyPicked = !!(existing && existing.categoryId);
+    var catManuallyPicked = !!(pre && pre.categoryId);
     var goalSelect = document.getElementById("tx-goal-select");
     document.querySelectorAll("#tx-type-seg button").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -5541,6 +5684,7 @@
         state.transactions[idx] = record;
       } else {
         state.transactions.push(record);
+        if (prefill && prefill.onSave) prefill.onSave(record);
       }
       assignCategorySlots();
       save(); renderAll();
@@ -6206,14 +6350,605 @@
     reader.readAsText(file);
   }
 
-  /* ---------- Lists: Grocery placeholder, tasks shortcut, Home screen ----------
-     Grocery is not built yet, so its page is a tidy "coming soon" state with no sample data. */
+  /* ---------- Lists: Grocery, tasks shortcut, Home screen ---------- */
+  /* ---------- grocery ----------
+     state.grocery = { items, trips, learned }:
+       items:   [{ id, name, brand, cat, qty, unit, price (per unit) | null, status "pending"|"got"|"unavailable", addedAt }]
+       trips:   [{ id, date "YYYY-MM-DDTHH:MM", items [{ name, brand, cat, qty, unit, price }], total | null, expenseTxId }]  newest first
+       learned: { "<lower-case name>": { name, cat, unit, price, brand, brands[], bp {brand: price}, uses, last } }
+                what the person's own list taught the autofill: last unit, brand, aisle and price per item.
+     Complete trip moves the Got items into trips; Unavailable and not-yet-picked items stay on the list.
+     It is part of the one synced state blob, so save() carries it to the cloud and to Backup/Restore.
+     normalizeGrocery runs from load(), before the vars below exist, so it only uses hoisted functions. */
+
+  function groCatIds() { return ["fv", "dairy", "eggs", "meat", "fish", "chilled", "frozen", "canned", "bakery", "pantry", "snacks", "drinks", "house", "care", "baby", "pets", "other"]; }
+  function groUnitList() { return ["pcs", "kg", "g", "L", "ml", "pack", "box", "bottle", "can", "dozen", "bag"]; }
+  function groPos(v) { var n = typeof v === "number" ? v : parseFloat(v); return isFinite(n) && n > 0 ? Math.min(Math.round(n * 100) / 100, 9999999) : null; }
+  function groStr(v, n) { return String(v == null ? "" : v).replace(/\s+/g, " ").trim().slice(0, n); }
+  function normalizeGroItem(i, snapshot) {
+    if (!i || typeof i !== "object") return null;
+    var name = groStr(i.name, 120); if (!name) return null;
+    var o = {
+      id: i.id != null && i.id !== "" ? String(i.id) : uid(),
+      name: name,
+      brand: groStr(i.brand, 60),
+      cat: groCatIds().indexOf(i.cat) !== -1 ? i.cat : "other",
+      qty: groPos(i.qty) || 1,
+      unit: groUnitList().indexOf(i.unit) !== -1 ? i.unit : "pcs",
+      price: groPos(i.price)
+    };
+    if (!snapshot) {
+      o.status = i.status === "got" ? "got" : (i.status === "unavailable" || i.status === "na") ? "unavailable" : "pending";
+      o.addedAt = typeof i.addedAt === "string" ? i.addedAt.slice(0, 16) : "";
+    }
+    return o;
+  }
+  function groItemsTotal(items) { var s = 0; items.forEach(function (i) { if (i.price) s += i.price * i.qty; }); return Math.round(s * 100) / 100; }
+  function normalizeGroTrip(t) {
+    if (!t || typeof t !== "object") return null;
+    var items = (Array.isArray(t.items) ? t.items : []).map(function (i) { return normalizeGroItem(i, true); }).filter(Boolean);
+    if (!items.length) return null;
+    var total = groPos(t.total); if (total === null) total = groItemsTotal(items) || null;
+    return {
+      id: t.id != null && t.id !== "" ? String(t.id) : uid(),
+      date: typeof t.date === "string" && /^\d{4}-\d{2}-\d{2}/.test(t.date) ? t.date.slice(0, 16) : "1970-01-01T00:00",
+      items: items, total: total, expenseTxId: t.expenseTxId ? String(t.expenseTxId) : ""
+    };
+  }
+  function normalizeGroLearned(raw) {
+    var out = {}, n = 0;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return out;
+    Object.keys(raw).forEach(function (k) {
+      var e = raw[k]; if (k === "__proto__" || !e || typeof e !== "object" || n >= 500) return;
+      var name = groStr(e.name, 120); if (!name) return;
+      var bp = {}; if (e.bp && typeof e.bp === "object") Object.keys(e.bp).forEach(function (b) { var p = groPos(e.bp[b]); if (b !== "__proto__" && p) bp[b.slice(0, 60)] = p; });
+      out[name.toLowerCase()] = {
+        name: name, cat: groCatIds().indexOf(e.cat) !== -1 ? e.cat : "other", unit: groUnitList().indexOf(e.unit) !== -1 ? e.unit : "pcs",
+        price: groPos(e.price), brand: groStr(e.brand, 60),
+        brands: (Array.isArray(e.brands) ? e.brands : []).map(function (b) { return groStr(b, 60); }).filter(Boolean).slice(0, 8),
+        bp: bp, uses: Math.max(1, Math.min(9999, Math.floor(+e.uses) || 1)), last: typeof e.last === "string" ? e.last.slice(0, 10) : ""
+      };
+      n++;
+    });
+    return out;
+  }
+  function defaultGrocery() { return { items: [], trips: [], learned: {} }; }
+  function normalizeGrocery(g) {
+    g = g && typeof g === "object" ? g : {};
+    return {
+      items: (Array.isArray(g.items) ? g.items : []).map(function (i) { return normalizeGroItem(i, false); }).filter(Boolean).slice(0, 1000),
+      trips: (Array.isArray(g.trips) ? g.trips : []).map(normalizeGroTrip).filter(Boolean).slice(0, 200),
+      learned: normalizeGroLearned(g.learned)
+    };
+  }
+
+  var GRO_CATS = [["fv", "Fruits & Vegetables", 140], ["dairy", "Dairy", 205], ["eggs", "Eggs", 45], ["meat", "Meat & Poultry", 5], ["fish", "Fish & Seafood", 195], ["chilled", "Chilled", 175], ["frozen", "Frozen", 215], ["canned", "Canned & Jarred", 25], ["bakery", "Bakery", 35], ["pantry", "Pantry", 55], ["snacks", "Snacks", 340], ["drinks", "Drinks", 225], ["house", "Household & Cleaning", 260], ["care", "Personal Care", 300], ["baby", "Baby", 320], ["pets", "Pets", 85], ["other", "Other", 0]];
+  var GRO_CATN = {}, GRO_CATH = {};
+  GRO_CATS.forEach(function (c) { GRO_CATN[c[0]] = c[1]; GRO_CATH[c[0]] = c[2]; });
+  var GRO_UNITS = groUnitList();
+  /* Built-in catalog: name|aisle|usual unit|common brands|typical price in SAR (only used while the currency is SAR). */
+  var GRO_RAW = [
+  'Tomatoes|fv|kg||6','Cucumbers|fv|kg||5','Potatoes|fv|kg||4','Onions|fv|kg||3.5','Garlic|fv|pack||3','Carrots|fv|kg||4','Bananas|fv|kg||7','Apples|fv|kg||9','Oranges|fv|kg||6','Lemons|fv|kg||8','Sukkari Dates|fv|kg|Bateel,Al Qassim|45','Grapes|fv|kg||14','Watermelon|fv|pcs||18','Strawberries|fv|pack||12','Lettuce|fv|pcs||4','Parsley|fv|pack||2','Coriander|fv|pack||2','Mint|fv|pack||2','Bell Peppers|fv|kg||9','Eggplant|fv|kg||5','Zucchini|fv|kg||5','Avocado|fv|pcs||5','Mango|fv|kg||12','Spinach|fv|pack||3','Pomegranate|fv|kg||10','Green Chili|fv|pack||3',
+  'Milk|dairy|L|Almarai,Nadec,Alsafi,Danone,Saudia|7.5','Long Life Milk|dairy|L|Almarai,Nadec,Alsafi|6.5','Laban|dairy|L|Nadec,Almarai,Alsafi|5','Yogurt|dairy|pack|Almarai,Nadec,Danone,Activia|3.5','Greek Yogurt|dairy|pack|Almarai,Danone|4.5','Labneh|dairy|pack|Almarai,Nadec,Puck|6','Cheddar Cheese|dairy|pack|Kraft,Almarai,Puck|14','Cream Cheese|dairy|pack|Puck,Kiri,Philadelphia,Almarai|9','Cheese Slices|dairy|pack|Kraft,Kiri,Almarai|11','Mozzarella|dairy|pack|Almarai,Puck|15','Halloumi|dairy|pack|Almarai,Nadec|13','Feta Cheese|dairy|pack|Almarai,Puck|10','Butter|dairy|pack|Lurpak,Anchor,Almarai|14','Fresh Cream|dairy|pack|Almarai,Puck|5','Evaporated Milk|dairy|can|Carnation,Nestle,Alsafi|3.5','Powdered Milk|dairy|pack|Nido,Nadec,Almarai|38','Cottage Cheese|dairy|pack|Almarai|7',
+  'Eggs|eggs|dozen|Al Watania,Nadec,Alyoum|14','Brown Eggs|eggs|dozen|Al Watania,Nadec|17','Quail Eggs|eggs|pack||10',
+  'Chicken Breast|meat|kg|Tanmiah,Al Watania,Alyoum|28','Whole Chicken|meat|pcs|Tanmiah,Al Watania,Alyoum,Sadia|18','Chicken Thighs|meat|kg|Tanmiah,Al Watania|22','Chicken Drumsticks|meat|kg|Tanmiah,Al Watania|20','Minced Beef|meat|kg||42','Lamb Shoulder|meat|kg||65','Lamb Chops|meat|kg||78','Beef Steak|meat|kg||70','Beef Burger|meat|pack|Sadia,Americana|18','Beef Sausages|meat|pack|Sadia,Americana|14',
+  'Salmon Fillet|fish|kg||75','Shrimp|fish|kg||60','Hamour|fish|kg||55','Fish Fillet|fish|kg||38','Tilapia|fish|kg||24','Squid|fish|kg||35','Sultan Ibrahim|fish|kg||45',
+  'Hummus|chilled|pack|Sabra,Freshly|6','Mutabbal|chilled|pack|Freshly|6','Tabbouleh|chilled|pack||8','Fresh Orange Juice|chilled|bottle|Almarai|9','Beef Mortadella|chilled|pack|Americana,Sadia|8','Chicken Slices|chilled|pack|Sadia,Americana|9','Cream Dessert|chilled|pack|Almarai|4','Fresh Pasta|chilled|pack||12','Puff Pastry Dough|chilled|pack|Americana|10',
+  'French Fries|frozen|bag|McCain,Americana|13','Frozen Peas|frozen|bag|Americana,McCain|7','Frozen Mixed Vegetables|frozen|bag|Americana|7','Chicken Nuggets|frozen|pack|Sadia,Americana,Tanmiah|19','Samosa|frozen|pack|Americana|14','Ice Cream|frozen|box|Magnum,Kwality Walls,Baskin Robbins|22','Frozen Paratha|frozen|pack|Americana|12','Frozen Shrimp|frozen|bag||38','Frozen Spinach|frozen|bag|Americana|6','Frozen Pizza|frozen|pcs|Dr. Oetker|20','Frozen Okra|frozen|bag|Americana|7',
+  'Tuna|canned|can|Al Alali,John West,Calvo|6.5','Sardines|canned|can|Al Alali,Goody|4','Chickpeas|canned|can|Al Alali,Freshly|3.5','Fava Beans|canned|can|Al Alali,Freshly|3.5','Baked Beans|canned|can|Heinz|5','Tomato Paste|canned|can|Heinz,Al Alali|3','Sweet Corn|canned|can|Del Monte,Green Giant|4','Olives|canned|bottle|Freshly|9','Pickles|canned|bottle|Freshly|7','Nutella|canned|pcs|Nutella,Nutoka|19','Peanut Butter|canned|pcs|Skippy,Jif|17','Jam|canned|pcs|Hero,Bonne Maman|12','Honey|canned|pcs|Al Shifa,Langnese|45','Tahini|canned|pcs|Al Wadi,Ziyad|14','Mayonnaise|canned|pcs|Heinz,Hellmann\'s,Americana|11','Ketchup|canned|bottle|Heinz,Americana|9','Coconut Milk|canned|can|Chaokoh,Kara|7','Canned Mushrooms|canned|can|Bonduelle|6',
+  'Arabic Bread|bakery|pack|Almarai,Modern|4','Toast Bread|bakery|pack|Lusine,Almarai|6','Samoon|bakery|pack||5','Croissant|bakery|pcs|Almarai|3','Brioche|bakery|pack|La Brioche|8','Tortilla Wraps|bakery|pack|Mission,Almarai|10','Baguette|bakery|pcs||3','Maamoul|bakery|box|Bateel|30','Cake|bakery|pcs||45','Burger Buns|bakery|pack|Almarai|7',
+  'Basmati Rice|pantry|kg|Abu Kass,Tilda,India Gate,Zaffran|9','Egyptian Rice|pantry|kg|Abu Kass|7','Spaghetti|pantry|pack|Barilla,Divella|6','Macaroni|pantry|pack|Barilla,Divella|5','Vermicelli|pantry|pack|Barilla|3','Couscous|pantry|pack|Divella|6','Flour|pantry|kg|Nadec,Pillsbury|4','Sugar|pantry|kg|Al Osra,Domino|5','Salt|pantry|pack|Morton,Al Osra|2','Sunflower Oil|pantry|L|Afia,Mazola,Al Arabi|14','Olive Oil|pantry|L|Filippo Berio,Bertolli|45','Ghee|pantry|kg|Amul,Alsafi|40','Lentils|pantry|kg|Abu Kass,Al Alali|8','Oats|pantry|pack|Quaker|13','Cornflakes|pantry|box|Kellogg\'s,Nestle|15','Black Pepper|pantry|bottle|Shan,Mehran|7','Cardamom|pantry|pack||18','Cumin|pantry|pack|Shan|5','Turmeric|pantry|pack|Shan|4','Cinnamon|pantry|pack||5','Kabsa Spice Mix|pantry|pack|Shan,Al Alali|6','Instant Noodles|pantry|pack|Indomie,Maggi|1.5','Baking Powder|pantry|pack|Foster Clark\'s,Royal|3','Cornstarch|pantry|pack|Foster Clark\'s|4','Vanilla Extract|pantry|bottle||8','Breadcrumbs|pantry|pack||5','Chickpea Flour|pantry|pack||6','Pasta Sauce|pantry|bottle|Barilla,Heinz|12',
+  'Potato Chips|snacks|pack|Lay\'s,Pringles,Doritos,Cheetos|3','Biscuits|snacks|pack|Oreo,McVitie\'s,Lotus|4','Chocolate|snacks|pack|Galaxy,Kit Kat,Snickers,Cadbury|5','Popcorn|snacks|pack|Act II|6','Mixed Nuts|snacks|pack||25','Cashews|snacks|pack||30','Pistachios|snacks|pack||40','Almonds|snacks|pack||28','Protein Bar|snacks|pack|Quest|12','Chewing Gum|snacks|pack|Wrigley\'s,Trident|3','Cookies|snacks|pack|Oreo,Lotus|7','Crackers|snacks|pack|Ritz,Tuc|5','Halawa|snacks|pack|Al Wadi|9','Wafers|snacks|pack|Loacker,Tiffany|4',
+  'Water|drinks|bottle|Nestle,Aquafina,Hana,Berain|1','Tea Bags|drinks|box|Lipton,Ahmad Tea,Tetley|16','Green Tea|drinks|box|Lipton,Twinings|14','Arabic Coffee|drinks|pack|Najjar,Bateel|24','Instant Coffee|drinks|pcs|Nescafe,Maxwell House|28','Orange Juice|drinks|L|Almarai,Rani,Tropicana|8','Mango Juice|drinks|L|Rani,Almarai|8','Apple Juice|drinks|L|Almarai,Rani,Tropicana|8','Cola|drinks|bottle|Pepsi,Coca-Cola|4','Sparkling Water|drinks|bottle|San Pellegrino,Perrier|5','Energy Drink|drinks|can|Red Bull,Monster|9','Ice Tea|drinks|bottle|Lipton|4','Malt Drink|drinks|can|Barbican,Moussy|4','Tang Orange Powder|drinks|pack|Tang|8',
+  'Laundry Detergent|house|pack|Tide,Ariel,Persil|38','Dishwashing Liquid|house|bottle|Fairy,Sunlight,Palmolive|12','Toilet Paper|house|pack|Fine,Kleenex|28','Tissues|house|box|Fine,Kleenex|6','Paper Towels|house|pack|Fine,Bounty|16','Trash Bags|house|pack|Hefty,Fine|9','Bleach|house|bottle|Clorox|9','Floor Cleaner|house|bottle|Flash,Lysol|14','Fabric Softener|house|bottle|Downy,Comfort|18','Aluminum Foil|house|pcs|Diamond,Reynolds|12','Sponges|house|pack|Scotch-Brite|8','Air Freshener|house|pcs|Glade,Air Wick|15','Dishwasher Tablets|house|pack|Finish|35','Glass Cleaner|house|bottle|Windex|11','Batteries|house|pack|Duracell,Energizer|18','Insect Spray|house|can|Raid|14',
+  'Shampoo|care|bottle|Head & Shoulders,Pantene,Dove,Clear|22','Conditioner|care|bottle|Pantene,Dove|22','Toothpaste|care|pcs|Colgate,Sensodyne,Signal|10','Toothbrush|care|pcs|Colgate,Oral-B|8','Bar Soap|care|pack|Dove,Lux,Dettol|12','Shower Gel|care|bottle|Dove,Nivea,Lux|18','Deodorant|care|pcs|Rexona,Nivea,Dove|15','Hand Wash|care|bottle|Dettol,Palmolive,Lifebuoy|10','Razors|care|pack|Gillette|30','Body Lotion|care|bottle|Nivea,Vaseline|20','Sanitary Pads|care|pack|Always,Kotex|16','Face Wash|care|pcs|Nivea,Garnier|18','Mouthwash|care|bottle|Listerine,Colgate|17',
+  'Diapers|baby|pack|Pampers,Huggies,Molfix|62','Baby Wipes|baby|pack|Pampers,Huggies,Johnson\'s|14','Baby Formula|baby|can|Aptamil,SMA,Nestle NAN|68','Baby Cereal|baby|box|Cerelac,Nestle|16','Baby Shampoo|baby|bottle|Johnson\'s|16','Baby Puree|baby|pack|Gerber|5','Baby Lotion|baby|bottle|Johnson\'s,Sebamed|18',
+  'Cat Food|pets|pack|Whiskas,Royal Canin,Felix|12','Dog Food|pets|bag|Pedigree,Royal Canin|55','Cat Litter|pets|bag|Catsan,Me-O|30','Dog Treats|pets|pack|Pedigree|14','Bird Seed|pets|bag||12','Fish Food|pets|pack||9',
+  'Light Bulbs|other|pcs|Philips,Osram|9','Candles|other|pack||10','Matches|other|pack||2','Charcoal|other|bag||15','Party Napkins|other|pack||6'
+  ];
+  var groCatalog = null, groCatByName = {};
+  function groCat() {
+    if (groCatalog) return groCatalog;
+    groCatalog = GRO_RAW.map(function (s) { var p = s.split("|"); return { name: p[0], cat: p[1], unit: p[2], brands: p[3] ? p[3].split(",") : [], price: parseFloat(p[4]) }; });
+    groCatalog.forEach(function (c) { c.nw = groWords(c.name); c.bw = c.brands.map(groWords); groCatByName[c.name.toLowerCase()] = c; });
+    return groCatalog;
+  }
+
+  var groView = "list", groShut = {}, groOpenTrip = null, groFlash = null, groSuppress = false, groFocusKey = "";
+  var groDraft = null, groList = [], groHi = 0, groPicked = false, groSel = null, groDraftKey = "";
+
+  function groLearned(k) { var L = state.grocery.learned; return Object.prototype.hasOwnProperty.call(L, k) ? L[k] : null; }
+  function groWords(s) { return String(s).toLowerCase().split(/[^a-z0-9؀-ۿ]+/).filter(Boolean); }
+  function groLev(a, b) {
+    var m = a.length, n = b.length, d = [], i, j;
+    for (i = 0; i <= m; i++) d[i] = [i]; for (j = 1; j <= n; j++) d[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[m][n];
+  }
+  function groWordScore(t, ws) {
+    var best = 0;
+    for (var i = 0; i < ws.length; i++) {
+      var w = ws[i], s = 0;
+      if (w === t) s = 100; else if (w.indexOf(t) === 0) s = 80; else if (t.length >= 3 && w.indexOf(t) > 0) s = 45;
+      else if (t.length >= 4 && (groLev(t, w) <= 1 || groLev(t, w.slice(0, t.length)) <= 1)) s = 35;
+      if (s > best) best = s;
+    }
+    return best;
+  }
+  function groCap(s) { s = groStr(s, 120); return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  /* The catalog with what this person has taught it laid over the top (their usual unit, brand, aisle and price first). */
+  function groIndex() {
+    var cat = groCat(), sar = state.settings.currency === "SAR", seen = {}, out = [];
+    function overlay(it, e) {
+      it.cat = e.cat; it.unit = e.unit; if (e.price) it.price = e.price; it.learned = true; it.uses = e.uses; it.brand = e.brand; it.bp = e.bp;
+      var bs = [], low = {};
+      [e.brand].concat(e.brands, it.brands).forEach(function (b) { if (b && !low[b.toLowerCase()]) { low[b.toLowerCase()] = 1; bs.push(b); } });
+      it.brands = bs; it.nw = groWords(it.name); it.bw = bs.map(groWords);
+    }
+    cat.forEach(function (c, ci) {
+      var k = c.name.toLowerCase(), e = groLearned(k);
+      var it = { ord: ci, name: c.name, cat: c.cat, unit: c.unit, brands: c.brands, price: sar ? c.price : null, nw: c.nw, bw: c.bw, learned: false, uses: 0, brand: "", bp: {} };
+      if (e) { seen[k] = 1; overlay(it, e); }
+      out.push(it);
+    });
+    Object.keys(state.grocery.learned).forEach(function (k) {
+      if (seen[k] || groCatByName[k]) return;
+      var e = state.grocery.learned[k], it = { ord: 9999, name: e.name, cat: e.cat, unit: e.unit, brands: [], price: null, nw: [], bw: [], learned: true, uses: e.uses, brand: "", bp: {} };
+      overlay(it, e); out.push(it);
+    });
+    return out;
+  }
+  function groSuggest(q) {
+    var toks = groWords(q), out = [], ql = groStr(q, 120).toLowerCase();
+    if (!toks.length) return out;
+    groIndex().forEach(function (c) {
+      var ns = toks.map(function (t) { return groWordScore(t, c.nw); }), all = ns.every(function (s) { return s > 0; });
+      var bonus = c.learned ? 12 + Math.min(c.uses, 10) : 0;
+      if (all) out.push({ item: c, brand: "", score: ns.reduce(function (a, b) { return a + b; }, 0) + (c.name.toLowerCase().indexOf(ql) === 0 ? 20 : 0) + bonus });
+      c.brands.forEach(function (b, bi) {
+        var used = false, sum = 0, ok = true;
+        toks.forEach(function (t, i) { var bs = groWordScore(t, c.bw[bi]); if (bs > ns[i]) used = true; var m = Math.max(bs, ns[i]); if (!m) ok = false; sum += m; });
+        if (ok && used) out.push({ item: c, brand: b, score: sum + bonus });
+      });
+    });
+    out.sort(function (a, b) { return b.score - a.score || a.item.ord - b.item.ord || a.brand.localeCompare(b.brand); }); // ties: the catalog's own order, so the everyday item comes first
+    out = out.slice(0, 7);
+    if (!out.some(function (o) { return groLabel(o).toLowerCase() === ql; })) out.push({ custom: true, name: groCap(q), score: 0 });
+    return out;
+  }
+  function groLabel(o) { return o.custom ? o.name : (o.brand ? o.brand + " " : "") + o.item.name; }
+  function groResolve(name) { // a catalog or learned entry by exact name
+    var k = name.toLowerCase(), idx = groIndex();
+    for (var i = 0; i < idx.length; i++) if (idx[i].name.toLowerCase() === k) return idx[i];
+    return null;
+  }
+
+  /* what the autofill remembers: called whenever an item is added or edited */
+  function groLearn(it) {
+    var L = state.grocery.learned, k = it.name.toLowerCase(); if (k === "__proto__") return;
+    var e = groLearned(k) || { name: it.name, cat: it.cat, unit: it.unit, price: null, brand: "", brands: [], bp: {}, uses: 0, last: "" };
+    e.name = it.name; e.cat = it.cat; e.unit = it.unit; e.brand = it.brand || "";
+    if (it.price) e.price = it.price;
+    if (it.brand) {
+      e.brands = [it.brand].concat(e.brands.filter(function (b) { return b.toLowerCase() !== it.brand.toLowerCase(); })).slice(0, 8);
+      if (it.price) e.bp[it.brand.toLowerCase()] = it.price;
+    }
+    e.uses = Math.min(9999, e.uses + 1); e.last = todayISO(); L[k] = e;
+    var keys = Object.keys(L);
+    if (keys.length > 500) { keys.sort(function (a, b) { return (L[a].last || "").localeCompare(L[b].last || "") || L[a].uses - L[b].uses; }); delete L[keys[0]]; }
+  }
+
+  /* ----- list actions ----- */
+  function groFind(id) { return byId(state.grocery.items, id); }
+  function groRound(n) { return Math.round(n * 100) / 100; }
+  function groAddToList(src, qty) {
+    var G = state.grocery, q = groPos(qty) || groPos(src.qty) || 1;
+    var ex = G.items.filter(function (i) { return i.status !== "got" && i.name.toLowerCase() === src.name.toLowerCase() && (i.brand || "").toLowerCase() === (src.brand || "").toLowerCase() && i.unit === src.unit; })[0];
+    if (ex) { ex.qty = groRound(ex.qty + q); if (ex.status === "unavailable") ex.status = "pending"; if (src.price && !ex.price) ex.price = groPos(src.price); return ex; }
+    var n = normalizeGroItem({ id: uid(), name: src.name, brand: src.brand, cat: src.cat, qty: q, unit: src.unit, price: src.price, status: "pending", addedAt: todoStamp() }, false);
+    G.items.push(n); return n;
+  }
+  function groSave() { save(); renderGrocery(); }
+  function groUndoable(msg, mutate, then) {
+    var before = JSON.stringify(state.grocery);
+    mutate(); groSave();
+    todoToast(msg, "Undo", function () { state.grocery = normalizeGrocery(JSON.parse(before)); groSave(); }, 5500);
+    if (then) then();
+  }
+  function groDateLabel(iso) {
+    var d = new Date(iso.slice(0, 10) + "T12:00:00"), n = daysUntil(iso.slice(0, 10));
+    if (n === 0) return "Today"; if (n === -1) return "Yesterday";
+    return TODO_WD[d.getDay()] + " " + d.getDate() + " " + TODO_MO[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? " " + d.getFullYear() : "");
+  }
+  function groCurrency() { return state.settings.currency || "SAR"; }
+  function groCchip(cat) { return '<span class="gro-cc"><i style="background:hsl(' + GRO_CATH[cat] + ' 62% 55%)"></i>' + escapeHtml(GRO_CATN[cat]) + "</span>"; }
+  function groUnitOpts(sel) { return GRO_UNITS.map(function (u) { return '<option' + (u === sel ? " selected" : "") + ">" + u + "</option>"; }).join(""); }
+  function groCatOpts(sel) { return GRO_CATS.map(function (c) { return '<option value="' + c[0] + '"' + (c[0] === sel ? " selected" : "") + ">" + escapeHtml(c[1]) + "</option>"; }).join(""); }
+  function groPlain(n) { return fmtMoneyPlain(n); }
+
+  /* ----- page shell + render ----- */
+  function buildGroceryShell(tab) {
+    tab.innerHTML = '<div class="gro-head"><div><div class="t" id="gro-title"></div><div class="todo-sub" id="gro-sub"></div></div>' +
+      '<button type="button" class="gro-cmp" id="gro-cmp" aria-label="Compare prices by size" title="Compare prices by size">' + icon("scale") + "</button></div>" +
+      '<div class="todo-quick" id="gro-quick"><form class="todo-qa" id="gro-qf" autocomplete="off"><input id="gro-q" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gro-sugg" placeholder="Add an item or brand, e.g. tomatoes" aria-label="Add a grocery item" enterkeyhint="done" autocapitalize="off" spellcheck="false" />' +
+      '<button type="submit" class="icon-btn" id="gro-add" aria-label="Add item" disabled>' + icon("plus") + "</button></form>" +
+      '<div class="gro-sugg" id="gro-sugg" role="listbox" aria-label="Suggestions" hidden></div><div class="gro-draft" id="gro-draft" hidden></div></div>' +
+      '<div class="todo-seg gro-seg" id="gro-seg" role="tablist" aria-label="Grocery views"></div><div id="gro-body"></div>';
+    groDraft = groFreshDraft();
+    var q = document.getElementById("gro-q");
+    q.addEventListener("input", function () { groPicked = false; groHi = 0; groDraft.brandM = false; groUpdateDraft(); });
+    q.addEventListener("focus", function () { if (q.value.trim()) groUpdateDraft(); });
+    q.addEventListener("blur", function () { setTimeout(function () { if (document.activeElement !== q) groHideSugg(); }, 150); });
+    q.addEventListener("keydown", function (e) {
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (groList.length) { groHi = (groHi + (e.key === "ArrowDown" ? 1 : groList.length - 1)) % groList.length; groPicked = false; groUpdateDraft(); } }
+      else if (e.key === "Escape" && !document.getElementById("gro-sugg").hidden) { e.preventDefault(); e.stopPropagation(); groHideSugg(); }
+    });
+    document.getElementById("gro-qf").addEventListener("submit", function (e) { e.preventDefault(); groAddDraft(); });
+    var sg = document.getElementById("gro-sugg");
+    sg.addEventListener("pointerdown", function (e) { e.preventDefault(); });
+    sg.addEventListener("click", function (e) {
+      var b = e.target.closest(".gro-sg"); if (!b) return;
+      groHi = +b.getAttribute("data-k"); groSel = groList[groHi]; groPicked = true; groDraft.brandM = false; q.value = groLabel(groSel); groHideSugg(); groUpdateDraft(); q.focus();
+    });
+    var dr = document.getElementById("gro-draft");
+    dr.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-gbrand]");
+      if (b) { groDraft.brandM = true; groDraft.brand = groDraft.brand === b.getAttribute("data-gbrand") ? "" : b.getAttribute("data-gbrand"); groPicked = true; groSyncDraft(); return; }
+      var s = e.target.closest("[data-gq]");
+      if (s) { var st = groStep(groDraft.unit); groDraft.qty = Math.max(st, groRound((parseFloat(groDraft.qty) || 1) + st * +s.getAttribute("data-gq"))); groPicked = true; groSyncDraft(); }
+    });
+    dr.addEventListener("change", function (e) {
+      if (dr.hidden) return; // a field being torn down after Add can still fire a late change
+      groPicked = true;
+      if (e.target.id === "gro-d-qty") groDraft.qty = groPos(e.target.value) || 1;
+      if (e.target.id === "gro-d-unit") { groDraft.unit = e.target.value; groDraft.unitM = true; }
+      if (e.target.id === "gro-d-price") { groDraft.price = e.target.value === "" ? "" : (groPos(e.target.value) || ""); groDraft.priceM = true; }
+      if (e.target.id === "gro-d-cat") { groDraft.cat = e.target.value; groDraft.catM = true; }
+      groSyncDraft();
+    });
+    dr.addEventListener("keydown", function (e) { if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); e.target.dispatchEvent(new Event("change", { bubbles: true })); groAddDraft(); } });
+    document.getElementById("gro-cmp").addEventListener("click", function () { openGroceryCompare(null); });
+    document.getElementById("gro-seg").addEventListener("click", function (e) { var b = e.target.closest("[data-gv]"); if (b) { groView = b.getAttribute("data-gv"); renderGrocery(); } });
+    var body = document.getElementById("gro-body");
+    body.addEventListener("click", groBodyClick);
+    body.addEventListener("keydown", function (e) {
+      if ((e.key === "Enter" || e.key === " ") && e.target.getAttribute && e.target.getAttribute("data-ga") === "edit") { e.preventDefault(); groBodyClick(e); }
+    });
+    wireGrocerySwipe(body);
+  }
+
   function renderGrocery() {
-    var el = document.getElementById("tab-grocery"); if (!el || el.firstChild) return;
-    el.innerHTML = '<div class="coming-soon">' + icon("grocery") + "<h2>Grocery is coming soon</h2>" +
-      "<p>Your shopping list will live here, with aisles and past trips you can add back in one tap.</p>" +
-      '<button type="button" class="btn plain" data-go-tab="todo">Go to To-Do</button></div>';
-    el.querySelector("[data-go-tab]").addEventListener("click", function () { land(0); });
+    var tab = document.getElementById("tab-grocery"); if (!tab) return;
+    if (!document.getElementById("gro-body")) buildGroceryShell(tab);
+    var G = state.grocery, items = G.items;
+    var got = items.filter(function (i) { return i.status === "got"; }).length, na = items.filter(function (i) { return i.status === "unavailable"; }).length;
+    document.getElementById("gro-title").textContent = items.length ? items.length + (items.length === 1 ? " item" : " items") + " on your list" : "Your list is empty";
+    document.getElementById("gro-sub").textContent = items.length ? got + " collected" + (na ? " · " + na + " unavailable" : "") : "Add an item below";
+    document.getElementById("gro-seg").innerHTML = [["list", "Shopping list", items.length], ["hist", "History", G.trips.length]].map(function (x) {
+      return '<button type="button" role="tab" data-gv="' + x[0] + '" aria-selected="' + (groView === x[0]) + '">' + x[1] + "<b>" + x[2] + "</b></button>";
+    }).join("");
+    document.getElementById("gro-quick").hidden = groView !== "list";
+    var ae = document.activeElement, key = ae && ae.getAttribute && ae.closest && ae.closest("#gro-body") ? ae.getAttribute("data-gk") : "";
+    document.getElementById("gro-body").innerHTML = groView === "list" ? groListHtml() : groHistHtml();
+    if (key) { var again = document.querySelector('#gro-body [data-gk="' + key + '"]'); if (again) again.focus({ preventScroll: true }); }
+    groFlash = null;
+  }
+
+  function groItemHtml(i) {
+    var st = i.status, meta = [i.brand ? escapeHtml(i.brand) : "", groQty(i.qty) + " " + escapeHtml(i.unit)].filter(Boolean).join(" · ");
+    var k = escapeAttr(i.id);
+    return '<div class="gro-itw" data-id="' + k + '"><button type="button" class="gro-del" data-ga="del" data-gk="del:' + k + '" tabindex="-1" aria-hidden="true">Delete</button>' +
+      '<div class="gro-itc st-' + st + (groFlash === i.id ? " flash" : "") + '" data-no-pageswipe>' +
+      '<button type="button" class="gro-chk" data-ga="got" data-gk="got:' + k + '" aria-pressed="' + (st === "got") + '" aria-label="Got ' + escapeAttr(i.name) + '">' + icon("check") + "</button>" +
+      '<div class="gro-im" data-ga="edit" data-gk="edit:' + k + '" role="button" tabindex="0" aria-label="Edit ' + escapeAttr(i.name) + '"><b>' + escapeHtml(i.name) + "</b><small><span>" + meta + "</span>" + (st === "unavailable" ? '<span class="gro-tag">Unavailable</span>' : "") + "</small></div>" +
+      '<div class="gro-pr' + (i.price ? "" : " none") + '">' + (i.price ? fmtMoney(i.price * i.qty) : "no price") + "</div>" +
+      '<button type="button" class="gro-rcmp" data-ga="cmp" data-gk="cmp:' + k + '" aria-label="Compare sizes for ' + escapeAttr(i.name) + '" title="Compare sizes">' + icon("scale") + "</button>" +
+      '<button type="button" class="gro-ban" data-ga="na" data-gk="na:' + k + '" aria-pressed="' + (st === "unavailable") + '" aria-label="' + escapeAttr(i.name) + ' unavailable" title="Unavailable">' + icon("ban") + "</button>" +
+      "</div></div>";
+  }
+  function groListHtml() {
+    var G = state.grocery, items = G.items;
+    if (!items.length) {
+      var re = G.trips.length ? '<div class="gro-chips"><button type="button" class="gro-btn" data-ga="readdlast">Re-add last trip (' + G.trips[0].items.length + (G.trips[0].items.length === 1 ? " item" : " items") + ")</button></div>" : "";
+      return '<div class="todo-empty">' + icon("grocery") + "<h3>Your list is empty</h3><p>Type an item above. It goes straight into the right aisle, with your usual brand and unit filled in.</p>" +
+        '<div class="gro-chips">' + ["Milk", "Eggs", "Tomatoes", "Basmati Rice"].map(function (n) { return '<button type="button" class="gro-chip" data-gquick="' + n + '">' + n + "</button>"; }).join("") + "</div>" + re + "</div>";
+    }
+    var total = items.length, got = 0, na = 0, est = 0, priced = 0;
+    items.forEach(function (i) { if (i.status === "got") got++; if (i.status === "unavailable") na++; else if (i.price) est += i.price * i.qty; if (i.price) priced++; });
+    var pct = Math.round(got / total * 100);
+    var h = '<div class="gro-card"><div class="gro-sum"><div><div class="gro-lbl">Collected</div><div class="big">' + got + " <small>of " + total + '</small></div></div><div class="gro-tot"><div class="gro-lbl">Estimated total</div><b>' + fmtMoney(groRound(est)) + "</b></div></div>" +
+      '<div class="gro-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + pct + '" aria-label="Items collected"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="gro-note">' + (na ? na + " unavailable, left out of the total. " : "") + "Prices set on " + priced + " of " + total + " items.</div>" +
+      '<button type="button" class="btn primary gro-complete" data-ga="complete"' + (got ? "" : " disabled") + ">" + (got ? "Complete trip · " + got + " collected" : "Tick items as you shop to complete the trip") + "</button></div>";
+    GRO_CATS.forEach(function (c) {
+      var its = items.filter(function (i) { return i.cat === c[0]; }); if (!its.length) return;
+      var g = its.filter(function (i) { return i.status === "got"; }).length, shut = groShut[c[0]];
+      h += '<section class="gro-grp' + (shut ? " shut" : "") + '"><button type="button" class="gro-gh" data-ga="grp" data-cat="' + c[0] + '" data-gk="grp:' + c[0] + '" aria-expanded="' + !shut + '"><span class="dotc" style="background:hsl(' + c[2] + ' 62% 55%)"></span><span class="gt">' + escapeHtml(c[1]) + '</span><span class="gc">' + g + "/" + its.length + "</span>" + icon("chevron") + '</button><div class="gro-gbody">' + its.map(groItemHtml).join("") + "</div></section>";
+    });
+    return h + '<div class="todo-hint">Tap the circle when it is in the basket, the slashed circle if the shop does not have it. Swipe left to delete.</div>';
+  }
+  function groHistHtml() {
+    var G = state.grocery;
+    if (!G.trips.length) return '<div class="todo-empty">' + icon("grocery") + "<h3>No trips yet</h3><p>Completed trips appear here, so you can add a favourite item or a whole trip back to your list in one tap.</p></div>";
+    return G.trips.map(function (t) {
+      var open = groOpenTrip === t.id, k = escapeAttr(t.id), n = t.items.length;
+      var h = '<div class="gro-card" data-tid="' + k + '"><div class="gro-th"><div class="m"><b>' + groDateLabel(t.date) + "</b><small>" + n + (n === 1 ? " item" : " items") + ' collected</small></div><div class="a">' + (t.total ? fmtMoney(t.total) : "") + "</div>" +
+        '<button type="button" class="gro-tbtn" data-ga="trip" data-gk="trip:' + k + '" aria-expanded="' + open + '" aria-label="Show items from ' + escapeAttr(groDateLabel(t.date)) + '">' + icon("chevron") + "</button></div>";
+      if (open) h += t.items.map(function (i, x) {
+        return '<div class="gro-hi"><div class="gro-im"><b>' + escapeHtml(i.name) + "</b><small>" + [i.brand ? escapeHtml(i.brand) : "", groQty(i.qty) + " " + escapeHtml(i.unit)].filter(Boolean).join(" · ") + '</small></div><div class="gro-pr' + (i.price ? "" : " none") + '">' + (i.price ? fmtMoney(i.price * i.qty) : "") + "</div>" +
+          '<button type="button" class="icon-btn ghost" style="width:32px;height:32px" data-ga="readd1" data-k="' + x + '" data-gk="readd1:' + k + ":" + x + '" aria-label="Add ' + escapeAttr(i.name) + ' back to list">' + icon("plus") + "</button></div>";
+      }).join("");
+      h += '<div class="gro-tacts"><button type="button" class="gro-btn" data-ga="readdall" data-gk="readdall:' + k + '">Add whole trip to list</button>';
+      if (t.total) h += t.expenseTxId ? '<span class="gro-logged">Logged as expense</span>' : '<button type="button" class="gro-btn plain" data-ga="tripexp" data-gk="tripexp:' + k + '">Log as expense</button>';
+      if (open) h += '<button type="button" class="gro-btn danger" data-ga="tripdel" data-gk="tripdel:' + k + '">Delete trip</button>';
+      return h + "</div></div>";
+    }).join("");
+  }
+  function groQty(n) { return String(groRound(n)); }
+
+  function groBodyClick(e) {
+    if (groSuppress) { groSuppress = false; return; }
+    var G = state.grocery, qk = e.target.closest("[data-gquick]");
+    if (qk) { groQuickAdd(qk.getAttribute("data-gquick")); return; }
+    var a = e.target.closest("[data-ga]"); if (!a) return;
+    var act = a.getAttribute("data-ga"), row = a.closest("[data-id]"), it = row ? groFind(row.getAttribute("data-id")) : null;
+    var tcard = a.closest("[data-tid]"), trip = tcard ? byId(G.trips, tcard.getAttribute("data-tid")) : null;
+    if (act === "got" && it) { it.status = it.status === "got" ? "pending" : "got"; groSave(); }
+    else if (act === "na" && it) { it.status = it.status === "unavailable" ? "pending" : "unavailable"; groSave(); if (it.status === "unavailable") todoToast(it.name + " marked unavailable. It stays on your list.", "", null, 3600); }
+    else if (act === "edit" && it) { var r = a.closest(".gro-itc"); if (r && r.classList.contains("open")) { r.classList.remove("open"); return; } openGroceryEdit(it); }
+    else if (act === "cmp" && it) openGroceryCompare(it);
+    else if (act === "del" && it) groUndoable("Removed " + it.name, function () { G.items = G.items.filter(function (x) { return x.id !== it.id; }); });
+    else if (act === "grp") { groShut[a.getAttribute("data-cat")] = !groShut[a.getAttribute("data-cat")]; renderGrocery(); }
+    else if (act === "complete") openGroceryComplete();
+    else if (act === "trip" && trip) { groOpenTrip = groOpenTrip === trip.id ? null : trip.id; renderGrocery(); }
+    else if (act === "readd1" && trip) { var s = trip.items[+a.getAttribute("data-k")]; if (s) groUndoable("Added " + s.name + " to your list", function () { groAddToList(s); }); }
+    else if (act === "readdall" && trip) groUndoable("Added " + trip.items.length + (trip.items.length === 1 ? " item" : " items") + " to your list", function () { trip.items.forEach(function (s) { groAddToList(s); }); });
+    else if (act === "readdlast" && G.trips[0]) { var lt = G.trips[0]; groUndoable("Added " + lt.items.length + (lt.items.length === 1 ? " item" : " items") + " to your list", function () { lt.items.forEach(function (s) { groAddToList(s); }); }); }
+    else if (act === "tripexp" && trip) groLogExpense(trip.id);
+    else if (act === "tripdel" && trip) confirmAction("Delete this trip from History?", "Delete", function () { groUndoable("Trip deleted", function () { G.trips = G.trips.filter(function (x) { return x.id !== trip.id; }); }); });
+  }
+  function groQuickAdd(name) {
+    var c = groResolve(name); if (!c) return;
+    var item = null;
+    groUndoable("Added " + c.name + " to " + GRO_CATN[c.cat], function () {
+      item = groAddToList({ name: c.name, brand: c.brand, cat: c.cat, qty: 1, unit: c.unit, price: c.price });
+      groLearn({ name: c.name, brand: c.brand, cat: c.cat, unit: c.unit, price: c.price }); groFlash = item.id; groShut = {};
+    });
+  }
+
+  /* ----- swipe left to reveal Delete (pointer events, so touch and mouse both work) ----- */
+  function wireGrocerySwipe(body) {
+    var sw = null;
+    body.addEventListener("pointerdown", function (e) {
+      var r = e.target.closest(".gro-itc"); if (!r || e.target.closest("button")) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      body.querySelectorAll(".gro-itc.open").forEach(function (o) { if (o !== r) o.classList.remove("open"); });
+      sw = { r: r, x0: e.clientX, y0: e.clientY, id: e.pointerId, drag: false, base: r.classList.contains("open") ? -84 : 0, x: 0 };
+    });
+    body.addEventListener("pointermove", function (e) {
+      if (!sw || e.pointerId !== sw.id) return;
+      var dx = e.clientX - sw.x0, dy = e.clientY - sw.y0;
+      if (!sw.drag) {
+        if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.3) { sw.drag = true; sw.r.classList.add("drag"); try { sw.r.setPointerCapture(e.pointerId); } catch (x) {} }
+        else { if (Math.abs(dy) > 10) sw = null; return; }
+      }
+      sw.x = Math.max(-84, Math.min(0, sw.base + dx)); sw.r.style.transform = "translateX(" + sw.x + "px)";
+    });
+    function end(e) {
+      if (!sw || e.pointerId !== sw.id) return;
+      var s = sw; sw = null; if (!s.drag) return;
+      groSuppress = true; setTimeout(function () { groSuppress = false; }, 60);
+      s.r.classList.remove("drag"); s.r.style.transform = ""; s.r.classList.toggle("open", e.type !== "pointercancel" && s.x < -42);
+      var d = s.r.querySelector("[data-ga]"); // keep the hidden Delete reachable only while it is showing
+      var del = s.r.parentNode.querySelector(".gro-del"); if (del) { del.tabIndex = s.r.classList.contains("open") ? 0 : -1; del.setAttribute("aria-hidden", s.r.classList.contains("open") ? "false" : "true"); }
+    }
+    body.addEventListener("pointerup", end); body.addEventListener("pointercancel", end);
+  }
+
+  /* ----- quick add with autofill ----- */
+  function groFreshDraft() { return { qty: 1, unit: "pcs", price: "", cat: "other", brand: "", catM: false, unitM: false, priceM: false, brandM: false }; }
+  function groStep(unit) { return unit === "kg" ? 0.5 : (unit === "g" || unit === "ml") ? 100 : 1; }
+  function groHideSugg() { var s = document.getElementById("gro-sugg"), q = document.getElementById("gro-q"); if (s) s.hidden = true; if (q) { q.setAttribute("aria-expanded", "false"); q.removeAttribute("aria-activedescendant"); } }
+  function groResetDraft() {
+    var q = document.getElementById("gro-q"); groDraft = groFreshDraft(); q.value = ""; groPicked = false; groSel = null; groList = []; groHi = 0; groDraftKey = "";
+    groHideSugg(); var dr = document.getElementById("gro-draft"); dr.hidden = true; dr.innerHTML = ""; document.getElementById("gro-add").disabled = true; // empty, so a stale field cannot fire a late change event into the next draft
+  }
+  function groUpdateDraft() {
+    var q = document.getElementById("gro-q"), text = q.value.trim(), sg = document.getElementById("gro-sugg"), dr = document.getElementById("gro-draft"), D = groDraft;
+    document.getElementById("gro-add").disabled = !text;
+    if (!text) { groHideSugg(); dr.hidden = true; groDraftKey = ""; groSel = null; return; }
+    if (!groPicked) { groList = groSuggest(text); if (groHi >= groList.length) groHi = 0; groSel = groList[groHi]; }
+    var sel = groSel;
+    if (sel && !sel.custom) {
+      var it = sel.item, bk = sel.brand ? sel.brand.toLowerCase() : "";
+      if (!D.catM) D.cat = it.cat; if (!D.unitM) D.unit = it.unit;
+      if (!D.priceM) D.price = sel.brand && it.bp[bk] ? it.bp[bk] : (it.price || "");
+      if (!D.brandM) D.brand = sel.brand || it.brand || "";
+    } else if (sel) { if (!D.catM) D.cat = "other"; if (!D.unitM) D.unit = "pcs"; if (!D.priceM) D.price = ""; if (!D.brandM) D.brand = ""; }
+    if (!groPicked && document.activeElement === q) {
+      sg.innerHTML = groList.map(function (o, k) {
+        if (o.custom) return '<button type="button" class="gro-sg" role="option" id="gro-opt-' + k + '" data-k="' + k + '" aria-selected="' + (k === groHi) + '"><span class="nm">Add “' + escapeHtml(o.name) + "”<small>New item, goes to Other</small></span>" + groCchip("other") + "</button>";
+        var hint = !o.brand ? (o.item.learned ? "Your usual" + (o.item.brand ? ": " + o.item.brand : "") : o.item.brands.slice(0, 4).join(" · ")) : "";
+        return '<button type="button" class="gro-sg" role="option" id="gro-opt-' + k + '" data-k="' + k + '" aria-selected="' + (k === groHi) + '"><span class="nm">' + (o.brand ? '<span class="bd">' + escapeHtml(o.brand) + "</span> " : "") + escapeHtml(o.item.name) + (hint ? "<small>" + escapeHtml(hint) + "</small>" : "") + "</span>" + groCchip(o.item.cat) + "</button>";
+      }).join("");
+      sg.hidden = false; q.setAttribute("aria-expanded", "true"); q.setAttribute("aria-activedescendant", "gro-opt-" + groHi);
+    } else groHideSugg();
+    var brands = sel && !sel.custom ? sel.item.brands : [], key = (sel && !sel.custom ? sel.item.name : "") + "|" + brands.join(",");
+    if (key !== groDraftKey || dr.hidden) {
+      groDraftKey = key;
+      dr.innerHTML = (brands.length ? '<div class="gro-brands" role="group" aria-label="Brand"><span class="lbl">Brand</span>' + brands.map(function (b) { return '<button type="button" class="gro-chip" data-gbrand="' + escapeAttr(b) + '" aria-pressed="false">' + escapeHtml(b) + "</button>"; }).join("") + "</div>" : "") +
+        '<div class="gro-fields"><div class="gro-stp" role="group" aria-label="Quantity"><button type="button" data-gq="-1" aria-label="Less">&minus;</button><input id="gro-d-qty" type="number" min="0" step="any" inputmode="decimal" aria-label="Quantity" /><button type="button" data-gq="1" aria-label="More">+</button></div>' +
+        '<select class="gro-sel" id="gro-d-unit" aria-label="Unit">' + groUnitOpts("") + '</select><label class="gro-pricebox"><span>' + escapeHtml(groCurrency()) + '</span><input id="gro-d-price" type="number" min="0" step="any" inputmode="decimal" placeholder="Price" aria-label="Price per unit in ' + escapeAttr(groCurrency()) + '" /></label>' +
+        '<select class="gro-sel cat" id="gro-d-cat" aria-label="Aisle">' + groCatOpts("") + "</select></div>";
+      dr.hidden = false;
+    }
+    groSyncDraft(true);
+  }
+  function groSyncDraft(fromUpdate) { // push the draft values into the fields without rebuilding them (keeps keyboard focus)
+    var D = groDraft, g = function (id) { return document.getElementById(id); };
+    if (!g("gro-d-qty")) return;
+    if (document.activeElement !== g("gro-d-qty")) g("gro-d-qty").value = D.qty;
+    g("gro-d-unit").value = D.unit; g("gro-d-cat").value = D.cat;
+    if (document.activeElement !== g("gro-d-price")) g("gro-d-price").value = D.price === "" ? "" : D.price;
+    document.querySelectorAll("#gro-draft [data-gbrand]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-gbrand") === D.brand ? "true" : "false"); });
+  }
+  function groAddDraft() {
+    var q = document.getElementById("gro-q"), text = q.value.trim(), D = groDraft; if (!text) { q.focus(); return; }
+    if (!groSel) { groList = groSuggest(text); groSel = groList[groHi] || groList[0]; }
+    var name = groSel.custom ? groSel.name : groSel.item.name, item = null;
+    var f = { name: name, brand: D.brand, cat: D.cat, qty: parseFloat(D.qty) || 1, unit: D.unit, price: D.price === "" ? null : D.price };
+    groView = "list";
+    groUndoable("Added " + (f.brand ? f.brand + " " : "") + name + " to " + GRO_CATN[f.cat], function () {
+      item = groAddToList(f); groLearn(f); groFlash = item.id; groShut = {};
+    });
+    groResetDraft(); q.focus();
+    var el = document.querySelector('#gro-body [data-id="' + (item ? item.id : "") + '"]'); if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", behavior: reducedMotion() ? "auto" : "smooth" });
+  }
+
+  /* ----- edit sheet ----- */
+  function openGroceryEdit(it) {
+    var cur = escapeHtml(groCurrency());
+    var html = '<div class="modal-head"><h3>Edit item</h3><button type="button" class="icon-btn ghost" data-close aria-label="Close" style="width:30px;height:30px">' + icon("x") + "</button></div>" +
+      '<form id="gro-edit">' +
+      '<div class="field"><label for="ge-name">Item</label><input id="ge-name" type="text" name="name" maxlength="120" value="' + escapeAttr(it.name) + '" required /></div>' +
+      '<div class="field"><label for="ge-brand">Brand</label><input id="ge-brand" type="text" name="brand" maxlength="60" value="' + escapeAttr(it.brand) + '" placeholder="Any brand" /></div>' +
+      '<div class="field"><label for="ge-cat">Aisle</label><select id="ge-cat" name="cat">' + groCatOpts(it.cat) + "</select></div>" +
+      '<div class="todo-two"><div class="field"><label for="ge-qty">Quantity</label><input id="ge-qty" type="number" name="qty" min="0" step="any" inputmode="decimal" value="' + it.qty + '" /></div>' +
+      '<div class="field"><label for="ge-unit">Unit</label><select id="ge-unit" name="unit">' + groUnitOpts(it.unit) + "</select></div></div>" +
+      '<div class="field"><label for="ge-price">Price per unit (' + cur + ')</label><input id="ge-price" type="number" name="price" min="0" step="any" inputmode="decimal" value="' + (it.price == null ? "" : it.price) + '" placeholder="Optional" /></div>' +
+      '<button type="button" class="btn plain" data-cmp style="margin-bottom:10px">' + icon("scale") + " Compare sizes</button>" +
+      '<button type="submit" class="btn primary">Save</button><button type="button" class="btn danger" style="margin-top:10px" data-del>Delete</button></form>';
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    document.querySelector("[data-cmp]").addEventListener("click", function () {
+      var f = new FormData(document.getElementById("gro-edit"));
+      closeModal(); openGroceryCompare({ name: groStr(f.get("name"), 120) || it.name, qty: groPos(f.get("qty")) || it.qty, unit: String(f.get("unit")), price: groPos(f.get("price")) });
+    });
+    document.querySelector("[data-del]").addEventListener("click", function () { closeModal(); groUndoable("Removed " + it.name, function () { state.grocery.items = state.grocery.items.filter(function (x) { return x.id !== it.id; }); }); });
+    document.getElementById("gro-edit").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var f = new FormData(e.target), name = groStr(f.get("name"), 120); if (!name) return;
+      var n = normalizeGroItem(Object.assign({}, it, { name: name, brand: f.get("brand"), cat: f.get("cat"), qty: f.get("qty"), unit: f.get("unit"), price: f.get("price") }), false);
+      Object.keys(n).forEach(function (k) { it[k] = n[k]; });
+      groLearn(it); groFlash = it.id; closeModal(); groSave();
+    });
+    setTimeout(function () { var n = document.getElementById("ge-name"); if (n) n.focus(); }, 30);
+  }
+
+  /* ----- complete trip ----- */
+  function openGroceryComplete() {
+    var G = state.grocery, got = G.items.filter(function (i) { return i.status === "got"; }), na = G.items.filter(function (i) { return i.status === "unavailable"; }), pend = G.items.filter(function (i) { return i.status === "pending"; });
+    if (!got.length) return;
+    var tot = groItemsTotal(got);
+    var html = '<div class="modal-head"><h3>Complete this trip?</h3><button type="button" class="icon-btn ghost" data-close aria-label="Close" style="width:30px;height:30px">' + icon("x") + "</button></div>" +
+      '<p class="footnote" style="margin:-6px 0 14px">' + got.length + " collected go to History. " + (na.length ? na.length + " unavailable stay" : "Nothing unavailable") + " on your list" + (pend.length ? ", along with " + pend.length + " not picked yet" : "") + ".</p>" +
+      '<div class="gro-stats"><div class="gro-stat ok"><b>' + got.length + '</b><span>Collected</span></div><div class="gro-stat na"><b>' + na.length + '</b><span>Unavailable</span></div><div class="gro-stat"><b>' + pend.length + "</b><span>To find</span></div></div>" +
+      '<p style="margin:0 0 16px;font-size:13.5px;color:var(--ink-2)">Trip total: <b>' + (tot ? fmtMoney(tot) : "no prices set") + "</b>" + (tot && got.some(function (i) { return !i.price; }) ? " (some items have no price)" : "") + "</p>" +
+      '<button type="button" class="btn primary" data-ok>Complete trip</button><button type="button" class="btn plain" style="margin-top:10px" data-close>Keep shopping</button>';
+    openModal(html);
+    document.querySelectorAll("[data-close]").forEach(function (b) { b.addEventListener("click", closeModal); });
+    document.querySelector("[data-ok]").addEventListener("click", function () {
+      var trip = normalizeGroTrip({ id: uid(), date: todoStamp(), total: tot, items: got });
+      G.trips.unshift(trip); G.items = G.items.filter(function (i) { return i.status !== "got"; });
+      groView = "list"; groOpenTrip = null; closeModal(); groSave();
+      celebrateGroceryTrip(got.length);
+      groOffer(trip);
+    });
+  }
+  function groOffer(trip) {
+    if (!trip || !trip.total) return;
+    var st = todoStackEl(), o = st.querySelector(".gro-offer"); if (o) o.remove();
+    var d = document.createElement("div"); d.className = "todo-offer gro-offer"; d.setAttribute("role", "status");
+    d.innerHTML = "<div><b>Log this trip as an expense?</b><small>" + fmtMoney(trip.total) + " · " + trip.items.length + (trip.items.length === 1 ? " item" : " items") + '</small></div><div class="row"><button class="go" type="button">Log as expense</button><button class="no" type="button">Not now</button></div>';
+    d.querySelector(".go").addEventListener("click", function () { d.remove(); groLogExpense(trip.id); });
+    d.querySelector(".no").addEventListener("click", function () { d.remove(); });
+    st.insertBefore(d, st.firstChild);
+    setTimeout(function () { if (d.parentNode) d.remove(); }, 20000);
+  }
+  function groLogExpense(tripId) { // the app's own Add Transaction sheet, filled in; nothing is saved until the person saves it
+    var t = byId(state.grocery.trips, tripId); if (!t || !t.total || t.expenseTxId) return;
+    openTransactionForm(null, {
+      amount: t.total, merchant: "", categoryId: byId(state.categories, "groceries") ? "groceries" : "", date: t.date.slice(0, 10),
+      note: "Grocery trip, " + t.items.length + (t.items.length === 1 ? " item" : " items"),
+      onSave: function (rec) { var tt = byId(state.grocery.trips, tripId); if (tt) tt.expenseTxId = rec.id; }
+    });
+    setTimeout(function () { var m = document.querySelector('#tx-form input[name="merchant"]'); if (m) m.focus(); }, 30);
+  }
+
+  /* ----- compare: unit-rate calculator -----
+     Same item in different sizes and prices -> price per kg, per L or per unit, cheapest highlighted.
+     g/kg and ml/L convert; dozen counts as 12 pcs. Weight, volume and each count unit are separate kinds
+     and are never compared with each other. */
+  var GRO_UF = { g: ["wt", 0.001], kg: ["wt", 1], ml: ["vol", 0.001], L: ["vol", 1], pcs: ["pcs", 1], dozen: ["pcs", 12], pack: ["pack", 1], box: ["box", 1], bottle: ["bottle", 1], can: ["can", 1], bag: ["bag", 1] };
+  var GRO_FAM = { wt: "kg", vol: "L", pcs: "unit", pack: "pack", box: "box", bottle: "bottle", can: "can", bag: "bag" };
+  function groCompute(opts) { // opts: [{label, size, unit, price}] -> per-row results plus the verdict
+    var rows = opts.map(function (o, i) {
+      var f = GRO_UF[o.unit] || ["pcs", 1], size = groPos(o.size), price = groPos(o.price), base = size ? size * f[1] : 0;
+      return { i: i, label: o.label || "Option " + String.fromCharCode(65 + i), fam: f[0], size: size, unit: o.unit, price: price, ok: !!(size && price), rate: size && price ? price / base : null };
+    });
+    var count = {}, fam = null, best = 0;
+    rows.forEach(function (r) { if (r.ok) count[r.fam] = (count[r.fam] || 0) + 1; });
+    rows.forEach(function (r) { if (r.ok && count[r.fam] > best) { best = count[r.fam]; fam = r.fam; } });
+    var comp = rows.filter(function (r) { return r.ok && r.fam === fam; });
+    rows.forEach(function (r) { r.comparable = r.ok && r.fam === fam; });
+    var out = { rows: rows, fam: fam, n: comp.length, unit: fam ? GRO_FAM[fam] : "", cheapest: null, saving: 0 };
+    if (comp.length) {
+      var min = Math.min.apply(null, comp.map(function (r) { return r.rate; })), max = Math.max.apply(null, comp.map(function (r) { return r.rate; }));
+      out.cheapest = comp.filter(function (r) { return r.rate === min; })[0]; out.min = min; out.max = max;
+      out.saving = comp.length > 1 && max > min ? (max - min) / max * 100 : 0;
+      comp.forEach(function (r) { r.isBest = r.rate === min; r.more = min > 0 ? (r.rate / min - 1) * 100 : 0; });
+    }
+    return out;
+  }
+  function groPct(n) { return (n >= 10 ? Math.round(n) : Math.round(n * 10) / 10) + "%"; }
+  function groCompareResultHtml(res) {
+    if (!res.n) return '<p class="footnote">Enter a size and a price for at least two options to see the price per ' + "kg, L or unit.</p>";
+    var h = "";
+    if (res.n > 1) h += '<p class="gro-verdict" id="gro-verdict">' + (res.saving > 0 ? "<b>" + escapeHtml(res.cheapest.label) + "</b> is cheapest: it saves " + groPct(res.saving) + " per " + res.unit + " compared with the dearest." : "All options cost the same per " + res.unit + ".") + "</p>";
+    else h += '<p class="footnote">Add one more option to compare.</p>';
+    res.rows.forEach(function (r) {
+      if (!r.ok) return;
+      var sz = groQty(r.size) + " " + escapeHtml(r.unit);
+      if (!r.comparable) { h += '<div class="gro-res bad"><div class="who"><b>' + escapeHtml(r.label) + "</b><small>" + sz + " · " + fmtMoney(r.price) + '</small></div><div class="rt"><small>Different kind, not compared</small></div></div>'; return; }
+      var per = (r.fam === "wt" || r.fam === "vol") ? "= " + fmtMoney(r.rate / 10) + " per 100 " + (r.fam === "wt" ? "g" : "ml") : "";
+      h += '<div class="gro-res' + (r.isBest && res.n > 1 && res.saving > 0 ? " best" : "") + '"><div class="who"><b>' + escapeHtml(r.label) + "</b><small>" + sz + " · " + fmtMoney(r.price) + (per ? " · " + per : "") + '</small></div><div class="rt">' + fmtMoney(groRound(r.rate)) + " / " + res.unit +
+        "<small>" + (res.n < 2 || res.saving === 0 ? "" : r.isBest ? "Cheapest" : "+" + groPct(r.more) + " more") + "</small></div></div>";
+    });
+    return h;
+  }
+  function openGroceryCompare(seed) {
+    var cur = escapeHtml(groCurrency()), opts = [];
+    var u0 = seed && seed.unit && GRO_UF[seed.unit] ? seed.unit : "kg";
+    opts.push({ label: seed ? "Current" : "", size: seed && seed.price ? 1 : "", unit: u0, price: seed && seed.price ? seed.price : "" });
+    opts.push({ label: "", size: "", unit: u0, price: "" });
+    function rowHtml(o, i) {
+      return '<div class="gro-opt" data-i="' + i + '"><div class="gro-opt-h"><input type="text" data-f="label" maxlength="40" placeholder="Option ' + String.fromCharCode(65 + i) + ' (brand or size, optional)" aria-label="Option ' + (i + 1) + ' name" value="' + escapeAttr(o.label) + '" />' +
+        (opts.length > 2 ? '<button type="button" class="gro-x" data-rm="' + i + '" aria-label="Remove option ' + (i + 1) + '">' + icon("x") + "</button>" : "") + "</div>" +
+        '<div class="gro-opt-row"><label>Size<input type="number" data-f="size" min="0" step="any" inputmode="decimal" placeholder="500" value="' + escapeAttr(o.size) + '" aria-label="Option ' + (i + 1) + ' size" /></label>' +
+        '<label>Unit<select data-f="unit" aria-label="Option ' + (i + 1) + ' unit">' + groUnitOpts(o.unit) + "</select></label>" +
+        '<label>Price<input type="number" data-f="price" min="0" step="any" inputmode="decimal" placeholder="' + cur + '" value="' + escapeAttr(o.price) + '" aria-label="Option ' + (i + 1) + ' price in ' + cur + '" /></label></div></div>';
+    }
+    function draw() { document.getElementById("gro-opts").innerHTML = opts.map(rowHtml).join(""); document.getElementById("gro-addopt").hidden = opts.length >= 6; out(); }
+    function out() { document.getElementById("gro-cmp-out").innerHTML = groCompareResultHtml(groCompute(opts)); }
+    var html = '<div class="modal-head"><h3>Compare sizes</h3><button type="button" class="icon-btn ghost" data-close aria-label="Close" style="width:30px;height:30px">' + icon("x") + "</button></div>" +
+      '<p class="footnote" style="margin:-6px 0 14px">' + (seed && seed.name ? "<b>" + escapeHtml(seed.name) + "</b> · " : "") + "Same item, different sizes or prices. Grams and kilos, millilitres and litres convert, so the cheapest per kg, L or unit wins.</p>" +
+      '<div id="gro-opts"></div><button type="button" class="btn plain" id="gro-addopt" style="margin:-2px 0 14px">' + icon("plus") + " Add another option</button>" +
+      '<div id="gro-cmp-out" aria-live="polite"></div>';
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    draw();
+    var sheet = document.getElementById("modal-sheet");
+    sheet.addEventListener("input", function (e) {
+      var row = e.target.closest(".gro-opt"); if (!row) return; var o = opts[+row.getAttribute("data-i")], f = e.target.getAttribute("data-f"); if (!o || !f) return;
+      o[f] = e.target.value; out();
+    });
+    sheet.addEventListener("change", function (e) { var row = e.target.closest(".gro-opt"); if (row && e.target.getAttribute("data-f") === "unit") { opts[+row.getAttribute("data-i")].unit = e.target.value; out(); } });
+    sheet.addEventListener("click", function (e) {
+      var rm = e.target.closest("[data-rm]"); if (rm) { opts.splice(+rm.getAttribute("data-rm"), 1); draw(); return; }
+      if (e.target.closest("#gro-addopt") && opts.length < 6) { var last = opts[opts.length - 1]; opts.push({ label: "", size: "", unit: last ? last.unit : "kg", price: "" }); draw(); var all = sheet.querySelectorAll('.gro-opt [data-f="size"]'); if (all.length) all[all.length - 1].focus(); }
+    });
+    setTimeout(function () { var s = sheet.querySelector('.gro-opt [data-f="size"]'); if (s) s.focus(); }, 30);
   }
 
   function tasksDueToday() { var t = todayISO(); return todoOpenTasks().filter(function (x) { return x.dueDate && x.dueDate <= t; }).sort(todoByDue); }
@@ -6254,10 +6989,11 @@
       '<div class="hcv">' + v + '</div><div class="hcf"><div class="chips">' + chips + '</div><span class="go">' + icon("arrow") + "</span></div>";
   }
   function homeListsHtml() {
-    var today0 = todayISO(), due = tasksDueToday();
+    var today0 = todayISO(), due = tasksDueToday(), gn = state.grocery.items.length;
     var done = state.tasks.filter(function (t) { return t.done && t.completedAt.slice(0, 10) === today0; }).length, total = due.length + done;
     var v = '<div class="n num">' + total + (total === 1 ? " task" : " tasks") + " <small>today</small></div>" +
-      '<div class="s">' + (total ? done + " done, " + due.length + " to go" : "Nothing due today") + "</div>";
+      '<div class="s">' + (total ? done + " done, " + due.length + " to go" : "Nothing due today") + "</div>" +
+      (gn ? '<div class="s">' + gn + (gn === 1 ? " grocery" : " groceries") + " on your list</div>" : "");
     var chips = due.slice(0, 2).map(function (t) { return '<span class="chip">' + escapeHtml(t.title) + "</span>"; }).join("") + (due.length > 2 ? '<span class="chip">+' + (due.length - 2) + " more</span>" : "");
     return '<div class="hct"><span class="ic">' + icon("tasks") + "</span><span><b>Lists</b><small>To-do and grocery</small></span></div>" +
       '<div class="hcv">' + v + '</div><div class="hcf"><div class="chips">' + (chips || '<span class="chip">All clear</span>') + '</div><span class="go">' + icon("arrow") + "</span></div>";
