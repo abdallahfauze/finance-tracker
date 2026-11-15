@@ -1087,6 +1087,138 @@
     background-position: right 14px center; background-size: 16px;
     padding-right: 42px; text-overflow: ellipsis;
   }
+
+  /* ================= To-Do page ================= */
+  .todo-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 2px 14px; }
+  .todo-date { font-size: 13px; font-weight: 700; color: var(--ink-2); }
+  .todo-sub { font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-top: 1px; }
+  .todo-sub .late { color: var(--critical); }
+  .todo-tools { display: flex; align-items: center; gap: 10px; }
+  .todo-streak { display: flex; align-items: center; gap: 5px; height: 36px; padding: 0 12px; border-radius: 999px; box-shadow: var(--soft-inset); color: var(--accent); font-weight: 800; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  .todo-streak svg { width: 15px; height: 15px; }
+  .todo-streak.bump { animation: todo-bump .5s ease; }
+  @keyframes todo-bump { 40% { transform: scale(1.18); } }
+  .todo-quick { margin-bottom: 14px; }
+  .todo-qa { display: flex; align-items: center; gap: 8px; height: 52px; border-radius: 26px; box-shadow: var(--soft-inset); padding: 0 6px 0 16px; }
+  .todo-qa:focus-within { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 75%, transparent); }
+  .todo-qa input { flex: 1; min-width: 0; border: none !important; background: none !important; box-shadow: none !important; padding: 0 !important; font-size: 14px; font-weight: 600; outline: none; }
+  .todo-qa input::placeholder { color: var(--ink-muted); }
+  .todo-qa .icon-btn { width: 40px; height: 40px; flex: none; }
+  .todo-qa .icon-btn:disabled { opacity: .45; cursor: default; }
+  .todo-parse { display: flex; gap: 6px; overflow-x: auto; padding: 10px 2px 4px; min-height: 40px; align-items: center; scrollbar-width: none; }
+  .todo-parse::-webkit-scrollbar { display: none; }
+  .todo-tok { flex: 0 0 auto; font-size: 11.5px; font-weight: 700; padding: 5px 10px; border-radius: 999px; box-shadow: var(--soft-raise-sm); background: var(--page); color: var(--ink-2); display: inline-flex; gap: 5px; align-items: center; white-space: nowrap; border: none; font-family: inherit; }
+  .todo-tok i { font-style: normal; color: var(--ink-muted); }
+  .todo-tok svg { width: 12px; height: 12px; }
+  .todo-tok.date { color: var(--accent); }
+  .todo-tok.ex { box-shadow: var(--soft-inset); color: var(--ink-muted); }
+  button.todo-tok { cursor: pointer; }
+  .todo-seg { display: grid; grid-template-columns: repeat(4, 1fr); padding: 4px; border-radius: 20px; box-shadow: var(--soft-inset); gap: 2px; margin-bottom: 14px; }
+  .todo-seg button { border: none; background: none; border-radius: 16px; padding: 8px 0; font-size: 12.5px; font-weight: 700; color: var(--ink-muted); cursor: pointer; }
+  .todo-seg button[aria-selected="true"] { color: var(--accent); background: var(--page); box-shadow: var(--soft-raise-sm); }
+  .todo-seg b { font-weight: 800; font-size: 10.5px; margin-left: 3px; opacity: .8; }
+  .todo-grp { margin: 16px 4px 8px; display: flex; justify-content: space-between; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); font-weight: 800; }
+  .todo-grp.late { color: var(--critical); }
+  .todo-grp span { color: var(--ink-muted); font-weight: 700; }
+  .todo-card-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .todo-card-h h2 { margin: 0 !important; }
+  .todo-card-h > span { font-size: 12px; color: var(--ink-muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .todo-strip { display: flex; gap: 10px; overflow-x: auto; padding: 4px 10px 12px; margin: 0 -10px 4px; scrollbar-width: none; }
+  .todo-strip::-webkit-scrollbar { display: none; }
+  .todo-mchip { flex: 0 0 auto; min-width: 124px; text-align: left; border: none; cursor: pointer; background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 16px; padding: 9px 12px; color: var(--ink); font-family: inherit; }
+  .todo-mchip:active { box-shadow: var(--soft-inset); }
+  .todo-mchip small { display: block; font-size: 10.5px; font-weight: 700; color: var(--ink-muted); letter-spacing: .04em; text-transform: uppercase; }
+  .todo-mchip b { display: block; font-size: 14px; margin-top: 1px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .todo-mchip .d { font-size: 11px; font-weight: 700; color: var(--ink-2); }
+  .todo-mchip.late .d { color: var(--critical); }
+  .todo-mchip.has .d { color: var(--accent); }
+  .todo-t3row { display: flex; align-items: center; gap: 10px; padding: 7px 0; min-height: 44px; }
+  .todo-t3row .tx { flex: 1; min-width: 0; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+  .todo-t3row .tx small { display: block; font-size: 11.5px; color: var(--ink-muted); font-weight: 600; }
+  .todo-t3row.done .tx { text-decoration: line-through; color: var(--ink-muted); }
+  .todo-t3row.slot { border: 1.5px dashed var(--soft-groove); border-radius: 14px; padding: 0 12px; color: var(--ink-muted); font-size: 12.5px; font-weight: 600; margin: 4px 0; }
+  .todo-ring { width: 36px; height: 36px; flex: none; position: relative; }
+  .todo-ring svg { width: 36px; height: 36px; transform: rotate(-90deg); }
+  .todo-ring span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .todo-chk { width: 26px; height: 26px; border-radius: 50%; border: 2.5px solid var(--pc, var(--ink-muted)); background: var(--page); box-shadow: var(--soft-raise-sm); cursor: pointer; flex: none; display: grid; place-items: center; padding: 0; color: transparent; position: relative; }
+  .todo-chk::after { content: ""; position: absolute; inset: -9px; }
+  .todo-chk svg { width: 13px; height: 13px; }
+  .todo-chk[aria-checked="true"] { background: var(--good); border-color: var(--good); color: #fff; box-shadow: none; }
+  .todo-p-high { --pc: var(--critical); } .todo-p-med { --pc: var(--warning); } .todo-p-low { --pc: var(--good); }
+  .todo-star { border: none; background: none; cursor: pointer; width: 34px; height: 34px; border-radius: 50%; color: var(--ink-muted); display: grid; place-items: center; flex: none; padding: 0; }
+  .todo-star svg { width: 17px; height: 17px; }
+  .todo-star[aria-pressed="true"] { color: var(--accent); }
+  .todo-star[aria-pressed="true"] svg { fill: currentColor; }
+  .todo-swipe { position: relative; margin-bottom: 12px; }
+  .todo-act { position: absolute; inset: 0; border-radius: 20px; display: flex; align-items: center; padding: 0 20px; font-weight: 800; font-size: 12.5px; gap: 8px; opacity: 0; color: #fff; }
+  .todo-act svg { width: 18px; height: 18px; }
+  .todo-act.l { background: var(--good); justify-content: flex-start; }
+  .todo-act.r { background: var(--warning); justify-content: flex-end; color: #1d1405; }
+  .todo-item { position: relative; background: var(--page); border-radius: 20px; box-shadow: var(--soft-raise-sm); padding: 12px 8px 12px 12px; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .todo-item.dragging { transition: none; cursor: grabbing; }
+  .todo-item.settle { transition: transform .22s cubic-bezier(.22,.9,.25,1); }
+  .todo-item.flash { animation: todo-flash 1.4s ease; }
+  @keyframes todo-flash { 0%, 60% { box-shadow: 0 0 0 2px var(--accent), var(--soft-raise-sm); } }
+  .todo-item.isdone { cursor: default; }
+  .todo-main { display: flex; gap: 10px; align-items: flex-start; }
+  .todo-body { flex: 1; min-width: 0; padding-top: 2px; }
+  .todo-title { font-size: 14.5px; font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
+  .isdone .todo-title { text-decoration: line-through; color: var(--ink-muted); }
+  .todo-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 5px; font-size: 11.5px; font-weight: 700; color: var(--ink-muted); align-items: center; }
+  .todo-meta .m { display: inline-flex; align-items: center; gap: 4px; }
+  .todo-meta svg { width: 12px; height: 12px; flex: none; }
+  .todo-meta .late { color: var(--critical); }
+  .todo-meta .lnk { color: var(--accent); }
+  .todo-prog { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .todo-prog .bar { flex: 1; height: 7px; border-radius: 99px; box-shadow: var(--soft-inset); padding: 1px; overflow: hidden; }
+  .todo-prog .bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+  .todo-prog span { font-size: 11px; font-weight: 800; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .todo-x { margin: 12px 0 0 36px; padding-top: 10px; border-top: 1px solid var(--soft-groove); display: grid; gap: 10px; cursor: default; user-select: text; -webkit-user-select: text; }
+  .todo-notes { font-size: 12.5px; color: var(--ink-2); line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .todo-sub-row { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; padding: 2px 0; }
+  .todo-sub-row.done span { text-decoration: line-through; color: var(--ink-muted); }
+  .todo-sub-row .todo-chk { width: 20px; height: 20px; border-width: 2px; }
+  .todo-sub-row .todo-chk svg { width: 10px; height: 10px; }
+  .todo-xbtns { display: flex; flex-wrap: wrap; gap: 8px; }
+  .todo-xb { border: none; background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 999px; padding: 7px 12px; font-size: 12px; font-weight: 700; color: var(--ink-2); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; font-family: inherit; }
+  .todo-xb:active { box-shadow: var(--soft-inset); }
+  .todo-xb svg { width: 13px; height: 13px; }
+  .todo-xb.danger { color: var(--critical); }
+  .todo-hint { font-size: 11.5px; color: var(--ink-muted); text-align: center; margin: 2px 0 10px; font-weight: 600; }
+  .todo-sug { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--soft-groove); }
+  .todo-sug:last-child { border-bottom: 0; }
+  .todo-sug .tx { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; overflow-wrap: anywhere; }
+  .todo-sug .tx small { display: block; font-size: 11.5px; color: var(--ink-muted); font-weight: 600; margin-top: 1px; }
+  .todo-empty { text-align: center; padding: 26px 18px 18px; color: var(--ink-muted); }
+  .todo-empty svg { width: 56px; height: 56px; color: var(--accent); opacity: .85; }
+  .todo-empty h3 { margin: 8px 0 4px; font-size: 16px; color: var(--ink); }
+  .todo-empty p { margin: 0 0 14px; font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+  .todo-empty .btn { width: auto; padding: 10px 18px; text-transform: none; letter-spacing: 0; }
+  .todo-stack { position: fixed; left: 50%; transform: translateX(-50%); width: calc(100% - 32px); max-width: 448px; bottom: calc(168px + env(safe-area-inset-bottom)); z-index: 45; display: grid; gap: 8px; pointer-events: none; }
+  .todo-stack > * { pointer-events: auto; }
+  .todo-toast, .todo-offer { border-radius: 18px; padding: 10px 14px; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 10px; animation: todo-rise .25s ease; }
+  .todo-toast { background: var(--ink); color: var(--page); box-shadow: 0 8px 22px rgba(0,0,0,.35); }
+  .todo-toast .tb { margin-left: auto; border: none; background: none; color: var(--accent); font-weight: 800; cursor: pointer; padding: 4px 6px; font-size: 12.5px; }
+  .todo-toast span { overflow-wrap: anywhere; }
+  .todo-offer { background: var(--page); box-shadow: var(--soft-raise), var(--soft-ring-flat); flex-direction: column; align-items: flex-start; gap: 8px; }
+  .todo-offer small { display: block; color: var(--ink-muted); font-weight: 600; margin-top: 2px; }
+  .todo-offer .row { display: flex; gap: 8px; }
+  .todo-offer .go { border: none; background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 7px 14px; font-weight: 800; font-size: 12px; cursor: pointer; }
+  .todo-offer .no { border: none; background: none; color: var(--ink-2); font-weight: 700; font-size: 12px; cursor: pointer; padding: 7px 8px; }
+  @keyframes todo-rise { from { transform: translateY(10px); opacity: 0; } }
+  .todo-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .todo-two .field { min-width: 0; }
+  :root[data-skin="soft"] input[type="time"] { width: 100%; border: none; background: var(--page); box-shadow: var(--soft-inset); padding: 13px 15px; border-radius: var(--radius-md); color: var(--ink); font-size: 15px; }
+  .todo-subs-edit { display: grid; gap: 8px; margin-bottom: 8px; }
+  .todo-subs-edit .r { display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; }
+  .todo-subs-edit .r span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .todo-add-row { display: flex; gap: 8px; }
+  .todo-tpl { padding: 14px; border-radius: 20px; box-shadow: var(--soft-raise-sm); margin-bottom: 14px; }
+  .todo-tpl h3 { margin: 0; font-size: 14.5px; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .todo-tpl h3 small { font-size: 11.5px; color: var(--ink-muted); font-weight: 700; }
+  .todo-tpl ul { margin: 8px 0 12px; padding-left: 18px; font-size: 12.5px; color: var(--ink-2); line-height: 1.55; }
+  .todo-tpl .btn { width: auto; padding: 9px 18px; text-transform: none; letter-spacing: 0; }
+  @media (prefers-reduced-motion: reduce) { .todo-toast, .todo-offer, .todo-streak.bump, .todo-item.flash { animation: none; } .todo-item.settle { transition: none; } }
 </style>
 
 <svg width="0" height="0" style="position:absolute">
@@ -1203,6 +1335,24 @@
     <rect x="8" y="8" width="12" height="12" rx="1.5"/>
     <path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4H5.5A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/>
   </symbol>
+  <symbol id="i-todo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="3" width="16" height="18" rx="3"/><path d="M8.5 8.5l1.5 1.5 2.5-3M8.5 15h7"/>
+  </symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/>
+  </symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3.2 2-4 0 1.5.6 2.3 1.3 2.7C10 9 10.5 5.5 12 3z"/>
+  </symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+  </symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/>
+  </symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>
+  </symbol>
 </svg>
 
 <div class="app">
@@ -1234,6 +1384,7 @@
     <section class="tab" id="tab-forecast"></section>
     <section class="tab" id="tab-loans"></section>
     <section class="tab" id="tab-goals"></section>
+    <section class="tab" id="tab-todo"></section>
     <section class="tab" id="tab-cards"></section>
     <section class="tab" id="tab-categories"></section>
     <section class="tab" id="tab-transfer"></section>
@@ -1421,6 +1572,7 @@
       recurring: [],
       loans: [],
       goals: [],
+      tasks: [],
       cards: [],
       customBankCards: [],
       removedBankCards: BANK_CARDS.slice(),
@@ -1444,6 +1596,8 @@
     if (!parsed.loans) parsed.loans = [];
     if (!parsed.goals) parsed.goals = [];
     if (!parsed.cards) parsed.cards = [];
+    // To-Do tasks arrived later: backfill for existing accounts, and drop anything malformed.
+    parsed.tasks = (Array.isArray(parsed.tasks) ? parsed.tasks : []).map(normalizeTask).filter(Boolean);
     if (!parsed.customBankCards) parsed.customBankCards = [];
     if (!parsed.removedBankCards) parsed.removedBankCards = [];
     if (!parsed.bankCardConfig) parsed.bankCardConfig = defaultBankCardConfig();
@@ -2181,6 +2335,7 @@
     forecast: { title: "Forecast", sub: "Expected monthly payments" },
     loans: { title: "Loans", sub: "Long-term debt payoff" },
     goals: { title: "Goals", sub: "Savings progress" },
+    todo: { title: "To-Do", sub: "Tasks & bill reminders" },
     cards: { title: "Cards", sub: "Debit & credit accounts" },
     categories: { title: "Categories", sub: "Spending categories & budgets" },
     transfer: { title: "Transfer", sub: "Move funds between accounts" },
@@ -2198,7 +2353,7 @@
        it lands, while dragging just moves the already-rendered neighbour. */
   var DIAL_PAGES = [
     ["dashboard", "pie"], ["transactions", "list"], ["recurring", "refresh"], ["loans", "trend-down"], ["cards", "card"],
-    ["categories", "tag"], ["goals", "target"], ["transfer", "swap"], ["forecast", "grid"]
+    ["categories", "tag"], ["goals", "target"], ["todo", "todo"], ["transfer", "swap"], ["forecast", "grid"]
   ];
   var DIAL_N = DIAL_PAGES.length;
   var mainEl = document.querySelector("main");
@@ -2405,7 +2560,7 @@
     return false;
   }
   mainEl.addEventListener("pointerdown", function (e) {
-    if (e.pointerType !== "touch" || !e.isPrimary || onSettings() || inHScroller(e.target)) return;
+    if (e.pointerType !== "touch" || !e.isPrimary || onSettings() || inHScroller(e.target) || e.target.closest("[data-no-pageswipe]")) return;
     sw = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lastX: e.clientX, active: false, samples: [{ t: performance.now(), x: e.clientX }], nb: -1, top: 0 };
   });
   mainEl.addEventListener("pointermove", function (e) {
@@ -2465,6 +2620,7 @@
     else if (currentTab === "recurring") openRecurringForm(null);
     else if (currentTab === "loans") openLoanForm(null);
     else if (currentTab === "goals") openGoalForm(null);
+    else if (currentTab === "todo") openTaskForm(null);
     else if (currentTab === "categories") openCategoryForm(null);
     else if (currentTab === "transfer") openTransferForm();
   });
@@ -5473,6 +5629,626 @@
     reader.readAsText(file);
   }
 
+  /* ---------- to-do ----------
+     state.tasks: [{ id, title, notes, dueDate "YYYY-MM-DD"|"", dueTime "HH:MM"|"",
+     priority "high"|"med"|"low"|"", tag, done, completedAt "YYYY-MM-DDTHH:MM"|"",
+     repeat ""|daily|weekly|monthly|yearly, subtasks [{id,title,done}],
+     linked {type: recurring|loan|card|goal, id}|null, snoozedUntil, createdAt, top3 }].
+     It lives in the one synced state blob, so save() carries it to the cloud
+     and to Backup/Restore with everything else. Reminders are NOT implemented
+     on the web (no Notification API here): the sheet says they come with the
+     Android app. */
+
+  var TODO_REPEAT_LABELS = { daily: "Daily", weekly: "Weekly", monthly: "Monthly", yearly: "Yearly" };
+  var TODO_PRI_LABELS = { high: "High", med: "Medium", low: "Low" };
+  var TODO_WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var TODO_MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var TODO_LINK_LABELS = { recurring: "Recurring", loan: "Loans", card: "Cards", goal: "Goals" };
+  var todoSugs = [], todoView = "today", todoExpanded = null, todoFlash = null, todoQuick = "", todoToastTimer = 0, todoLastStreak = null;
+
+  // normalizeTask runs from load(), before the var declarations below have executed, so it only uses hoisted functions.
+  function todoIsIso(v) { return typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v); }
+  function normalizeTask(t) {
+    if (!t || typeof t !== "object") return null;
+    var link = t.linked && typeof t.linked === "object" && ["recurring", "loan", "card", "goal"].indexOf(t.linked.type) !== -1 && t.linked.id != null
+      ? { type: t.linked.type, id: String(t.linked.id) } : null;
+    return {
+      id: t.id != null && t.id !== "" ? String(t.id) : uid(),
+      title: String(t.title == null ? "" : t.title).slice(0, 300),
+      notes: String(t.notes == null ? "" : t.notes).slice(0, 4000),
+      dueDate: todoIsIso(t.dueDate) ? t.dueDate : "",
+      dueTime: typeof t.dueTime === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(t.dueTime) ? t.dueTime : "",
+      priority: ["high", "med", "low"].indexOf(t.priority) !== -1 ? t.priority : "",
+      tag: String(t.tag == null ? "" : t.tag).replace(/^#/, "").slice(0, 40),
+      done: !!t.done,
+      completedAt: typeof t.completedAt === "string" ? t.completedAt : "",
+      repeat: ["daily", "weekly", "monthly", "yearly"].indexOf(t.repeat) !== -1 ? t.repeat : "",
+      subtasks: (Array.isArray(t.subtasks) ? t.subtasks : []).filter(function (s) { return s && typeof s === "object"; }).map(function (s) {
+        return { id: s.id != null && s.id !== "" ? String(s.id) : uid(), title: String(s.title == null ? "" : s.title).slice(0, 200), done: !!s.done };
+      }),
+      linked: link,
+      snoozedUntil: todoIsIso(t.snoozedUntil) ? t.snoozedUntil : "",
+      createdAt: typeof t.createdAt === "string" ? t.createdAt : "",
+      top3: !!t.top3,
+      spawnedId: t.spawnedId ? String(t.spawnedId) : ""
+    };
+  }
+
+  /* dates: tasks keep local-calendar ISO strings; arithmetic goes through noon to dodge DST edges */
+  function todoIso(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+  function todoAddDays(iso, n) { var d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return todoIso(d); }
+  function todoAddMonths(iso, n) {
+    var p = iso.split("-"), day = +p[2], first = new Date(+p[0], +p[1] - 1 + n, 1, 12);
+    var last = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
+    return todoIso(new Date(first.getFullYear(), first.getMonth(), Math.min(day, last), 12));
+  }
+  function todoNextDate(iso, repeat) {
+    if (repeat === "daily") return todoAddDays(iso, 1);
+    if (repeat === "weekly") return todoAddDays(iso, 7);
+    if (repeat === "yearly") return todoAddMonths(iso, 12);
+    return todoAddMonths(iso, 1);
+  }
+  function todoStamp() { var d = new Date(); return todoIso(d) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+  function todoTimeLabel(t) { if (!t) return ""; var h = +t.slice(0, 2), m = t.slice(3); return (h % 12 || 12) + (m === "00" ? "" : ":" + m) + (h < 12 ? " AM" : " PM"); }
+  function todoDueLabel(iso) {
+    var n = daysUntil(iso);
+    if (n === 0) return "Today"; if (n === 1) return "Tomorrow"; if (n === -1) return "Yesterday";
+    if (n < -1) return Math.abs(n) + " days ago";
+    var d = new Date(iso + "T12:00:00");
+    if (n < 7) return TODO_WD[d.getDay()];
+    return TODO_WD[d.getDay()] + " " + d.getDate() + " " + TODO_MO[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? " " + d.getFullYear() : "");
+  }
+  function todoLongDay(iso) {
+    var d = new Date(iso + "T12:00:00"), n = daysUntil(iso);
+    return (n === 0 ? "Today" : n === 1 ? "Tomorrow" : TODO_WD[d.getDay()]) + " · " + d.getDate() + " " + TODO_MO[d.getMonth()];
+  }
+  function todoOpenTasks() { return state.tasks.filter(function (t) { return !t.done; }); }
+  function todoByDue(a, b) {
+    var pr = { high: 3, med: 2, low: 1, "": 0 };
+    return (a.dueDate || "9999").localeCompare(b.dueDate || "9999") || (a.dueTime || "99").localeCompare(b.dueTime || "99") || pr[b.priority] - pr[a.priority];
+  }
+  function todoSave() { save(); renderTodo(); }
+
+  /* ----- linking a task to a bill / loan / card / goal ----- */
+  function todoLinkTarget(link) {
+    if (!link) return null;
+    if (link.type === "recurring") { var r = byId(state.recurring, link.id); return r ? { name: r.name, amount: r.amount, income: r.kind === "income" } : null; }
+    if (link.type === "loan") { var l = byId(state.loans, link.id); return l ? { name: l.name, amount: l.monthlyPayment } : null; }
+    if (link.type === "goal") { var g = byId(state.goals, link.id); return g ? { name: g.name, amount: null } : null; }
+    if (link.type === "card") return allBankCards().indexOf(link.id) !== -1 ? { name: link.id, amount: null } : null;
+    return null;
+  }
+  var TODO_STOP = { bill: 1, pay: 1, payment: 1, card: 1, loan: 1, the: 1, and: 1, for: 1, fund: 1, goal: 1, account: 1, monthly: 1, subscription: 1, my: 1, to: 1, of: 1, installment: 1, new: 1 };
+  function todoWords(s) { return String(s).toLowerCase().replace(/[^a-z0-9؀-ۿ\s]/g, " ").split(/\s+/).filter(Boolean); }
+  function todoScore(name, titleWords) {
+    var nw = todoWords(name); if (!nw.length) return 0;
+    var tl = " " + titleWords.join(" ") + " ";
+    if (tl.indexOf(" " + nw.join(" ") + " ") !== -1) return 100 + nw.join("").length;
+    var sig = nw.filter(function (w) { return !TODO_STOP[w] && w.length >= 2; });
+    if (!sig.length) return 0;
+    for (var i = 0; i < sig.length; i++) if (tl.indexOf(" " + sig[i] + " ") === -1) return 0;
+    return 50 + sig.join("").length;
+  }
+  function todoFindLink(title) {
+    var tw = todoWords(title), cands = [];
+    state.recurring.filter(function (r) { return r.isActive && r.kind !== "income"; }).forEach(function (r) { cands.push({ type: "recurring", id: r.id, name: r.name }); });
+    state.loans.filter(function (l) { return l.isActive && !loanProgress(l).isPaidOff; }).forEach(function (l) { cands.push({ type: "loan", id: l.id, name: l.name }); });
+    allBankCards().forEach(function (c) { cands.push({ type: "card", id: c, name: c }); });
+    state.goals.forEach(function (g) { cands.push({ type: "goal", id: g.id, name: g.name }); });
+    var best = 0, pick = null, tie = false;
+    cands.forEach(function (c) {
+      var s = todoScore(c.name, tw);
+      if (s > best) { best = s; pick = c; tie = false; } else if (s === best && s > 0) tie = true;
+    });
+    return best > 0 && !tie ? { type: pick.type, id: pick.id } : null;
+  }
+
+  /* ----- quick-add parser ----- */
+  var TODO_DAYS = { sun: 0, sunday: 0, mon: 1, monday: 1, tue: 2, tues: 2, tuesday: 2, wed: 3, wednesday: 3, thu: 4, thur: 4, thurs: 4, thursday: 4, fri: 5, friday: 5, sat: 6, saturday: 6 };
+  var TODO_DAY_RE = "sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tues|tue|wed|thurs|thur|thu|fri|sat";
+  function todoParse(raw) {
+    var s = " " + raw + " ", stash = "", mm;
+    var out = { title: "", dueDate: "", dueTime: "", priority: "", tag: "", repeat: "", amount: null, linked: null };
+    var amRe = /(?:\b(?:sar|sr)\s?(\d[\d,]*(?:\.\d+)?)|(\d[\d,]*(?:\.\d+)?)\s?(?:sar|sr)\b)/i;
+    mm = s.match(amRe);
+    if (mm) { stash = mm[0]; out.amount = parseFloat((mm[1] || mm[2]).replace(/,/g, "")); s = s.replace(amRe, " \u0001 "); }
+    function take(re, fn) { var m = s.match(re); if (m) { s = s.replace(re, " "); fn(m); return true; } return false; }
+    take(/\s#([\w-]+)/i, function (x) { out.tag = x[1].toLowerCase(); });
+    take(/\s!(high|h|1|med|medium|m|2|low|l|3)\b/i, function (x) { var k = x[1].toLowerCase().charAt(0); out.priority = (k === "h" || k === "1") ? "high" : (k === "m" || k === "2") ? "med" : "low"; });
+    var wdRepeat = null;
+    take(new RegExp("\\severy\\s+(" + TODO_DAY_RE + ")\\b", "i"), function (x) { out.repeat = "weekly"; wdRepeat = TODO_DAYS[x[1].toLowerCase()]; }) ||
+      take(/\severy\s+(day|week|month|year)\b/i, function (x) { out.repeat = { day: "daily", week: "weekly", month: "monthly", year: "yearly" }[x[1].toLowerCase()]; }) ||
+      take(/\s(daily|weekly|monthly|yearly)\b/i, function (x) { out.repeat = x[1].toLowerCase(); });
+    take(/\s(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s?(am|pm)\b/i, function (x) { var h = (+x[1]) % 12 + (x[3].toLowerCase() === "pm" ? 12 : 0); out.dueTime = pad(h) + ":" + (x[2] || "00"); }) ||
+      take(/\s(?:at\s+)?([01]?\d|2[0-3]):([0-5]\d)\b/, function (x) { out.dueTime = pad(+x[1]) + ":" + x[2]; });
+    var today = todayISO(), dow = new Date().getDay();
+    function nextWd(wd) { return todoAddDays(today, ((wd - dow + 7) % 7) || 7); }
+    if (wdRepeat !== null) out.dueDate = nextWd(wdRepeat);
+    else if (take(/\s(?:on\s+)?(\d{4}-\d{2}-\d{2})\b/, function (x) { out.dueDate = x[1]; })) {}
+    else if (take(/\s(?:on\s+)?(today|tonight)\b/i, function () { out.dueDate = today; })) {}
+    else if (take(/\s(?:on\s+)?(tomorrow|tmrw|tmr)\b/i, function () { out.dueDate = todoAddDays(today, 1); })) {}
+    else if (take(/\s(?:on\s+)?in\s+(\d+)\s+days?\b/i, function (x) { out.dueDate = todoAddDays(today, +x[1]); })) {}
+    else if (take(/\s(?:on\s+)?next\s+week\b/i, function () { out.dueDate = todoAddDays(today, 7); })) {}
+    else if (take(/\s(?:on\s+)?next\s+month\b/i, function () { out.dueDate = todoAddMonths(today, 1); })) {}
+    else take(new RegExp("\\s(?:on\\s+|next\\s+)?(" + TODO_DAY_RE + ")\\b", "i"), function (x) { out.dueDate = nextWd(TODO_DAYS[x[1].toLowerCase()]); });
+    if (!out.dueDate && (out.repeat || out.dueTime)) out.dueDate = today;
+    var title = s.replace(/\s+/g, " ").trim().replace(/\b(on|at|by|every|due)$/i, "").trim().replace("\u0001", stash);
+    out.title = title.charAt(0).toUpperCase() + title.slice(1);
+    out.linked = todoFindLink(out.title);
+    return out;
+  }
+  function todoTok(cls, icn, text, lead) { return '<span class="todo-tok ' + cls + '">' + (icn ? icon(icn) : "") + (lead ? "<i>" + lead + "</i>" : "") + escapeHtml(text) + "</span>"; }
+  function renderTodoParse() {
+    var v = (document.getElementById("todo-qa").value || "").trim(), el = document.getElementById("todo-parse");
+    document.getElementById("todo-qadd").disabled = !v;
+    if (!v) {
+      el.innerHTML = '<span class="todo-tok ex">Try</span>' + ["pay rent friday 9am !high #bills", "cancel gym every month", "transfer SAR 500 tomorrow !med #goals"].map(function (e) { return '<button type="button" class="todo-tok" data-todo-ex="' + escapeAttr(e) + '">' + escapeHtml(e) + "</button>"; }).join("");
+      return;
+    }
+    var p = todoParse(v), h = todoTok("", "", p.title || "(add a title)", "Task");
+    if (p.dueDate) h += todoTok("date", "cal", todoDueLabel(p.dueDate));
+    if (p.dueTime) h += todoTok("date", "clock", todoTimeLabel(p.dueTime));
+    if (p.repeat) h += todoTok("date", "refresh", TODO_REPEAT_LABELS[p.repeat]);
+    if (p.priority) h += '<span class="todo-tok todo-p-' + p.priority + '" style="color:var(--pc)"><i>Priority</i>' + TODO_PRI_LABELS[p.priority] + "</span>";
+    if (p.tag) h += todoTok("", "", p.tag, "#");
+    if (p.amount) h += '<span class="todo-tok"><i>Amount</i>' + fmtMoney(p.amount) + "</span>";
+    if (p.linked) { var tg = todoLinkTarget(p.linked); h += todoTok("date", "link", tg ? tg.name : ""); }
+    el.innerHTML = h;
+  }
+  function todoAddFromQuick() {
+    var inp = document.getElementById("todo-qa"), raw = inp.value.trim(); if (!raw) return;
+    var p = todoParse(raw);
+    var t = normalizeTask({ title: p.title || raw, dueDate: p.dueDate || todayISO(), dueTime: p.dueTime, priority: p.priority, tag: p.tag, repeat: p.repeat, linked: p.linked, createdAt: todoStamp() });
+    var before = JSON.stringify(state.tasks);
+    state.tasks.push(t);
+    todoView = t.dueDate <= todayISO() ? "today" : "upcoming"; todoFlash = t.id; todoExpanded = null;
+    inp.value = ""; todoQuick = "";
+    todoSave(); renderTodoParse();
+    todoToast("Added for " + todoDueLabel(t.dueDate).toLowerCase() + (t.priority ? " · " + TODO_PRI_LABELS[t.priority] : ""), "Undo", function () { state.tasks = JSON.parse(before); todoSave(); });
+    var el = todoRowEl(t.id); if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  /* ----- toast + offer ----- */
+  function todoStackEl() {
+    var s = document.getElementById("todo-stack");
+    if (!s) { s = document.createElement("div"); s.id = "todo-stack"; s.className = "todo-stack"; document.body.appendChild(s); }
+    return s;
+  }
+  function todoToast(msg, label, fn, ms) {
+    var st = todoStackEl(), old = st.querySelector(".todo-toast"); if (old) old.remove(); clearTimeout(todoToastTimer);
+    var t = document.createElement("div"); t.className = "todo-toast"; t.setAttribute("role", "status");
+    t.innerHTML = "<span>" + escapeHtml(msg) + "</span>" + (label ? '<button class="tb" type="button">' + escapeHtml(label) + "</button>" : "");
+    if (label) t.querySelector(".tb").addEventListener("click", function () { t.remove(); fn(); });
+    st.appendChild(t); todoToastTimer = setTimeout(function () { t.remove(); }, ms || 5500);
+  }
+  function todoOffer(t) {
+    var st = todoStackEl(), o = st.querySelector(".todo-offer"); if (o) o.remove();
+    var L = t && t.linked, tg = todoLinkTarget(L); if (!L || !tg || L.type === "card") return;
+    var text, btn, go;
+    if (L.type === "goal") { text = "Add funds to " + tg.name + "?"; btn = "Add funds"; go = function () { openGoalContributionForm(L.id); }; }
+    else if (L.type === "loan") { text = "Mark the " + tg.name + " installment as paid?"; btn = "Mark paid"; go = function () { openLoanMarkPaidConfirm(L.id); }; }
+    else { text = tg.income ? "Mark " + tg.name + " as received?" : "Mark " + tg.name + " as paid?"; btn = tg.income ? "Mark received" : "Mark paid"; go = function () { openMarkPaidConfirm(L.id); }; }
+    var d = document.createElement("div"); d.className = "todo-offer";
+    d.innerHTML = "<div><b>" + escapeHtml(text) + "</b><small>Updates " + TODO_LINK_LABELS[L.type] + (tg.amount ? " · " + fmtMoney(tg.amount) : "") + '</small></div><div class="row"><button class="go" type="button">' + btn + '</button><button class="no" type="button">Not now</button></div>';
+    d.querySelector(".go").addEventListener("click", function () { d.remove(); go(); });
+    d.querySelector(".no").addEventListener("click", function () { d.remove(); });
+    st.insertBefore(d, st.firstChild);
+    setTimeout(function () { if (d.parentNode) d.remove(); }, 15000);
+  }
+
+  /* ----- top 3 + streak -----
+     Top 3 = tasks flagged top3 that are still open, plus ones finished today
+     (so the card can show them ticked). Streak rule: tasks carry no per-day
+     history of what was starred, so past days are judged by whether at least
+     one task was completed that day (completedAt). Today counts once all of
+     today's Top 3 are done, or, when nothing is starred, once one task is
+     done. Today not counting yet never breaks the streak: it just starts
+     from yesterday. */
+  function todoTop3List() {
+    var today = todayISO(), pr = { high: 3, med: 2, low: 1, "": 0 };
+    return state.tasks.filter(function (t) { return t.top3 && (!t.done || t.completedAt.slice(0, 10) === today); })
+      .sort(function (a, b) { return (a.done - b.done) || (pr[b.priority] - pr[a.priority]) || todoByDue(a, b); });
+  }
+  function todoStreak() {
+    var today = todayISO(), days = {}, top = todoTop3List(), n = 0, d;
+    state.tasks.forEach(function (t) { if (t.done && t.completedAt) days[t.completedAt.slice(0, 10)] = 1; });
+    var todayOk = top.length ? top.every(function (t) { return t.done; }) : !!days[today];
+    if (todayOk) n = 1;
+    d = todoAddDays(today, -1);
+    for (var i = 0; i < 3650 && days[d]; i++) { n++; d = todoAddDays(d, -1); }
+    return n;
+  }
+  /* The single hook for the "all three done" moment (a separate fist-bump
+     animation will replace the body of this function). */
+  function celebrateTop3() {
+    var streak = todoStreak();
+    try { document.dispatchEvent(new CustomEvent("financetracker:top3-complete", { detail: { streak: streak } })); } catch (e) {}
+    celebrate("Awesome!", "Top 3 done. Day " + streak + " in a row.");
+  }
+
+  /* ----- actions ----- */
+  function todoFind(id) { return byId(state.tasks, id); }
+  function todoRowEl(id) { var els = document.querySelectorAll("#todo-body [data-id]"); for (var i = 0; i < els.length; i++) if (els[i].getAttribute("data-id") === id) return els[i]; return null; }
+  function todoComplete(id) {
+    var t = todoFind(id); if (!t) return;
+    var before = JSON.stringify(state.tasks);
+    if (t.done) { // reopen; drop the untouched next occurrence it spawned
+      t.done = false; t.completedAt = "";
+      if (t.spawnedId) { var sp = todoFind(t.spawnedId); if (sp && !sp.done) state.tasks = state.tasks.filter(function (x) { return x.id !== sp.id; }); t.spawnedId = ""; }
+      todoSave(); return;
+    }
+    var streakBefore = todoStreak();
+    t.done = true; t.completedAt = todoStamp();
+    var msg = '"' + t.title + '" done';
+    if (t.repeat) {
+      var base = t.dueDate || todayISO(), next = todoNextDate(base, t.repeat), guard = 0;
+      while (next <= todayISO() && guard++ < 400) next = todoNextDate(next, t.repeat);
+      var c = normalizeTask(t); c.id = uid(); c.done = false; c.completedAt = ""; c.dueDate = next; c.snoozedUntil = ""; c.top3 = false; c.spawnedId = ""; c.createdAt = todoStamp();
+      c.subtasks.forEach(function (s) { s.done = false; s.id = uid(); });
+      state.tasks.push(c); t.spawnedId = c.id; msg += ". Next: " + todoDueLabel(next);
+    }
+    var top = todoTop3List(), all3 = t.top3 && top.length === 3 && top.every(function (x) { return x.done; });
+    todoSave();
+    if (todoStreak() > streakBefore) { var se = document.getElementById("todo-streak"); if (se) { se.classList.remove("bump"); void se.offsetWidth; se.classList.add("bump"); } }
+    todoOffer(t);
+    todoToast(msg, "Undo", function () { state.tasks = JSON.parse(before); todoSave(); var o = document.querySelector(".todo-offer"); if (o) o.remove(); });
+    if (all3) setTimeout(celebrateTop3, 350);
+  }
+  function todoSnooze(id) {
+    var t = todoFind(id); if (!t) return;
+    var before = JSON.stringify(state.tasks), today = todayISO();
+    t.dueDate = todoAddDays(!t.dueDate || t.dueDate < today ? today : t.dueDate, 1); t.snoozedUntil = t.dueDate;
+    todoSave();
+    todoToast("Snoozed to " + todoDueLabel(t.dueDate).toLowerCase(), "Undo", function () { state.tasks = JSON.parse(before); todoSave(); });
+  }
+  function todoDelete(id) {
+    var before = JSON.stringify(state.tasks);
+    state.tasks = state.tasks.filter(function (t) { return t.id !== id; }); if (todoExpanded === id) todoExpanded = null;
+    todoSave();
+    todoToast("Task deleted", "Undo", function () { state.tasks = JSON.parse(before); todoSave(); });
+  }
+  function todoToggleTop3(id) {
+    var t = todoFind(id); if (!t) return;
+    if (!t.top3 && todoTop3List().length >= 3) { todoToast("Top 3 is full. Unstar one first."); return; }
+    t.top3 = !t.top3; todoSave();
+  }
+  function todoAddTask(partial) {
+    var t = normalizeTask(Object.assign({ createdAt: todoStamp() }, partial));
+    state.tasks.push(t); todoFlash = t.id; todoExpanded = null;
+    todoView = t.dueDate && t.dueDate > todayISO() ? "upcoming" : "today";
+    return t;
+  }
+
+  /* ----- money due / suggestions ----- */
+  function todoMoneyItems(maxDays, minDays) {
+    var items = [];
+    state.recurring.forEach(function (r) {
+      if (!r.isActive || r.kind === "income" || (r.endDate && r.nextDueDate > r.endDate)) return;
+      var d = daysUntil(r.nextDueDate); if (d <= maxDays && d >= minDays) items.push({ type: "recurring", id: r.id, name: r.name, amount: r.amount, date: r.nextDueDate, days: d, kindLabel: r.kind === "subscription" ? "Subscription" : "Bill" });
+    });
+    state.loans.forEach(function (l) {
+      if (!l.isActive || loanProgress(l).isPaidOff) return;
+      var d = daysUntil(l.nextPaymentDate); if (d <= maxDays && d >= minDays) items.push({ type: "loan", id: l.id, name: l.name, amount: l.monthlyPayment, date: l.nextPaymentDate, days: d, kindLabel: "Loan" });
+    });
+    return items.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+  }
+  function todoOpenLinked(type, id) {
+    return state.tasks.filter(function (t) { return !t.done && t.linked && t.linked.type === type && t.linked.id === id; })[0] || null;
+  }
+  function todoPartialFor(it) {
+    var freq = it.type === "recurring" ? (byId(state.recurring, it.id) || {}).frequency : "monthly";
+    var rep = { weekly: "weekly", monthly: "monthly", yearly: "yearly" }[freq] || "";
+    return { title: "Pay " + it.name, dueDate: it.date, priority: it.days <= 2 ? "high" : "med", tag: it.type === "loan" ? "loans" : "bills", repeat: rep, linked: { type: it.type, id: it.id } };
+  }
+  function todoSuggestions() {
+    var out = [];
+    todoMoneyItems(30, -3650).filter(function (it) { return it.days > 7 && !todoOpenLinked(it.type, it.id); }).forEach(function (it) {
+      out.push({ title: "Pay " + it.name, why: "Due " + todoDueLabel(it.date).toLowerCase() + " in " + (it.type === "loan" ? "Loans" : "Recurring"), partial: todoPartialFor(it) });
+    });
+    state.goals.forEach(function (g) {
+      var p = goalProgress(g);
+      if ((p.paceStatus === "behind" || p.paceStatus === "overdue") && !todoOpenLinked("goal", g.id))
+        out.push({ title: "Add funds to " + g.name, why: p.paceStatus === "overdue" ? "Past its target date" : "Behind pace", partial: { title: "Add funds to " + g.name, dueDate: todoAddDays(todayISO(), 3), priority: "med", tag: "goals", linked: { type: "goal", id: g.id } } });
+    });
+    return out.slice(0, 3);
+  }
+
+  /* ----- rendering ----- */
+  function todoEmpty(h, p, btn, act) {
+    return '<div class="todo-empty">' + icon("todo") + "<h3>" + h + "</h3><p>" + p + "</p>" + (btn ? '<button type="button" class="btn plain" data-todo-empty="' + act + '">' + btn + "</button>" : "") + "</div>";
+  }
+  function todoChk(t, label) {
+    return '<button type="button" class="todo-chk' + (t.priority ? " todo-p-" + t.priority : "") + '" role="checkbox" aria-checked="' + t.done + '" aria-label="' + escapeAttr(label + " " + t.title) + '" data-a="done">' + icon("check") + "</button>";
+  }
+  function todoItemHtml(t) {
+    var today = todayISO(), late = !t.done && t.dueDate && t.dueDate < today, subs = t.subtasks, dn = subs.filter(function (s) { return s.done; }).length, open = todoExpanded === t.id;
+    var tg = todoLinkTarget(t.linked), h = "";
+    h += '<div class="todo-swipe" data-id="' + escapeAttr(t.id) + '">';
+    if (!t.done) h += '<div class="todo-act l" aria-hidden="true">' + icon("check") + 'Complete</div><div class="todo-act r" aria-hidden="true">Snooze 1 day' + icon("moon") + "</div>";
+    h += '<div class="todo-item' + (t.done ? " isdone" : "") + (todoFlash === t.id ? " flash" : "") + '"' + (t.done ? "" : " data-no-pageswipe") + ' tabindex="0" role="button" aria-expanded="' + open + '"><div class="todo-main">';
+    h += todoChk(t, t.done ? "Reopen" : "Complete");
+    h += '<div class="todo-body"><div class="todo-title">' + escapeHtml(t.title) + '</div><div class="todo-meta">';
+    if (t.done) {
+      var dd = t.completedAt.slice(0, 10), n = dd ? daysUntil(dd) : null;
+      h += '<span class="m">' + icon("check") + "Done " + (n === 0 ? "today" : n === -1 ? "yesterday" : n !== null ? Math.abs(n) + " days ago" : "") + "</span>";
+    } else if (!t.dueDate) h += '<span class="m">' + icon("moon") + "Someday</span>";
+    else h += '<span class="m' + (late ? " late" : "") + '">' + icon("cal") + (late ? (daysUntil(t.dueDate) === -1 ? "Overdue · yesterday" : "Overdue · " + Math.abs(daysUntil(t.dueDate)) + " days") : todoDueLabel(t.dueDate)) + (t.dueTime ? " · " + todoTimeLabel(t.dueTime) : "") + "</span>";
+    if (t.repeat) h += '<span class="m">' + icon("refresh") + TODO_REPEAT_LABELS[t.repeat] + "</span>";
+    if (tg) h += '<span class="m lnk">' + icon("link") + escapeHtml(tg.name) + (tg.amount ? " · " + fmtMoney(tg.amount) : "") + "</span>";
+    if (t.tag) h += '<span class="m">#' + escapeHtml(t.tag) + "</span>";
+    if (!t.done && t.snoozedUntil && t.snoozedUntil > today) h += '<span class="m">' + icon("moon") + "Snoozed</span>";
+    h += "</div>";
+    if (subs.length) h += '<div class="todo-prog"><div class="bar"><i style="width:' + Math.round(dn / subs.length * 100) + '%"></i></div><span>' + dn + "/" + subs.length + "</span></div>";
+    h += "</div>";
+    if (!t.done) h += '<button type="button" class="todo-star" data-a="star" aria-pressed="' + !!t.top3 + '" aria-label="Top 3 for today">' + icon("star") + "</button>";
+    h += "</div>";
+    if (open) {
+      h += '<div class="todo-x" data-stop>';
+      if (t.notes) h += '<div class="todo-notes">' + escapeHtml(t.notes) + "</div>";
+      subs.forEach(function (s, i) { h += '<div class="todo-sub-row' + (s.done ? " done" : "") + '"><button type="button" class="todo-chk" role="checkbox" aria-checked="' + s.done + '" data-a="sub" data-i="' + i + '" aria-label="Toggle subtask">' + icon("check") + "</button><span>" + escapeHtml(s.title) + "</span></div>"; });
+      if (!t.done) h += '<input type="text" class="todo-addsub" data-a="addsub" placeholder="Add a subtask" aria-label="Add a subtask" />';
+      h += '<div class="todo-xbtns"><button type="button" class="todo-xb" data-a="edit">' + icon("pencil") + "Edit</button>";
+      if (!t.done) h += '<button type="button" class="todo-xb" data-a="snooze">' + icon("moon") + "Snooze 1 day</button>";
+      if (tg) h += '<button type="button" class="todo-xb" data-a="open">' + icon("link") + "Open in " + TODO_LINK_LABELS[t.linked.type] + "</button>";
+      h += '<button type="button" class="todo-xb danger" data-a="del">' + icon("trash") + "Delete</button></div></div>";
+    }
+    return h + "</div></div>";
+  }
+  function todoGroup(title, list, cls) {
+    return list.length ? '<div class="todo-grp ' + (cls || "") + '">' + title + "<span>" + list.length + "</span></div>" + list.map(todoItemHtml).join("") : "";
+  }
+  function todoMoneyStrip() {
+    var m = todoMoneyItems(7, -3650); if (!m.length) return "";
+    var tot = m.reduce(function (s, it) { return s + (it.amount || 0); }, 0);
+    return '<div class="todo-card-h" style="margin:2px 4px 2px"><h2 class="todo-grp" style="margin:0">Money due this week</h2><span>' + fmtMoney(tot) + ' to pay</span></div><div class="todo-strip">' + m.map(function (it) {
+      var has = !!todoOpenLinked(it.type, it.id);
+      return '<button type="button" class="todo-mchip' + (it.days < 0 ? " late" : "") + (has ? " has" : "") + '" data-todo-chip="' + escapeAttr(it.type + ":" + it.id) + '"><small>' + escapeHtml(it.kindLabel) + "</small><b>" + escapeHtml(it.name) + '</b><span class="d">' + fmtMoney(it.amount) + " · " + (it.days < 0 ? "overdue" : todoDueLabel(it.date)) + (has ? " · task" : "") + "</span></button>";
+    }).join("") + "</div>";
+  }
+  function todoTop3Card() {
+    var list = todoTop3List(), rows = "", done = 0;
+    for (var i = 0; i < 3; i++) {
+      var t = list[i];
+      if (!t) { rows += '<div class="todo-t3row slot">Star a task to add it here</div>'; continue; }
+      if (t.done) done++;
+      rows += '<div class="todo-t3row' + (t.done ? " done" : "") + '" data-id="' + escapeAttr(t.id) + '">' + todoChk(t, "Complete") + '<div class="tx">' + (i === 0 && !t.done ? '<small style="color:var(--accent)">Your frog. Start here.</small>' : "") + escapeHtml(t.title) + "<small>" + (t.dueDate ? (t.dueDate < todayISO() ? "Overdue" : todoDueLabel(t.dueDate)) : "Someday") + (t.dueTime ? " · " + todoTimeLabel(t.dueTime) : "") + '</small></div><button type="button" class="todo-star" data-a="star" aria-pressed="true" aria-label="Remove from Top 3">' + icon("star") + "</button></div>";
+    }
+    var C = 2 * Math.PI * 14, off = C * (1 - done / 3);
+    return '<div class="card"><div class="todo-card-h"><h2>Top 3 for today</h2><div class="todo-ring" id="todo-ring" aria-label="' + done + ' of 3 done"><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="14" fill="none" stroke="var(--soft-groove)" stroke-width="4"/><circle cx="17" cy="17" r="14" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + C.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/></svg><span>' + done + '/3</span></div></div><div class="todo-t3">' + rows + "</div></div>";
+  }
+  function todoSugCard() {
+    var sug = todoSuggestions(); todoSugs = sug; if (!sug.length) return "";
+    return '<div class="card"><div class="todo-card-h"><h2>Suggested by Finance Tracker</h2></div>' + sug.map(function (g, i) {
+      return '<div class="todo-sug"><div class="tx">' + escapeHtml(g.title) + "<small>" + escapeHtml(g.why) + '</small></div><button type="button" class="icon-btn ghost" data-todo-sug="' + i + '" aria-label="' + escapeAttr("Add " + g.title) + '">' + icon("plus") + "</button></div>";
+    }).join("") + "</div>";
+  }
+  function renderTodo() {
+    var tab = document.getElementById("tab-todo"); if (!tab) return;
+    if (!document.getElementById("todo-body")) buildTodoShell(tab);
+    var v = todoView, today = todayISO(), open = todoOpenTasks(), h = "";
+    var late = open.filter(function (t) { return t.dueDate && t.dueDate < today; }).length;
+    var todayN = open.filter(function (t) { return t.dueDate && t.dueDate <= today; }).length;
+    var doneT = state.tasks.filter(function (t) { return t.done; });
+    var tabs = [["today", "Today", todayN], ["upcoming", "Upcoming", open.filter(function (t) { return t.dueDate > today; }).length], ["all", "All", open.length], ["done", "Done", doneT.length]];
+    document.getElementById("todo-seg").innerHTML = tabs.map(function (x) { return '<button type="button" role="tab" data-todo-v="' + x[0] + '" aria-selected="' + (v === x[0]) + '">' + x[1] + "<b>" + x[2] + "</b></button>"; }).join("");
+    document.getElementById("todo-date").textContent = todoLongDay(today);
+    document.getElementById("todo-sub").innerHTML = late ? '<span class="late">' + late + " overdue</span>" : (todayN ? todayN + " due today" : "All clear");
+    var streak = todoStreak(), se = document.getElementById("todo-streak"); se.innerHTML = icon("flame") + streak; todoLastStreak = streak;
+    if (v === "today") {
+      h += todoMoneyStrip() + todoTop3Card();
+      var topIds = {}; todoTop3List().forEach(function (t) { topIds[t.id] = 1; });
+      var list = open.filter(function (t) { return t.dueDate && t.dueDate <= today && !topIds[t.id]; }).sort(todoByDue);
+      h += todoGroup("Overdue", list.filter(function (t) { return t.dueDate < today; }), "late") + todoGroup("Today", list.filter(function (t) { return t.dueDate === today; }));
+      if (!todayN && !todoTop3List().length) h += todoEmpty("Nothing due today", "You are clear. Plan tomorrow in a minute, or add a task above.", "See upcoming", "upcoming");
+      else if (!list.length) h += '<div class="todo-hint">That is everything for today.</div>';
+      h += todoSugCard();
+      if (list.length) h += '<div class="todo-hint">Swipe right to complete, left to snooze. Tap to open.</div>';
+    } else if (v === "upcoming") {
+      var up = open.filter(function (t) { return t.dueDate > today; }).sort(todoByDue), days = {}, keys = [];
+      up.forEach(function (t) { if (!days[t.dueDate]) { days[t.dueDate] = []; keys.push(t.dueDate); } days[t.dueDate].push(t); });
+      keys.forEach(function (k) { h += todoGroup(todoLongDay(k), days[k]); });
+      if (!up.length) h += todoEmpty("Nothing coming up", "Bills and tasks with a future date will line up here.", "Add from a template", "tpl");
+    } else if (v === "all") {
+      var a = open.slice().sort(todoByDue);
+      h += todoGroup("Overdue", a.filter(function (t) { return t.dueDate && t.dueDate < today; }), "late") + todoGroup("Today", a.filter(function (t) { return t.dueDate === today; })) + todoGroup("Upcoming", a.filter(function (t) { return t.dueDate > today; })) + todoGroup("Someday", a.filter(function (t) { return !t.dueDate; }));
+      if (!a.length) h += todoEmpty("No open tasks", "Add one above, or start from a template.", "Add from a template", "tpl");
+    } else {
+      var d = doneT.slice().sort(function (x, y) { return y.completedAt.localeCompare(x.completedAt); }).slice(0, 100);
+      h += d.length ? '<div class="todo-grp" style="margin-top:6px">Completed<span>' + doneT.length + "</span></div>" + d.map(todoItemHtml).join("") + '<div class="todo-hint">Tap the circle to reopen a task.</div>' : todoEmpty("Nothing done yet", "Finished tasks show up here so you can see the progress.", null);
+    }
+    document.getElementById("todo-body").innerHTML = h; todoFlash = null;
+  }
+
+  function buildTodoShell(tab) {
+    tab.innerHTML = '<div class="todo-head"><div><div class="todo-date" id="todo-date"></div><div class="todo-sub" id="todo-sub"></div></div><div class="todo-tools"><div class="todo-streak" id="todo-streak" title="Days in a row: a day counts when all of its Top 3 are done, or when at least one task is done if nothing is starred."></div><button type="button" class="icon-btn ghost" id="todo-tpl" aria-label="Templates">' + icon("clipboard") + '</button></div></div>' +
+      '<div class="todo-quick"><form class="todo-qa" id="todo-qf" autocomplete="off"><input id="todo-qa" type="text" placeholder="Add a task, e.g. pay rent friday !high" aria-label="Quick add a task" enterkeyhint="done" /><button type="submit" class="icon-btn" id="todo-qadd" aria-label="Add task" disabled>' + icon("plus") + '</button></form><div class="todo-parse" id="todo-parse" aria-live="polite"></div></div>' +
+      '<div class="todo-seg" id="todo-seg" role="tablist" aria-label="Task views"></div><div id="todo-body"></div>';
+    var inp = document.getElementById("todo-qa"); inp.value = todoQuick;
+    inp.addEventListener("input", function () { todoQuick = inp.value; renderTodoParse(); });
+    document.getElementById("todo-qf").addEventListener("submit", function (e) { e.preventDefault(); todoAddFromQuick(); });
+    document.getElementById("todo-parse").addEventListener("click", function (e) { var b = e.target.closest("[data-todo-ex]"); if (b) { inp.value = b.getAttribute("data-todo-ex"); todoQuick = inp.value; renderTodoParse(); inp.focus(); } });
+    document.getElementById("todo-tpl").addEventListener("click", openTodoTemplates);
+    document.getElementById("todo-seg").addEventListener("click", function (e) { var b = e.target.closest("[data-todo-v]"); if (b) { todoView = b.getAttribute("data-todo-v"); todoExpanded = null; renderTodo(); } });
+    var body = document.getElementById("todo-body");
+    body.addEventListener("click", todoBodyClick);
+    body.addEventListener("keydown", todoBodyKey);
+    renderTodoParse();
+    wireTodoSwipe(body);
+  }
+  function todoBodyClick(e) {
+    if (todoSuppress) { todoSuppress = false; return; }
+    var emp = e.target.closest("[data-todo-empty]");
+    if (emp) { if (emp.getAttribute("data-todo-empty") === "tpl") openTodoTemplates(); else { todoView = emp.getAttribute("data-todo-empty"); renderTodo(); } return; }
+    var chip = e.target.closest("[data-todo-chip]");
+    if (chip) {
+      var parts = chip.getAttribute("data-todo-chip").split(":"), type = parts.shift(), lid = parts.join(":");
+      var ex = todoOpenLinked(type, lid);
+      if (ex) { todoView = ex.dueDate && ex.dueDate <= todayISO() ? "all" : "upcoming"; todoExpanded = ex.id; todoFlash = ex.id; renderTodo(); var el = todoRowEl(ex.id); if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "smooth" }); return; }
+      var it = todoMoneyItems(7, -3650).filter(function (x) { return x.type === type && x.id === lid; })[0]; if (!it) return;
+      var before = JSON.stringify(state.tasks), nt = todoAddTask(todoPartialFor(it)); todoView = "all"; todoSave();
+      todoToast('Added "' + nt.title + '"', "Undo", function () { state.tasks = JSON.parse(before); todoSave(); }); return;
+    }
+    var sg = e.target.closest("[data-todo-sug]");
+    if (sg) {
+      var g = (todoSugs || [])[+sg.getAttribute("data-todo-sug")]; if (!g) return;
+      var b4 = JSON.stringify(state.tasks), n2 = todoAddTask(g.partial); todoSave();
+      todoToast('Added "' + n2.title + '"', "Undo", function () { state.tasks = JSON.parse(b4); todoSave(); }); return;
+    }
+    var row = e.target.closest("[data-id]"); if (!row) return;
+    var id = row.getAttribute("data-id"), act = e.target.closest("[data-a]"), a = act && act.getAttribute("data-a"), t = todoFind(id); if (!t) return;
+    if (a === "done") return todoComplete(id);
+    if (a === "star") return todoToggleTop3(id);
+    if (a === "sub") { var s = t.subtasks[+act.getAttribute("data-i")]; if (s) { s.done = !s.done; todoSave(); } return; }
+    if (a === "snooze") return todoSnooze(id);
+    if (a === "del") return todoDelete(id);
+    if (a === "edit") return openTaskForm(id);
+    if (a === "open") { var map = { recurring: "recurring", loan: "loans", card: "cards", goal: "goals" }; return setTab(map[t.linked.type]); }
+    if (a === "addsub" || e.target.closest("[data-stop]") || row.classList.contains("todo-t3row")) return;
+    todoExpanded = todoExpanded === id ? null : id; renderTodo();
+  }
+  function todoBodyKey(e) {
+    var inp = e.target.closest && e.target.closest('[data-a="addsub"]');
+    if (inp && e.key === "Enter") {
+      e.preventDefault(); var v = inp.value.trim(); if (!v) return;
+      var id = inp.closest("[data-id]").getAttribute("data-id"), t = todoFind(id);
+      if (t) { t.subtasks.push({ id: uid(), title: v.slice(0, 200), done: false }); todoSave(); var row = todoRowEl(id), again = row && row.querySelector(".todo-addsub"); if (again) again.focus(); }
+      return;
+    }
+    if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("todo-item")) {
+      e.preventDefault(); var id2 = e.target.parentNode.getAttribute("data-id"); todoExpanded = todoExpanded === id2 ? null : id2; renderTodo();
+    }
+  }
+
+  /* swipe right = complete, swipe left = snooze to tomorrow. Pointer events, so touch and mouse both work. */
+  var todoSuppress = false;
+  function wireTodoSwipe(body) {
+    var st = null, item = null, sw = null, L = null, R = null;
+    body.addEventListener("pointerdown", function (e) {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      var it = e.target.closest(".todo-item"); if (!it || it.classList.contains("isdone") || e.target.closest("button, input, [data-stop]")) return;
+      item = it; sw = it.parentNode; L = sw.querySelector(".todo-act.l"); R = sw.querySelector(".todo-act.r");
+      st = { id: e.pointerId, x: e.clientX, y: e.clientY, on: false, dx: 0 };
+    });
+    body.addEventListener("pointermove", function (e) {
+      if (!st || e.pointerId !== st.id) return;
+      var dx = e.clientX - st.x, dy = e.clientY - st.y;
+      if (!st.on) {
+        if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.3) { st.on = true; try { item.setPointerCapture(e.pointerId); } catch (x) {} item.classList.add("dragging"); item.classList.remove("settle"); }
+        else { if (Math.abs(dy) > 10) st = null; return; }
+      }
+      st.dx = dx; item.style.transform = "translateX(" + dx + "px)";
+      var p = Math.min(1, Math.abs(dx) / 90); L.style.opacity = dx > 0 ? 0.35 + 0.65 * p : 0; R.style.opacity = dx < 0 ? 0.35 + 0.65 * p : 0;
+    });
+    function end(e) {
+      if (!st || e.pointerId !== st.id) return;
+      var s = st, it = item, w = sw, l = L, r = R; st = null; if (!s.on) return;
+      todoSuppress = true; setTimeout(function () { todoSuppress = false; }, 60);
+      it.classList.remove("dragging"); it.classList.add("settle");
+      var id = w.getAttribute("data-id"), W = w.offsetWidth;
+      if (e.type !== "pointercancel" && s.dx > 90) { it.style.transform = "translateX(" + W + "px)"; setTimeout(function () { todoComplete(id); }, 180); }
+      else if (e.type !== "pointercancel" && s.dx < -90) { it.style.transform = "translateX(" + (-W) + "px)"; setTimeout(function () { todoSnooze(id); }, 180); }
+      else { it.style.transform = ""; l.style.opacity = r.style.opacity = 0; }
+    }
+    body.addEventListener("pointerup", end); body.addEventListener("pointercancel", end);
+  }
+
+  /* ----- add / edit sheet ----- */
+  function openTaskForm(id) {
+    var existing = id ? todoFind(id) : null;
+    var t = existing ? normalizeTask(existing) : normalizeTask({ dueDate: todayISO() });
+    var subs = t.subtasks.slice(), pri = t.priority;
+    var html = '<div class="modal-head"><h3>' + (existing ? "Edit Task" : "Add Task") + '</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + "</button></div>";
+    html += '<form id="todo-form">';
+    html += '<div class="field"><label>Title</label><input type="text" name="title" maxlength="300" placeholder="e.g. Pay rent" value="' + escapeAttr(t.title) + '" required /></div>';
+    html += '<div class="field"><label>Notes</label><textarea name="notes" rows="2" style="resize:vertical">' + escapeHtml(t.notes) + "</textarea></div>";
+    html += '<div class="todo-two"><div class="field"><label>Date</label><input type="date" name="dueDate" value="' + escapeAttr(t.dueDate) + '" /></div><div class="field"><label>Time</label><input type="time" name="dueTime" value="' + escapeAttr(t.dueTime) + '" /></div></div>';
+    html += '<div class="field"><label>Priority</label><div class="segmented" id="todo-pri-seg">';
+    [["", "None"], ["low", "Low"], ["med", "Medium"], ["high", "High"]].forEach(function (p) { html += '<button type="button" data-val="' + p[0] + '" class="' + (pri === p[0] ? "active" : "") + '">' + p[1] + "</button>"; });
+    html += "</div></div>";
+    html += '<div class="todo-two"><div class="field"><label>Tag</label><input type="text" name="tag" maxlength="40" placeholder="e.g. bills" value="' + escapeAttr(t.tag) + '" /></div><div class="field"><label>Repeat</label><select name="repeat"><option value="">Never</option>';
+    ["daily", "weekly", "monthly", "yearly"].forEach(function (r) { html += '<option value="' + r + '"' + (t.repeat === r ? " selected" : "") + ">" + TODO_REPEAT_LABELS[r] + "</option>"; });
+    html += "</select></div></div>";
+    var cur = t.linked ? t.linked.type + ":" + t.linked.id : "";
+    function opts(type, items) { return items.map(function (x) { var v = type + ":" + x[0]; return '<option value="' + escapeAttr(v) + '"' + (cur === v ? " selected" : "") + ">" + escapeHtml(x[1]) + "</option>"; }).join(""); }
+    html += '<div class="field"><label>Link to</label><select name="linked"><option value="">Nothing</option>';
+    if (state.recurring.length) html += '<optgroup label="Recurring">' + opts("recurring", state.recurring.filter(function (r) { return r.isActive; }).map(function (r) { return [r.id, r.name]; })) + "</optgroup>";
+    if (state.loans.length) html += '<optgroup label="Loans">' + opts("loan", state.loans.filter(function (l) { return l.isActive; }).map(function (l) { return [l.id, l.name]; })) + "</optgroup>";
+    html += '<optgroup label="Cards">' + opts("card", allBankCards().map(function (c) { return [c, c]; })) + "</optgroup>";
+    if (state.goals.length) html += '<optgroup label="Goals">' + opts("goal", state.goals.map(function (g) { return [g.id, g.name]; })) + "</optgroup>";
+    html += "</select></div>";
+    html += '<div class="field"><label>Subtasks</label><div class="todo-subs-edit" id="todo-subs-edit"></div><div class="todo-add-row"><input type="text" id="todo-sub-new" maxlength="200" placeholder="Add a subtask" /><button type="button" class="icon-btn ghost" id="todo-sub-add" aria-label="Add subtask">' + icon("plus") + "</button></div></div>";
+    html += '<p class="footnote" id="todo-remind-note">Reminders will arrive with the Android app.</p>';
+    html += '<button type="submit" class="btn primary" style="margin-top:8px">Save</button>';
+    if (existing) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
+    html += "</form>";
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    function drawSubs() {
+      document.getElementById("todo-subs-edit").innerHTML = subs.map(function (s, i) {
+        return '<div class="r"><button type="button" class="todo-chk" role="checkbox" aria-checked="' + s.done + '" data-sub-toggle="' + i + '" aria-label="Toggle subtask">' + icon("check") + "</button><span>" + escapeHtml(s.title) + '</span><button type="button" class="icon-btn ghost" style="width:28px;height:28px" data-sub-del="' + i + '" aria-label="Remove subtask">' + icon("x") + "</button></div>";
+      }).join("");
+    }
+    drawSubs();
+    document.getElementById("todo-subs-edit").addEventListener("click", function (e) {
+      var tg = e.target.closest("[data-sub-toggle]"), dl = e.target.closest("[data-sub-del]");
+      if (tg) subs[+tg.getAttribute("data-sub-toggle")].done = !subs[+tg.getAttribute("data-sub-toggle")].done;
+      else if (dl) subs.splice(+dl.getAttribute("data-sub-del"), 1); else return;
+      drawSubs();
+    });
+    function addSub() { var inp = document.getElementById("todo-sub-new"), v = inp.value.trim(); if (!v) return; subs.push({ id: uid(), title: v, done: false }); inp.value = ""; drawSubs(); inp.focus(); }
+    document.getElementById("todo-sub-add").addEventListener("click", addSub);
+    document.getElementById("todo-sub-new").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); addSub(); } });
+    document.querySelectorAll("#todo-pri-seg button").forEach(function (b) {
+      b.addEventListener("click", function () { pri = b.getAttribute("data-val"); document.querySelectorAll("#todo-pri-seg button").forEach(function (x) { x.classList.toggle("active", x === b); }); });
+    });
+    if (existing) document.querySelector("[data-delete]").addEventListener("click", function () { closeModal(); todoDelete(existing.id); });
+    document.getElementById("todo-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      var f = new FormData(e.target), title = String(f.get("title") || "").trim(); if (!title) return;
+      var lk = String(f.get("linked") || ""), ci = lk.indexOf(":"), linked = lk ? { type: lk.slice(0, ci), id: lk.slice(ci + 1) } : null;
+      var pending = document.getElementById("todo-sub-new").value.trim(); if (pending) subs.push({ id: uid(), title: pending, done: false });
+      var upd = { title: title, notes: String(f.get("notes") || ""), dueDate: String(f.get("dueDate") || ""), dueTime: String(f.get("dueTime") || ""), priority: pri, tag: String(f.get("tag") || "").trim(), repeat: String(f.get("repeat") || ""), linked: linked, subtasks: subs };
+      if (existing) {
+        if (upd.dueDate !== existing.dueDate) existing.snoozedUntil = "";
+        var n = normalizeTask(Object.assign({}, existing, upd)); Object.keys(n).forEach(function (k) { existing[k] = n[k]; });
+        todoFlash = existing.id;
+      } else {
+        var nt = todoAddTask(Object.assign({}, upd)); todoFlash = nt.id;
+      }
+      var due = upd.dueDate; todoView = !due ? "all" : due <= todayISO() ? "today" : "upcoming";
+      closeModal(); todoSave();
+    });
+  }
+
+  /* ----- templates ----- */
+  function todoTemplates() {
+    var now = new Date(), y = now.getFullYear(), m = now.getMonth(), today = todayISO();
+    var pay = todoIso(new Date(y, m, 25, 12)); if (pay < today) pay = todoIso(new Date(y, m + 1, 25, 12));
+    return [
+      { name: "Payday", due: pay, tag: "money", priority: "high", repeat: "monthly", notes: "Do this within an hour of salary landing.", items: ["Check the salary arrived", "Move savings first: 10% to an emergency fund", "Pay rent and utilities", "Pay card minimums", "Fund this month's goals"] },
+      { name: "Month-end", due: todoIso(new Date(y, m + 1, 0, 12)), tag: "money", priority: "med", repeat: "monthly", notes: "Close the month so the next one starts clean.", items: ["Categorize uncategorized transactions", "Compare spending to each budget", "Check the Forecast for next month", "Save a backup"] },
+      { name: "New subscription check", due: todoAddDays(today, 3), tag: "bills", priority: "med", repeat: "", notes: "Run this 3 days after signing up for something.", items: ["Add it to Recurring with the renewal date", "Decide: keep or cancel", "Cancel any overlapping service"] }
+    ];
+  }
+  function openTodoTemplates() {
+    var tpls = todoTemplates();
+    var html = '<div class="modal-head"><h3>Templates</h3><button class="icon-btn ghost" data-close style="width:30px;height:30px">' + icon("x") + "</button></div>";
+    html += '<p class="footnote" style="margin:-6px 0 14px">Each one adds a checklist task with its steps as subtasks.</p>';
+    tpls.forEach(function (t, i) {
+      html += '<div class="todo-tpl"><h3>' + escapeHtml(t.name) + "<small>" + t.items.length + " steps" + (t.repeat ? " · Monthly" : "") + "</small></h3><ul>" + t.items.map(function (x) { return "<li>" + escapeHtml(x) + "</li>"; }).join("") + '</ul><button type="button" class="btn primary" data-tpl="' + i + '">Add to my list</button></div>';
+    });
+    openModal(html);
+    document.querySelector("[data-close]").addEventListener("click", closeModal);
+    document.querySelectorAll("[data-tpl]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = tpls[+b.getAttribute("data-tpl")], before = JSON.stringify(state.tasks);
+        var nt = todoAddTask({ title: t.name + " checklist", dueDate: t.due, priority: t.priority, tag: t.tag, repeat: t.repeat, notes: t.notes, subtasks: t.items.map(function (x) { return { id: uid(), title: x, done: false }; }) });
+        todoExpanded = nt.id; closeModal(); todoSave();
+        todoToast(t.name + " checklist added for " + todoDueLabel(nt.dueDate).toLowerCase(), "Undo", function () { state.tasks = JSON.parse(before); todoSave(); });
+      });
+    });
+  }
+
   /* ---------- shared bits ---------- */
 
   function emptyState(iconName, title, body) {
@@ -5493,6 +6269,7 @@
     renderForecast();
     renderLoans();
     renderGoals();
+    renderTodo();
     renderCardsPage();
     renderCategoriesPage();
     renderTransfer();
