@@ -2305,6 +2305,8 @@
     setHeader(to); syncDialA11y();
     var actionBtn = document.getElementById("appbar-action");
     actionBtn.style.visibility = (to === "settings" || to === "forecast" || to === "cards") ? "hidden" : "visible";
+    // Settings has its own Quick Calculator button, so the floating one hides there too.
+    document.getElementById("calc-fab").style.visibility = (to === "settings") ? "hidden" : "visible";
     renderAll(); // the destination is only (re)rendered once it lands
     if (opts.instant || reducedMotion() || !mainEl.clientWidth) {
       allSections().forEach(function (s) { if (s !== secTo) cleanSection(s); });
