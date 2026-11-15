@@ -1645,7 +1645,7 @@
   <header class="appbar">
     <button type="button" class="brand" id="brand-btn" aria-label="Open the Home screen" aria-haspopup="dialog">
       <span class="logo" aria-hidden="true"></span>
-      <span class="bt"><span class="sub" id="appbar-sub">Money</span><span class="ttl" id="appbar-title">Dashboard</span></span>
+      <span class="bt"><span class="sub" id="appbar-sub">Finances</span><span class="ttl" id="appbar-title">Dashboard</span></span>
     </button>
     <div class="appbar-acts">
       <button type="button" class="space-switch" id="space-switch" aria-label="Switch to Lists"></button>
@@ -1708,7 +1708,7 @@
       <button type="button" class="hc" id="hc-money"></button>
       <button type="button" class="hc" id="hc-lists"></button>
     </div>
-    <p class="home-hint" id="home-hint">The app opens where you left off. Tap the logo for this screen, or the button in the header to switch between Money and Lists.</p>
+    <p class="home-hint" id="home-hint">The app opens where you left off. Tap the logo for this screen, or the button in the header to switch between Finances and Lists. Lists holds Do (to-do) and Buy (groceries).</p>
   </div>
 </div>
 
@@ -2673,11 +2673,11 @@
     forecast: { title: "Forecast", sub: "Expected monthly payments" },
     loans: { title: "Loans", sub: "Long-term debt payoff" },
     goals: { title: "Goals", sub: "Savings progress" },
-    todo: { title: "To-Do", sub: "Tasks & bill reminders" },
+    todo: { title: "Do", note: "To-do", sub: "Tasks & bill reminders" },
     cards: { title: "Cards", sub: "Debit & credit accounts" },
     categories: { title: "Categories", sub: "Spending categories & budgets" },
     transfer: { title: "Transfer", sub: "Move funds between accounts" },
-    grocery: { title: "Grocery", sub: "Shopping lists" },
+    grocery: { title: "Buy", note: "Groceries", sub: "Shopping lists" },
     settings: { title: "Settings", sub: "Finance Tracker" }
   };
   var currentTab = "dashboard";
@@ -2764,7 +2764,7 @@
   }
   function setHeader(tab) {
     document.getElementById("appbar-title").textContent = TAB_META[tab].title;
-    document.getElementById("appbar-sub").textContent = SPACES[currentSpace].name;
+    document.getElementById("appbar-sub").textContent = SPACES[currentSpace].name + (TAB_META[tab].note ? " \u00b7 " + TAB_META[tab].note : "");
   }
   function syncDialA11y() {
     var sel = onSettings() ? -1 : pageIndex(currentTab);
@@ -2890,7 +2890,7 @@
   }
   /* ----- spaces: Money and Lists, each with its own dial -----
      enterSpace swaps the dial and the visible page in one go (no slide); switchSpace wraps it in a short fade. */
-  var SPACES = { money: { name: "Money", other: "lists", icon: "wallet" }, lists: { name: "Lists", other: "money", icon: "tasks" } };
+  var SPACES = { money: { name: "Finances", other: "lists", icon: "wallet" }, lists: { name: "Lists", other: "money", icon: "tasks" } };
   function spaceOfTab(tab) { return LISTS_ORDER.indexOf(tab) !== -1 ? "lists" : NAV_ORDER.indexOf(tab) !== -1 ? "money" : ""; }
   function firstOfSpace(name) { return name === "lists" ? LISTS_ORDER[0] : (state.nav.order.filter(function (k) { return !navIsHidden(k); })[0] || NAV_ORDER[0]); }
   function updateSpaceUI() {
@@ -6078,7 +6078,7 @@
   function renderNavPage() {
     var html = '<button type="button" class="nav-back" id="nav-back" aria-label="Back to Settings">' + icon("chevron", "chevron-flip") + '<span>Settings</span></button>';
     html += '<div class="card"><h2>Navigation</h2>';
-    html += '<p class="footnote" style="margin-top:0">Set the order of the pages on the bottom dial and switch off the ones you never use (at least one stays on). Swiping between pages follows the same order. Settings is the gear in the top bar.</p>';
+    html += '<p class="footnote" style="margin-top:0">Set the order of the Finances pages on the bottom dial and switch off the ones you never use (at least one stays on). Swiping between pages follows the same order. Settings is the gear in the top bar.</p>';
     html += navPreviewHtml() + '<p class="nav-prev-count" id="nav-count">' + navCountText() + '</p>';
     html += '<div class="nav-list" id="nav-list">' + navRowsHtml() + '</div>';
     html += '<button type="button" class="btn plain nav-reset" id="nav-reset"' + (navIsDefault() ? " disabled" : "") + '>Reset to default</button>';
@@ -6574,7 +6574,7 @@
       '<div class="todo-quick" id="gro-quick"><form class="todo-qa" id="gro-qf" autocomplete="off"><input id="gro-q" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="gro-sugg" placeholder="Add an item or brand, e.g. tomatoes" aria-label="Add a grocery item" enterkeyhint="done" autocapitalize="off" spellcheck="false" />' +
       '<button type="submit" class="icon-btn" id="gro-add" aria-label="Add item" disabled>' + icon("plus") + "</button></form>" +
       '<div class="gro-sugg" id="gro-sugg" role="listbox" aria-label="Suggestions" hidden></div><div class="gro-draft" id="gro-draft" hidden></div></div>' +
-      '<div class="todo-seg gro-seg" id="gro-seg" role="tablist" aria-label="Grocery views"></div><div id="gro-body"></div>';
+      '<div class="todo-seg gro-seg" id="gro-seg" role="tablist" aria-label="Buy views"></div><div id="gro-body"></div>';
     groDraft = groFreshDraft();
     var q = document.getElementById("gro-q");
     q.addEventListener("input", function () { groPicked = false; groHi = 0; groDraft.brandM = false; groUpdateDraft(); });
@@ -6955,7 +6955,7 @@
   function renderTasksShortcut() {
     var due = tasksDueToday(); if (!due.length) return "";
     var names = due.slice(0, 2).map(function (t) { return escapeHtml(t.title); }).join(", ") + (due.length > 2 ? " +" + (due.length - 2) : "");
-    return '<button type="button" class="space-link" data-go-space="lists">' + icon("tasks") + "<span>" + due.length + (due.length === 1 ? " task" : " tasks") + " due today <small>" + names + "</small></span>" + icon("arrow") + "</button>";
+    return '<button type="button" class="space-link" data-go-space="lists" aria-label="Open Do in Lists: ' + due.length + (due.length === 1 ? " task" : " tasks") + ' due today">' + icon("tasks") + "<span>" + due.length + (due.length === 1 ? " task" : " tasks") + " due today <small>" + names + "</small></span>" + icon("arrow") + "</button>";
   }
 
   function billsThisWeek() {
@@ -6985,17 +6985,17 @@
     var bills = billsThisWeek(), chips = '<span class="chip">' + (bills ? bills + (bills === 1 ? " bill" : " bills") + " this week" : "No bills this week") + "</span>";
     var tgt = state.goals.reduce(function (s, g) { return s + g.targetAmount; }, 0), saved = state.goals.reduce(function (s, g) { return s + Math.min(goalProgress(g).saved, g.targetAmount); }, 0);
     if (state.goals.length && tgt > 0) chips += '<span class="chip">Goals ' + Math.round(saved / tgt * 100) + "%</span>";
-    return '<div class="hct"><span class="ic">' + icon("wallet") + "</span><span><b>Money</b><small>Finance tracker</small></span></div>" +
+    return '<div class="hct"><span class="ic">' + icon("wallet") + "</span><span><b>Finances</b><small>Finance tracker</small></span></div>" +
       '<div class="hcv">' + v + '</div><div class="hcf"><div class="chips">' + chips + '</div><span class="go">' + icon("arrow") + "</span></div>";
   }
   function homeListsHtml() {
     var today0 = todayISO(), due = tasksDueToday(), gn = state.grocery.items.length;
     var done = state.tasks.filter(function (t) { return t.done && t.completedAt.slice(0, 10) === today0; }).length, total = due.length + done;
     var v = '<div class="n num">' + total + (total === 1 ? " task" : " tasks") + " <small>today</small></div>" +
-      '<div class="s">' + (total ? done + " done, " + due.length + " to go" : "Nothing due today") + "</div>" +
-      (gn ? '<div class="s">' + gn + (gn === 1 ? " grocery" : " groceries") + " on your list</div>" : "");
+      '<div class="s">' + "Do: " + (total ? done + " done, " + due.length + " to go" : "nothing due today") + "</div>" +
+      (gn ? '<div class="s">Buy: ' + gn + (gn === 1 ? " grocery" : " groceries") + " on your list</div>" : "");
     var chips = due.slice(0, 2).map(function (t) { return '<span class="chip">' + escapeHtml(t.title) + "</span>"; }).join("") + (due.length > 2 ? '<span class="chip">+' + (due.length - 2) + " more</span>" : "");
-    return '<div class="hct"><span class="ic">' + icon("tasks") + "</span><span><b>Lists</b><small>To-do and grocery</small></span></div>" +
+    return '<div class="hct"><span class="ic">' + icon("tasks") + "</span><span><b>Lists</b><small>Do (to-do) and Buy (groceries)</small></span></div>" +
       '<div class="hcv">' + v + '</div><div class="hcf"><div class="chips">' + (chips || '<span class="chip">All clear</span>') + '</div><span class="go">' + icon("arrow") + "</span></div>";
   }
 
