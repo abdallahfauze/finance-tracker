@@ -282,57 +282,21 @@
     outline-offset: 2px;
   }
 
-  /* The floating menu + add buttons stack up to ~230px above the bottom, so
-     the last rows need that much room to scroll clear of them (otherwise the
-     tick on the final rows sits behind a button). The header's eye button
-     hides the buttons altogether (and gives the room back). */
-  main { flex: 1; overflow-y: auto; padding: 16px 16px calc(250px + env(safe-area-inset-bottom)); }
-  :root.fabs-hidden main { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  /* The floating add button (and calculator) sit above the dial: dial top is
+     ~74px up, the + is 64px tall, so the last rows need ~190px to scroll clear.
+     The header's eye button hides the floating buttons (and gives the room back). */
+  main { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; touch-action: pan-y; padding: 16px 16px calc(192px + env(safe-area-inset-bottom)); }
+  :root.fabs-hidden main { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
   :root.fabs-hidden .fab-anchor { display: none; }
-  section.tab { display: none; }
-  section.tab.active { display: block; animation: tab-in .25s ease; }
-  @keyframes tab-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-  nav.tabbar {
-    position: fixed;
-    bottom: 0; left: 50%;
-    transform: translateX(-50%);
-    width: 100%; max-width: 480px;
-    display: flex;
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-top: 1px solid var(--line);
-    padding-bottom: env(safe-area-inset-bottom);
-    z-index: 20;
-  }
-  nav.tabbar button {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-    border: none;
-    background: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 9px 2px 8px;
-    color: var(--ink-muted);
-    cursor: pointer;
-  }
-  nav.tabbar button svg { width: 22px; height: 22px; flex-shrink: 0; }
-  nav.tabbar button span {
-    font-size: 10.5px; font-weight: 600; letter-spacing: 0.01em;
-    max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  nav.tabbar button.active { color: var(--accent); }
-  nav.tabbar button.active::before {
-    content: "";
-    position: absolute; top: 2px; left: 50%;
-    width: 5px; height: 5px;
-    background: var(--accent);
-    transform: translateX(-50%) rotate(45deg);
-  }
+  section.tab { display: none; touch-action: pan-y; }
+  section.tab.active { display: block; }
+  /* Page slide (dial taps, swipes, Settings): the incoming page is lifted out of
+     the flow beside the current one and both are translated together. */
+  section.tab.peek { display: block; position: absolute; left: 16px; right: 16px; }
+  section.tab.sliding { will-change: transform; }
+  section.tab.anim { transition: transform .3s cubic-bezier(.22,.9,.25,1); }
+  .month-picker, .forecast-scroll { touch-action: pan-x pan-y; }
+  @media (prefers-reduced-motion: reduce) { section.tab.anim { transition: none; } }
 
   .card {
     position: relative;
@@ -756,15 +720,15 @@
      (search bars, section headers, etc. aren't independent cards) so they
      stay a single wider column rather than being force-fit into a grid. */
   @media (min-width: 760px) {
-    .app, nav.tabbar { max-width: 900px; }
+    .app { max-width: 900px; }
     /* CSS columns (not grid) so cards of very different heights pack tightly
        top-to-bottom per column instead of being forced into equal-height
        rows with dead space, which is what a grid would do here. */
-    #tab-dashboard.active {
+    #tab-dashboard.active, #tab-dashboard.peek {
       column-width: 320px;
       column-gap: 14px;
     }
-    #tab-dashboard.active .card { break-inside: avoid; margin-top: 0; margin-bottom: 14px; }
+    #tab-dashboard.active .card, #tab-dashboard.peek .card { break-inside: avoid; margin-top: 0; margin-bottom: 14px; }
   }
 
   .hidden { display: none !important; }
@@ -790,100 +754,68 @@
   .accent-opt.selected .accent-swatch svg { opacity: 1; }
   .accent-opt .lbl { font-size: 11px; color: var(--ink-2); font-weight: 600; }
 
-  /* ---------- shortcut speed-dial: floating bubble + popup menu ---------- */
-  /* Anchored the same way nav.tabbar centers itself under the app column
-     (left:50% + translateX(-50%) + matching max-width, including the
-     900px desktop breakpoint above) rather than the viewport edge, so it
-     sits at the app's own right edge instead of drifting toward the
-     browser window's corner on wide screens. */
+  /* ---------- floating add button + dial navigation ---------- */
+  /* The + (and the calculator beside it) are anchored to the app column's own
+     right edge, just above the dial, rather than the browser window's corner. */
   .fab-anchor {
     position: fixed; left: 50%; bottom: 0; transform: translateX(-50%);
     width: 100%; max-width: 480px; height: 0;
     pointer-events: none; z-index: 21;
   }
-  /* Must come after the base rule above (same specificity) so it actually
-     wins at this breakpoint instead of being shadowed by source order. */
   @media (min-width: 760px) {
     .fab-anchor { max-width: 900px; }
   }
-  .speed-dial {
+  .fab-stack {
     position: absolute; right: 16px;
-    bottom: calc(84px + env(safe-area-inset-bottom));
-    display: flex; flex-direction: column; align-items: flex-end;
+    bottom: calc(90px + env(safe-area-inset-bottom));
+    display: flex; align-items: flex-end; gap: 12px;
     pointer-events: none;
   }
-  .shortcut-fab {
-    position: relative; flex-shrink: 0;
-    width: 56px; height: 56px; border-radius: 999px;
-    background: var(--accent); color: var(--accent-ink);
-    border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 38%, transparent), 0 2px 6px rgba(0,0,0,.16);
-    pointer-events: auto;
-    transition: transform .18s cubic-bezier(.34,1.5,.4,1), box-shadow .15s ease;
-  }
-  .shortcut-fab:active { transform: scale(.88); }
-  /* The "+" (add) button lives directly under the menu button, a size up
-     from it since adding is the screen's primary action. Its space is always
-     reserved (the button just turns visibility:hidden on screens with no add
-     action, see setTab) so the menu button never jumps between screens. */
   .add-fab {
-    width: 64px; height: 64px; margin-top: 14px; flex-shrink: 0;
+    width: 64px; height: 64px; flex-shrink: 0;
     pointer-events: auto;
     box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 38%, transparent), 0 2px 6px rgba(0,0,0,.16);
     transition: transform .18s cubic-bezier(.34,1.5,.4,1), box-shadow .15s ease;
   }
   .add-fab svg { width: 28px; height: 28px; }
   .add-fab:active { transform: scale(.88); }
-  .fab-icon {
-    position: absolute; width: 24px; height: 24px;
-    transition: opacity .18s ease, transform .3s cubic-bezier(.34,1.56,.64,1);
-  }
-  .fab-icon-menu { opacity: 1; transform: rotate(0deg) scale(1); }
-  .fab-icon-close { opacity: 0; transform: rotate(-90deg) scale(.4); }
-  .speed-dial.open .fab-icon-menu { opacity: 0; transform: rotate(90deg) scale(.4); }
-  .speed-dial.open .fab-icon-close { opacity: 1; transform: rotate(0deg) scale(1); }
+  .calc-fab { width: 46px; height: 46px; flex-shrink: 0; margin-bottom: 9px; pointer-events: auto; }
+  .calc-fab svg { width: 20px; height: 20px; }
 
-  /* Items stack bottom-up above the fab (column-reverse so the first item
-     in markup lands closest to it) and are hidden/collapsed by default;
-     .open fans them out with a per-item stagger via the --i custom
-     property, using an overshoot easing so each one visibly bounces into
-     place - and, since the same transition runs in reverse, bounces back
-     down into the fab when the menu closes. */
-  .speed-dial-items {
-    display: flex; flex-direction: column-reverse; align-items: flex-end;
-    gap: 14px; margin-bottom: 14px;
+  /* The dial: every page on one strip, the selected one held in a recessed
+     pill that resizes to its label. The edge-fade mask lives on the fixed
+     .dial-clip box, never on the moving track, so the selected label keeps
+     its full colour on the first and last page. */
+  .navzone {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    display: flex; justify-content: center; pointer-events: none;
+    padding: 8px 12px calc(14px + env(safe-area-inset-bottom));
   }
-  .speed-dial-item {
-    display: flex; align-items: center; gap: 10px;
-    opacity: 0; transform: scale(.3) translateY(14px);
-    transform-origin: bottom right;
-    pointer-events: none;
-    transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .22s ease;
-    transition-delay: calc(var(--i, 0) * 35ms);
+  .dial {
+    position: relative; width: 100%; max-width: 520px; height: 60px; border-radius: 26px;
+    background: var(--page); box-shadow: var(--soft-raise);
+    touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; pointer-events: auto;
   }
-  .speed-dial.open .speed-dial-item {
-    opacity: 1; transform: scale(1) translateY(0);
-    pointer-events: auto;
+  .dial:active { cursor: grabbing; }
+  .dial-clip {
+    position: absolute; inset: 0; border-radius: 26px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 16%, #000 84%, transparent 100%);
   }
-  .speed-dial-label {
-    background: var(--pill-mint); color: var(--pill-mint-ink);
-    padding: 6px 12px; border-radius: 999px;
-    font-size: 13px; font-weight: 600; white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0,0,0,.14);
+  .dial-lens { position: absolute; left: 50%; top: 6px; bottom: 6px; border-radius: 22px; box-shadow: var(--soft-inset); pointer-events: none; transform: translateX(-50%); will-change: width; }
+  .dial-track { position: absolute; left: 0; top: 0; bottom: 0; width: max-content; display: flex; align-items: center; will-change: transform; }
+  .dial-item {
+    flex: 0 0 auto; padding: 0 16px; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    border: none; background: none; border-radius: 22px; font: inherit; font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    white-space: nowrap; color: var(--ink-muted); cursor: pointer; pointer-events: none;
   }
-  .speed-dial-btn {
-    width: 44px; height: 44px; border-radius: 999px; flex-shrink: 0;
-    background: var(--accent); color: var(--accent-ink);
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 35%, transparent);
-    transition: transform .15s ease;
-  }
-  .speed-dial-btn svg { width: 20px; height: 20px; }
-  .speed-dial-item:active .speed-dial-btn { transform: scale(.88); }
-  @media (prefers-reduced-motion: reduce) {
-    .speed-dial-item, .fab-icon { transition-duration: .01ms !important; transition-delay: 0s !important; }
-  }
+  .dial-item svg { width: 17px; height: 17px; flex: none; }
+  .dial-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+  .save-flash { text-align: center; font-size: 13px; font-weight: 700; color: var(--accent); margin-top: 10px; opacity: 0; transition: opacity .2s ease; }
+  .save-flash.show { opacity: 1; }
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { width: auto; flex: 1; }
+  .btn-row .btn.secondary { flex: 1.5; }
 
   .calc-display {
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg);
@@ -1034,23 +966,6 @@
   :root[data-skin="soft"] .icon-btn.ghost:active { box-shadow: var(--soft-inset); }
   :root[data-skin="soft"] .icon-btn.accent-ghost { background: var(--page); color: var(--accent); box-shadow: var(--soft-inset); }
 
-  /* floating pill tab bar */
-  :root[data-skin="soft"] nav.tabbar {
-    bottom: calc(10px + env(safe-area-inset-bottom));
-    width: calc(100% - 28px); max-width: 452px;
-    padding-bottom: 0;
-    border-top: none; border-radius: 28px;
-    background: var(--page);
-    backdrop-filter: none; -webkit-backdrop-filter: none;
-    box-shadow: var(--soft-raise);
-    padding: 6px;
-    gap: 4px;
-  }
-  :root[data-skin="soft"] nav.tabbar button { border-radius: 22px; padding: 8px 2px 7px; transition: box-shadow .15s ease, color .15s ease; }
-  :root[data-skin="soft"] nav.tabbar button.active { box-shadow: var(--soft-inset); }
-  :root[data-skin="soft"] nav.tabbar button.active::before { display: none; }
-  :root[data-skin="soft"] nav.tabbar button.active svg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 70%, transparent)); }
-
   /* panels */
   :root[data-skin="soft"] .card { border: none; box-shadow: var(--soft-raise); padding: 18px; }
   :root[data-skin="soft"] .card + .card { margin-top: 20px; }
@@ -1095,15 +1010,14 @@
   :root[data-skin="soft"] .btn.danger { background: var(--page); box-shadow: var(--soft-raise-sm); }
   :root[data-skin="soft"] .btn.danger:active { box-shadow: var(--soft-inset); }
 
-  /* sheets and the shortcut menu */
+  /* sheets and the floating add button */
   :root[data-skin="soft"] .modal-overlay { background: var(--soft-overlay); }
   :root[data-skin="soft"] .modal-sheet { background: var(--page); border-top: none; border-radius: 28px 28px 0 0; box-shadow: var(--soft-sheet-shadow); }
-  :root[data-skin="soft"] .shortcut-fab { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise), var(--soft-ring-flat); }
   :root[data-skin="soft"] .icon-btn.add-fab { box-shadow: var(--soft-raise), var(--soft-ring-flat); }
   :root[data-skin="soft"] .icon-btn.add-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
-  :root[data-skin="soft"] .shortcut-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
-  :root[data-skin="soft"] .speed-dial-btn { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm), 0 0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent); }
-  :root[data-skin="soft"] .speed-dial-label { background: var(--page); color: var(--ink); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .icon-btn.calc-fab { box-shadow: var(--soft-raise-sm), var(--soft-ring-flat); color: var(--accent); }
+  :root[data-skin="soft"] .icon-btn.calc-fab:active { box-shadow: var(--soft-inset), var(--soft-ring-flat); }
+  :root[data-skin="soft"] .icon-btn.ghost[aria-pressed="true"] { box-shadow: var(--soft-inset); color: var(--accent); }
 
   /* switches: pressed track, glowing teal when on */
   :root[data-skin="soft"] .switch .track { background: var(--page); border: none; box-shadow: var(--soft-inset); }
@@ -1279,6 +1193,9 @@
     <line x1="8" y1="12" x2="8.01" y2="12"/><line x1="12" y1="12" x2="12.01" y2="12"/><line x1="16" y1="12" x2="16.01" y2="12"/>
     <line x1="8" y1="16" x2="8.01" y2="16"/><line x1="12" y1="16" x2="12.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/>
   </symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>
+  </symbol>
   <symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>
   </symbol>
@@ -1304,6 +1221,9 @@
       <button class="icon-btn ghost" id="appbar-refresh" aria-label="Refresh">
         <svg><use href="#i-refresh"/></svg>
       </button>
+      <button class="icon-btn ghost" id="settings-btn" aria-label="Settings" aria-pressed="false">
+        <svg><use href="#i-gear"/></svg>
+      </button>
     </div>
   </header>
 
@@ -1320,23 +1240,20 @@
     <section class="tab" id="tab-settings"></section>
   </main>
 
-  <nav class="tabbar">
-    <button data-tab="dashboard" class="active"><svg><use href="#i-pie"/></svg><span>Dashboard</span></button>
-    <button data-tab="transactions"><svg><use href="#i-list"/></svg><span>Transactions</span></button>
-    <button data-tab="recurring"><svg><use href="#i-refresh"/></svg><span>Recurring</span></button>
-    <button data-tab="loans"><svg><use href="#i-trend-down"/></svg><span>Loans</span></button>
-  </nav>
-
   <div class="fab-anchor">
-    <div class="speed-dial" id="speed-dial">
-      <div class="speed-dial-items" id="speed-dial-items"></div>
-      <button class="shortcut-fab" id="shortcut-fab" aria-label="Shortcuts">
-        <svg class="fab-icon fab-icon-menu"><use href="#i-menu"/></svg>
-        <svg class="fab-icon fab-icon-close"><use href="#i-x"/></svg>
+    <div class="fab-stack" id="fab-stack">
+      <button class="icon-btn ghost calc-fab" id="calc-fab" aria-label="Calculator">
+        <svg><use href="#i-calculator"/></svg>
       </button>
       <button class="icon-btn add-fab" id="appbar-action" aria-label="Add">
         <svg><use href="#i-plus"/></svg>
       </button>
+    </div>
+  </div>
+
+  <div class="navzone" id="navzone">
+    <div class="dial" id="dial" role="tablist" aria-label="Pages">
+      <div class="dial-clip"><div class="dial-lens" id="dial-lens"></div><div class="dial-track" id="dial-track"></div></div>
     </div>
   </div>
 </div>
@@ -2271,26 +2188,277 @@
   };
   var currentTab = "dashboard";
 
-  function setTab(tab) {
-    currentTab = tab;
-    document.querySelectorAll("section.tab").forEach(function (el) { el.classList.remove("active"); });
-    document.getElementById("tab-" + tab).classList.add("active");
-    document.querySelectorAll("nav.tabbar button").forEach(function (btn) {
-      btn.classList.toggle("active", btn.getAttribute("data-tab") === tab);
-    });
-    document.getElementById("appbar-title").textContent = TAB_META[tab].title;
-    document.getElementById("appbar-sub").textContent = TAB_META[tab].sub;
-    var actionBtn = document.getElementById("appbar-action");
-    actionBtn.style.visibility = (tab === "settings" || tab === "forecast" || tab === "cards") ? "hidden" : "visible";
-    renderAll();
-  }
+  /* ---------- dial navigation ----------
+     Every page except Settings sits on one strip at the bottom, like a
+     camera's mode selector. Settings lives behind the gear in the header.
+     - dialX is the point of the strip sitting under the dial's centre; the
+       resizing pill, label colours and the header title are all drawn from it,
+       so dragging the dial, swiping a page and tapping all share one path.
+     - Pages are slid with transforms (showTab); a page is only rendered when
+       it lands, while dragging just moves the already-rendered neighbour. */
+  var DIAL_PAGES = [
+    ["dashboard", "pie"], ["transactions", "list"], ["recurring", "refresh"], ["loans", "trend-down"], ["cards", "card"],
+    ["categories", "tag"], ["goals", "target"], ["transfer", "swap"], ["forecast", "grid"]
+  ];
+  var DIAL_N = DIAL_PAGES.length;
+  var mainEl = document.querySelector("main");
+  var dialEl = document.getElementById("dial");
+  var trackEl = document.getElementById("dial-track");
+  var lensEl = document.getElementById("dial-lens");
+  var gearBtn = document.getElementById("settings-btn");
+  var dialItems = [], dialCx = [], dialWd = [], dialW = 0, dialX = 0;
+  var prevTab = "dashboard", settleTimer = 0, lastNear = -1;
 
-  document.querySelectorAll("nav.tabbar button").forEach(function (btn) {
-    btn.addEventListener("click", function () { setTab(btn.getAttribute("data-tab")); });
+  function pageIndex(tab) { for (var i = 0; i < DIAL_N; i++) if (DIAL_PAGES[i][0] === tab) return i; return -1; }
+  function secOf(tab) { return document.getElementById("tab-" + tab); }
+  function reducedMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+  function onSettings() { return currentTab === "settings"; }
+
+  DIAL_PAGES.forEach(function (p, i) {
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "dial-item"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", "false"); b.tabIndex = -1;
+    b.id = "dial-tab-" + p[0];
+    b.innerHTML = icon(p[1]) + "<span>" + TAB_META[p[0]].title + "</span>";
+    b.addEventListener("click", function () { land(i); }); // keyboard Enter/Space (pointer taps are handled by the dial itself)
+    trackEl.appendChild(b); dialItems.push(b);
   });
 
+  function measureDial() {
+    dialW = dialEl.clientWidth; var pos = 0;
+    for (var i = 0; i < DIAL_N; i++) { dialWd[i] = dialItems[i].offsetWidth; dialCx[i] = pos + dialWd[i] / 2; pos += dialWd[i]; }
+  }
+  function clampBand(v) { // a little rubber band past either end
+    var lo = dialCx[0], hi = dialCx[DIAL_N - 1];
+    if (v < lo) return lo - Math.pow(lo - v, 0.75) * 0.9;
+    if (v > hi) return hi + Math.pow(v - hi, 0.75) * 0.9;
+    return v;
+  }
+  function fracAt(v) { // fractional page index for strip position v
+    if (v <= dialCx[0]) return 0;
+    if (v >= dialCx[DIAL_N - 1]) return DIAL_N - 1;
+    for (var i = 0; i < DIAL_N - 1; i++) if (v <= dialCx[i + 1]) return i + (v - dialCx[i]) / (dialCx[i + 1] - dialCx[i]);
+    return DIAL_N - 1;
+  }
+  function nearestTo(v) { var best = 0, bd = 1e9; for (var i = 0; i < DIAL_N; i++) { var d = Math.abs(dialCx[i] - v); if (d < bd) { bd = d; best = i; } } return best; }
+
+  function renderDial() {
+    if (!dialW) return;
+    trackEl.style.transform = "translate3d(" + (dialW / 2 - dialX).toFixed(2) + "px,0,0)";
+    var f = fracAt(dialX), i0 = Math.floor(f), i1 = Math.min(DIAL_N - 1, i0 + 1), t = f - i0, sett = onSettings();
+    lensEl.style.width = Math.max(0, (dialWd[i0] * (1 - t) + dialWd[i1] * t) - 2).toFixed(1) + "px";
+    lensEl.style.opacity = sett ? "0" : "1";
+    for (var i = 0; i < DIAL_N; i++) {
+      var k = sett ? 0 : Math.max(0, 1 - Math.abs(f - i));
+      dialItems[i].style.color = "color-mix(in srgb, var(--accent) " + (k * 100).toFixed(0) + "%, var(--ink-muted))";
+    }
+    var near = Math.round(f);
+    if (near !== lastNear) { lastNear = near; if (!sett) setHeader(DIAL_PAGES[near][0]); }
+  }
+  function setHeader(tab) {
+    document.getElementById("appbar-title").textContent = TAB_META[tab].title;
+    document.getElementById("appbar-sub").textContent = TAB_META[tab].sub;
+  }
+  function syncDialA11y() {
+    var sel = onSettings() ? -1 : pageIndex(currentTab);
+    dialItems.forEach(function (b, i) { b.setAttribute("aria-selected", i === sel ? "true" : "false"); b.tabIndex = i === (sel < 0 ? 0 : sel) ? 0 : -1; });
+    gearBtn.setAttribute("aria-pressed", onSettings() ? "true" : "false");
+    gearBtn.setAttribute("aria-label", onSettings() ? "Close Settings" : "Settings");
+  }
+
+  var dialRaf = 0;
+  function stopGlide() { if (dialRaf) cancelAnimationFrame(dialRaf); dialRaf = 0; }
+  function glideTo(i, ms) {
+    stopGlide();
+    var from = dialX, to = dialCx[i];
+    if (reducedMotion() || ms === 0) { dialX = to; renderDial(); return; }
+    var t0 = performance.now(); ms = ms || Math.max(200, Math.min(520, 150 + 22 * Math.sqrt(Math.abs(to - from))));
+    (function step(now) {
+      var p = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - p, 3);
+      dialX = from + (to - from) * e; renderDial();
+      dialRaf = p < 1 ? requestAnimationFrame(step) : 0;
+    })(t0);
+  }
+
+  /* ----- sliding pages ----- */
+  function cleanSection(s) { s.classList.remove("peek", "anim", "sliding", "active"); s.style.transform = ""; s.style.top = ""; }
+  function allSections() { return Array.prototype.slice.call(document.querySelectorAll("section.tab")); }
+  function scrollPos() { return Math.max(mainEl.scrollTop, window.pageYOffset || 0); }
+  function scrollTop0() { mainEl.scrollTop = 0; window.scrollTo(0, 0); }
+  function settleNow() { // finish any slide in progress: only the current page stays
+    clearTimeout(settleTimer);
+    var keep = secOf(currentTab);
+    allSections().forEach(function (s) { if (s !== keep) cleanSection(s); });
+    keep.classList.remove("peek", "anim", "sliding"); keep.style.transform = ""; keep.style.top = "";
+    keep.classList.add("active");
+  }
+  function placeSection(sec, px, top) {
+    sec.classList.remove("anim"); sec.classList.add("peek", "sliding"); sec.style.top = top + "px"; sec.style.transform = "translate3d(" + px + "px,0,0)";
+  }
+  function showTab(to, dir, opts) { // slide `to` in from the side `dir` (1 = from the right)
+    opts = opts || {};
+    var from = currentTab; if (to === from) return;
+    clearTimeout(settleTimer);
+    var secFrom = secOf(from), secTo = secOf(to), wasSettings = onSettings();
+    if (!opts.placed) allSections().forEach(function (s) { if (s !== secFrom && s !== secTo) cleanSection(s); });
+    currentTab = to;
+    if (to !== "settings") prevTab = to;
+    setHeader(to); syncDialA11y();
+    var actionBtn = document.getElementById("appbar-action");
+    actionBtn.style.visibility = (to === "settings" || to === "forecast" || to === "cards") ? "hidden" : "visible";
+    renderAll(); // the destination is only (re)rendered once it lands
+    if (opts.instant || reducedMotion() || !mainEl.clientWidth) {
+      allSections().forEach(function (s) { if (s !== secTo) cleanSection(s); });
+      secTo.classList.remove("peek", "anim", "sliding"); secTo.style.transform = ""; secTo.style.top = ""; secTo.classList.add("active");
+      scrollTop0(); return;
+    }
+    var Wp = mainEl.clientWidth, top = scrollPos() + 16;
+    if (!opts.placed) { placeSection(secTo, dir * Wp, top); void secTo.offsetWidth; }
+    secFrom.classList.add("sliding", "anim"); secTo.classList.add("sliding", "anim");
+    secTo.style.transform = "translate3d(0,0,0)";
+    secFrom.style.transform = "translate3d(" + (wasSettings ? dir * Wp : -dir * Wp * (to === "settings" ? 0.3 : 1)) + "px,0,0)";
+    settleTimer = setTimeout(function () {
+      if (currentTab !== to) return;
+      allSections().forEach(function (s) { if (s !== secTo) cleanSection(s); });
+      secTo.classList.remove("peek", "anim", "sliding"); secTo.style.transform = ""; secTo.style.top = ""; secTo.classList.add("active");
+      scrollTop0();
+    }, 340);
+  }
+
+  function land(i) { // dial tap / flick / keyboard / setTab all end up here
+    i = Math.max(0, Math.min(DIAL_N - 1, i));
+    var id = DIAL_PAGES[i][0];
+    if (onSettings()) showTab(id, -1);
+    else if (id !== currentTab) showTab(id, i > pageIndex(currentTab) ? 1 : -1);
+    glideTo(i);
+  }
+  function setTab(tab) {
+    if (tab === "settings") { if (!onSettings()) openSettingsPage(); return; }
+    var i = pageIndex(tab); if (i >= 0) land(i);
+  }
+  function openSettingsPage() {
+    if (onSettings()) return;
+    prevTab = currentTab; showTab("settings", 1); renderDial();
+  }
+  gearBtn.addEventListener("click", function () {
+    if (onSettings()) land(pageIndex(prevTab) >= 0 ? pageIndex(prevTab) : 0); else openSettingsPage();
+  });
+
+  /* ----- dragging / flicking / tapping / wheeling the dial ----- */
+  var dialDrag = null, TAU = 240; // TAU: how far a flick carries, in ms of travel at release speed
+  dialEl.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    stopGlide(); try { dialEl.setPointerCapture(e.pointerId); } catch (x) {}
+    dialDrag = { id: e.pointerId, lastX: e.clientX, startX: e.clientX, moved: false, samples: [{ t: performance.now(), x: e.clientX }] };
+  });
+  dialEl.addEventListener("pointermove", function (e) {
+    if (!dialDrag || e.pointerId !== dialDrag.id) return;
+    var dx = e.clientX - dialDrag.lastX; dialDrag.lastX = e.clientX;
+    if (Math.abs(e.clientX - dialDrag.startX) > 5) dialDrag.moved = true;
+    if (!dialDrag.moved) return;
+    dialX = clampBand(dialX - dx); renderDial();
+    var now = performance.now(); dialDrag.samples.push({ t: now, x: e.clientX });
+    while (dialDrag.samples.length > 2 && now - dialDrag.samples[0].t > 90) dialDrag.samples.shift();
+  });
+  function endDialDrag(e) {
+    if (!dialDrag || e.pointerId !== dialDrag.id) return;
+    var d = dialDrag; dialDrag = null;
+    if (!d.moved) { // a tap: the label under the pointer
+      if (e.type === "pointercancel") return;
+      var rect = dialEl.getBoundingClientRect();
+      return land(nearestTo(dialX + (e.clientX - rect.left - dialW / 2)));
+    }
+    var s0 = d.samples[0], s1 = d.samples[d.samples.length - 1], dt = Math.max(1, s1.t - s0.t), v = -(s1.x - s0.x) / dt; // px/ms along the strip
+    if (performance.now() - s1.t > 80) v = 0;
+    land(nearestTo(dialX + v * TAU));
+  }
+  dialEl.addEventListener("pointerup", endDialDrag);
+  dialEl.addEventListener("pointercancel", endDialDrag);
+
+  var wheelTimer = 0;
+  dialEl.addEventListener("wheel", function (e) { // trackpad / mouse horizontal scroll
+    var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+    if (!d) return;
+    e.preventDefault(); stopGlide();
+    dialX = clampBand(dialX + d); renderDial();
+    clearTimeout(wheelTimer); wheelTimer = setTimeout(function () { land(nearestTo(dialX)); }, 120);
+  }, { passive: false });
+
+  dialEl.addEventListener("keydown", function (e) {
+    var cur = onSettings() ? -1 : pageIndex(currentTab), to = -1;
+    if (e.key === "ArrowRight") to = Math.min(DIAL_N - 1, cur + 1);
+    else if (e.key === "ArrowLeft") to = Math.max(0, cur - 1);
+    else if (e.key === "Home") to = 0;
+    else if (e.key === "End") to = DIAL_N - 1;
+    if (to < 0) return;
+    e.preventDefault(); land(to); dialItems[to].focus({ preventScroll: true });
+  });
+
+  /* ----- swiping the page (touch): it follows the finger, the dial turns in sync, a hard flick skips pages ----- */
+  var sw = null;
+  function inHScroller(el) {
+    for (; el && el !== mainEl; el = el.parentElement) {
+      if (el.scrollWidth > el.clientWidth + 2) { var ox = getComputedStyle(el).overflowX; if (ox === "auto" || ox === "scroll") return true; }
+      if (el.tagName === "INPUT" && el.type === "range") return true;
+    }
+    return false;
+  }
+  mainEl.addEventListener("pointerdown", function (e) {
+    if (e.pointerType !== "touch" || !e.isPrimary || onSettings() || inHScroller(e.target)) return;
+    sw = { id: e.pointerId, x0: e.clientX, y0: e.clientY, lastX: e.clientX, active: false, samples: [{ t: performance.now(), x: e.clientX }], nb: -1, top: 0 };
+  });
+  mainEl.addEventListener("pointermove", function (e) {
+    if (!sw || e.pointerId !== sw.id) return;
+    var dx = e.clientX - sw.x0, dy = e.clientY - sw.y0; sw.lastX = e.clientX;
+    if (!sw.active) {
+      if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+        sw.active = true; try { mainEl.setPointerCapture(e.pointerId); } catch (x) {}
+        stopGlide(); settleNow(); sw.top = scrollPos() + 16;
+      } else { if (Math.abs(dy) > 10) sw = null; return; }
+    }
+    var Wp = mainEl.clientWidth, cur = pageIndex(currentTab), nb = dx < 0 ? cur + 1 : cur - 1, valid = nb >= 0 && nb < DIAL_N, curSec = secOf(currentTab);
+    curSec.classList.remove("anim"); curSec.classList.add("sliding"); curSec.style.transform = "translate3d(" + (valid ? dx : dx * 0.28) + "px,0,0)";
+    if (valid) {
+      if (sw.nb !== nb) { if (sw.nb >= 0) cleanSection(secOf(DIAL_PAGES[sw.nb][0])); sw.nb = nb; }
+      placeSection(secOf(DIAL_PAGES[nb][0]), (dx < 0 ? Wp : -Wp) + dx, sw.top);
+      var p = Math.min(1, Math.abs(dx) / Wp); dialX = dialCx[cur] + (dialCx[nb] - dialCx[cur]) * p;
+    } else {
+      dialX = clampBand(dialCx[cur] - dx * 0.5);
+    }
+    renderDial();
+    var now = performance.now(); sw.samples.push({ t: now, x: e.clientX }); while (sw.samples.length > 2 && now - sw.samples[0].t > 90) sw.samples.shift();
+  });
+  function endSwipe(e) {
+    if (!sw || e.pointerId !== sw.id) return;
+    var s = sw; sw = null; if (!s.active) return;
+    var Wp = mainEl.clientWidth, cur = pageIndex(currentTab), x1 = e.type === "pointercancel" ? s.lastX : e.clientX, dx = x1 - s.x0;
+    var a = s.samples[0], b = s.samples[s.samples.length - 1], v = (b.x - a.x) / Math.max(1, b.t - a.t); // px/ms, + = rightwards
+    if (performance.now() - b.t > 80) v = 0;
+    var dir = dx < 0 ? 1 : -1, speed = Math.abs(v), pages = 0;
+    if (Math.abs(dx) > Wp * 0.28 || speed > 0.35) pages = 1 + (speed > 1.1 ? Math.floor((speed - 1.1) / 0.55) + 1 : 0);
+    var to = Math.max(0, Math.min(DIAL_N - 1, cur + dir * pages));
+    var curSec = secOf(currentTab), nbSec = s.nb >= 0 ? secOf(DIAL_PAGES[s.nb][0]) : null;
+    if (pages === 0 || to === cur) { // spring back
+      curSec.classList.add("anim"); curSec.style.transform = "translate3d(0,0,0)";
+      if (nbSec) { nbSec.classList.add("anim"); nbSec.style.transform = "translate3d(" + (dx < 0 ? Wp : -Wp) + "px,0,0)"; }
+      glideTo(cur, 220);
+      settleTimer = setTimeout(settleNow, 320);
+      return;
+    }
+    var placed = Math.abs(to - cur) === 1 && s.nb === to;
+    glideTo(to, 150 + 70 * Math.sqrt(Math.abs(to - cur)));
+    showTab(DIAL_PAGES[to][0], dir, { placed: placed });
+  }
+  mainEl.addEventListener("pointerup", endSwipe);
+  mainEl.addEventListener("pointercancel", endSwipe);
+
+  function initDial() {
+    measureDial(); dialX = dialCx[Math.max(0, pageIndex(currentTab))] || 0; lastNear = -1; renderDial(); syncDialA11y();
+  }
+  if (window.ResizeObserver) { var dialRO = new ResizeObserver(function () { measureDial(); if (!dialDrag && !dialRaf) dialX = Math.min(Math.max(dialX, dialCx[0]), dialCx[DIAL_N - 1]); renderDial(); }); dialRO.observe(dialEl); dialRO.observe(trackEl); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measureDial(); var i = pageIndex(currentTab); if (i >= 0) dialX = dialCx[i]; renderDial(); });
+  initDial();
+
   document.getElementById("appbar-action").addEventListener("click", function () {
-    setSpeedDialOpen(false);
     if (currentTab === "dashboard" || currentTab === "transactions") openTransactionForm(null);
     else if (currentTab === "recurring") openRecurringForm(null);
     else if (currentTab === "loans") openLoanForm(null);
@@ -2298,64 +2466,7 @@
     else if (currentTab === "categories") openCategoryForm(null);
     else if (currentTab === "transfer") openTransferForm();
   });
-
-  /* The floating bubble used to open the quick calculator directly; it now
-     fans this speed-dial menu out above itself instead, with Calculator as
-     one of its entries. Everything reachable here used to require the
-     header's 3-line "More" menu, which this replaces entirely.
-     .speed-dial-items is column-reverse (see its CSS), so the fab-closest,
-     bottom-most item on screen is this array's FIRST entry and the
-     top-most item is its LAST - this list is ordered bottom-to-top to read
-     top-to-bottom on screen as: Cards, Categories, Transfer, Goals,
-     Forecast, Calculator, Settings. */
-  var SHORTCUT_MENU_ITEMS = [
-    { tab: "settings", icon: "sliders", label: "Settings" },
-    { action: "calculator", icon: "calculator", label: "Calculator" },
-    { tab: "forecast", icon: "grid", label: "Forecast" },
-    { tab: "goals", icon: "target", label: "Goals" },
-    { tab: "transfer", icon: "swap", label: "Transfer" },
-    { tab: "categories", icon: "tag", label: "Categories" },
-    { tab: "cards", icon: "card", label: "Cards" }
-  ];
-
-  var speedDialOpen = false;
-
-  function setSpeedDialOpen(open) {
-    speedDialOpen = open;
-    document.getElementById("speed-dial").classList.toggle("open", open);
-  }
-
-  /* Built once rather than on every renderAll() - the items are static
-     (they don't depend on app state), and rebuilding the DOM on every
-     render would reset the CSS transitions mid-animation and require
-     re-binding these listeners constantly. */
-  function buildSpeedDial() {
-    var html = "";
-    SHORTCUT_MENU_ITEMS.forEach(function (item, i) {
-      html += '<div class="speed-dial-item" data-shortcut="' + (item.tab || item.action) + '" role="button" tabindex="0" aria-label="' + escapeAttr(item.label) + '" style="--i:' + i + '">';
-      html += '<span class="speed-dial-label">' + item.label + '</span>';
-      html += '<span class="speed-dial-btn">' + icon(item.icon) + '</span>';
-      html += '</div>';
-    });
-    var container = document.getElementById("speed-dial-items");
-    container.innerHTML = html;
-    container.querySelectorAll("[data-shortcut]").forEach(function (el) {
-      function activate() {
-        var key = el.getAttribute("data-shortcut");
-        setSpeedDialOpen(false);
-        if (key === "calculator") openCalculator();
-        else setTab(key);
-      }
-      el.addEventListener("click", activate);
-      // These are plain divs, not <button>, so they need their own
-      // Enter/Space handling - a <div role="button"> gets none of that
-      // for free the way a real button element would.
-      el.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
-      });
-    });
-  }
-  buildSpeedDial();
+  document.getElementById("calc-fab").addEventListener("click", function () { openCalculator(); });
 
   document.getElementById("appbar-refresh").addEventListener("click", function (e) {
     e.currentTarget.querySelector("svg").classList.add("spin-once");
@@ -2406,7 +2517,6 @@
   document.getElementById("fab-toggle").addEventListener("click", function () {
     var hidden = !document.documentElement.classList.contains("fabs-hidden");
     document.documentElement.classList.toggle("fabs-hidden", hidden);
-    if (hidden) setSpeedDialOpen(false);
     try { if (hidden) localStorage.setItem(FABS_KEY, "1"); else localStorage.removeItem(FABS_KEY); } catch (e) {}
     syncFabToggle();
   });
@@ -2440,12 +2550,10 @@
   });
 
   // A keyboard-only user has no mouse to tap the backdrop with, and
-  // without this there was no way to back out of a modal or the speed-dial
-  // menu at all from the keyboard.
+  // without this there was no way to back out of a modal from the keyboard.
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape") return;
     if (document.getElementById("modal-overlay").classList.contains("open")) closeModal();
-    else if (speedDialOpen) setSpeedDialOpen(false);
   });
 
   /* Custom confirm dialog — window.confirm() is blocked inside a sandboxed iframe
@@ -2785,17 +2893,6 @@
 
     render();
   }
-
-  document.getElementById("shortcut-fab").addEventListener("click", function () {
-    setSpeedDialOpen(!speedDialOpen);
-  });
-  // Tapping anywhere outside the dial also closes it, same pattern as
-  // #modal-overlay click-to-close above, in addition to the X-button
-  // toggle and Escape key. The toggle's own click target is inside
-  // #speed-dial, so this doesn't fire back-to-back with opening it.
-  document.addEventListener("click", function (e) {
-    if (speedDialOpen && !document.getElementById("speed-dial").contains(e.target)) setSpeedDialOpen(false);
-  });
 
   /* ---------- render: dashboard ---------- */
 
@@ -4730,8 +4827,13 @@
     html += '</select></div>';
     html += '<div class="field"><label>Date</label><input type="date" name="date" value="' + (existing ? existing.date : todayISO()) + '" required /></div>';
     html += '<div class="field"><label>Note (optional)</label><input type="text" name="note" value="' + escapeAttr(existing ? existing.note : "") + '" /></div>';
-    html += '<button type="submit" class="btn primary">Save</button>';
-    if (existing) html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
+    if (existing) {
+      html += '<button type="submit" class="btn primary">Save</button>';
+      html += '<button type="button" class="btn danger" style="margin-top:10px" data-delete>Delete</button>';
+    } else {
+      html += '<div class="btn-row"><button type="submit" class="btn primary">Save</button><button type="button" class="btn plain secondary" id="tx-save-another">Save &amp; add another</button></div>';
+      html += '<div class="save-flash" id="tx-saved" role="status" aria-live="polite"></div>';
+    }
     html += '</form>';
 
     openModal(html);
@@ -4779,9 +4881,9 @@
       });
     });
 
-    document.getElementById("tx-form").addEventListener("submit", function (e) {
-      e.preventDefault();
-      var f = new FormData(e.target);
+    // Shared by Save and "Save & add another". Returns true when saved.
+    function saveTransaction(form) {
+      var f = new FormData(form);
       var goalId = f.get("goalId") || null;
       var record = {
         id: existing ? existing.id : uid(),
@@ -4797,7 +4899,7 @@
         isGoalContribution: !!goalId,
         goalId: goalId
       };
-      if (isNaN(record.amount) || !record.merchant) return;
+      if (isNaN(record.amount) || !record.merchant) return false;
       if (existing) {
         var idx = state.transactions.findIndex(function (t) { return t.id === existing.id; });
         state.transactions[idx] = record;
@@ -4805,7 +4907,32 @@
         state.transactions.push(record);
       }
       assignCategorySlots();
-      save(); closeModal(); renderAll();
+      save(); renderAll();
+      return true;
+    }
+
+    document.getElementById("tx-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (saveTransaction(e.target)) closeModal();
+    });
+
+    var anotherBtn = document.getElementById("tx-save-another");
+    if (anotherBtn) anotherBtn.addEventListener("click", function () {
+      var form = document.getElementById("tx-form");
+      if (!form.reportValidity() || !saveTransaction(form)) return;
+      // Keep the date, card and type so repeated entries are quick; the
+      // category/goal follow the merchant, so they start over with it.
+      var amountInput = form.querySelector('input[name="amount"]');
+      amountInput.value = "";
+      form.querySelector('input[name="merchant"]').value = "";
+      form.querySelector('input[name="note"]').value = "";
+      document.getElementById("tx-cat-select").value = "";
+      if (goalSelect) goalSelect.value = "";
+      catManuallyPicked = false;
+      var flash = document.getElementById("tx-saved");
+      flash.textContent = "Saved"; flash.classList.add("show");
+      clearTimeout(flash._t); flash._t = setTimeout(function () { flash.classList.remove("show"); }, 1600);
+      amountInput.focus();
     });
   }
 
@@ -5141,6 +5268,10 @@
     if (cloudEnabled) html += '<button class="btn plain" id="sign-out">Sign Out</button>';
     html += '</div>';
 
+    html += '<div class="card"><h2>Tools</h2>';
+    html += '<button class="btn plain" id="open-calc">' + icon("calculator", "") + ' Quick Calculator</button>';
+    html += '</div>';
+
     html += '<div class="card"><h2>Notifications</h2>';
     html += '<div class="toggle-row"><span>Bill Reminders</span><label class="switch"><input type="checkbox" id="notify-bills" ' + (state.settings.notifyBills ? "checked" : "") + ' /><span class="track"></span><span class="thumb"></span></label></div>';
     html += '<p class="footnote" style="margin-top:0">Get a notification when a fixed bill or subscription is due within 2 days. Only fires while this tab or app is open on this device — it won\'t wake your phone in the background.</p>';
@@ -5162,6 +5293,7 @@
 
     document.getElementById("tab-settings").innerHTML = html;
 
+    document.getElementById("open-calc").addEventListener("click", function () { openCalculator(); });
     document.getElementById("currency-select").addEventListener("change", function (e) {
       state.settings.currency = e.target.value;
       save(); renderAll();
