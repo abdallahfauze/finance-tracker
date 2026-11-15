@@ -5943,7 +5943,7 @@
   function todoSuggestions() {
     var out = [];
     todoMoneyItems(30, -3650).filter(function (it) { return it.days > 7 && !todoOpenLinked(it.type, it.id); }).forEach(function (it) {
-      out.push({ title: "Pay " + it.name, why: "Due " + todoDueLabel(it.date).toLowerCase() + " in " + (it.type === "loan" ? "Loans" : "Recurring"), partial: todoPartialFor(it) });
+      out.push({ title: "Pay " + it.name, why: "Due " + todoDueLabel(it.date) + " in " + (it.type === "loan" ? "Loans" : "Recurring"), partial: todoPartialFor(it) });
     });
     state.goals.forEach(function (g) {
       var p = goalProgress(g);
