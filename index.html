@@ -673,6 +673,41 @@
   .switch input:checked ~ .thumb { transform: translateX(19px); }
 
   .footnote { font-size: 12.5px; color: var(--ink-muted); line-height: 1.5; margin-top: 4px; }
+
+  /* Settings > Navigation: an entry row on the main page, and its own sub-page. */
+  .nav-open { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; border: none; border-radius: var(--radius-md); background: var(--surface-2); color: var(--ink); font: inherit; text-align: left; cursor: pointer; transition: transform .1s ease; }
+  .nav-open:active { transform: scale(0.98); }
+  .nav-open-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .nav-open-title { font-size: 15px; font-weight: 600; }
+  .nav-open-hint { font-size: 12.5px; color: var(--ink-muted); line-height: 1.35; }
+  .nav-open > svg { width: 18px; height: 18px; flex: none; color: var(--ink-muted); }
+  .nav-back { display: inline-flex; align-items: center; gap: 2px; margin: 0 0 12px -4px; padding: 6px 10px 6px 4px; border: none; background: none; border-radius: 999px; color: var(--accent); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .nav-back svg { width: 20px; height: 20px; }
+  .nav-prev { position: relative; height: 56px; margin: 4px 0 6px; border-radius: 22px; background: var(--surface-2); overflow: hidden; }
+  .nav-prev-strip { display: flex; align-items: center; height: 100%; padding: 0 8px; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 7%, #000 93%, transparent 100%); }
+  .nav-prev-strip::-webkit-scrollbar { display: none; }
+  .nav-prev-item { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; height: 42px; padding: 0 12px; border-radius: 18px; font-size: 9.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; color: var(--ink-muted); }
+  .nav-prev-item svg { width: 15px; height: 15px; }
+  .nav-prev-item.sel { color: var(--accent); background: var(--surface); box-shadow: 0 0 0 1px var(--line); }
+  .nav-prev-count { margin: 0 0 10px; font-size: 12.5px; color: var(--ink-muted); text-align: center; }
+  .nav-list { margin-top: 4px; }
+  .nav-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+  .nav-row:last-child { border-bottom: none; }
+  .nav-icon { width: 34px; height: 34px; flex: none; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: var(--accent-soft); color: var(--accent); }
+  .nav-icon svg { width: 17px; height: 17px; }
+  .nav-label { flex: 1; min-width: 0; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-row.off .nav-icon, .nav-row.off .nav-label { opacity: .5; }
+  .nav-switch { flex: none; margin-right: 4px; }
+  .nav-switch input:disabled { cursor: not-allowed; }
+  .nav-switch input:disabled ~ .track, .nav-switch input:disabled ~ .thumb { opacity: .55; }
+  .nav-move { width: 34px; height: 34px; flex: none; }
+  .nav-move:disabled { opacity: .35; cursor: default; }
+  .nav-move svg { width: 16px; height: 16px; }
+  .nav-up svg { transform: rotate(-90deg); }
+  .nav-down svg { transform: rotate(90deg); }
+  .nav-reset { margin-top: 14px; }
+  .nav-reset:disabled { opacity: .45; cursor: default; }
+  .sr-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   a { color: var(--accent); }
 
   .lock-screen {
@@ -1022,6 +1057,13 @@
   :root[data-skin="soft"] .switch .thumb { background: var(--soft-thumb); box-shadow: var(--soft-raise-sm); }
   :root[data-skin="soft"] .switch input:checked + .track { background: var(--page); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent), 0 0 12px color-mix(in srgb, var(--accent) 30%, transparent); }
   :root[data-skin="soft"] .switch input:checked ~ .thumb { background: var(--accent); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 75%, transparent); }
+  :root[data-skin="soft"] .nav-open { background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 16px; }
+  :root[data-skin="soft"] .nav-open:active { box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .nav-prev { background: var(--page); box-shadow: var(--soft-inset); }
+  :root[data-skin="soft"] .nav-prev-item.sel { background: var(--page); box-shadow: var(--soft-raise-sm); }
+  :root[data-skin="soft"] .nav-row { border-bottom: 1px solid var(--soft-groove); box-shadow: 0 1px 0 var(--soft-groove-hi); }
+  :root[data-skin="soft"] .nav-row:last-child { box-shadow: none; border-bottom: none; }
+  :root[data-skin="soft"] .nav-icon { background: var(--page); box-shadow: var(--soft-inset); }
   :root[data-skin="soft"] .search-wrap input { padding-left: 42px; }
   :root[data-skin="soft"] #tx-import-btn, :root[data-skin="soft"] #tx-import-text-btn { background: var(--page) !important; border: none !important; box-shadow: var(--soft-raise-sm) !important; color: var(--accent) !important; border-radius: 999px !important; }
   :root[data-skin="soft"] #tx-import-btn:active, :root[data-skin="soft"] #tx-import-text-btn:active { box-shadow: var(--soft-inset) !important; }
@@ -1550,6 +1592,25 @@
     return "id-" + Date.now() + "-" + Math.random().toString(36).slice(2, 9);
   }
 
+  /* Dial pages in their default order (Settings is the gear, never on the dial).
+     state.nav = { order: [page ids], hidden: [page ids] } is saved per user in
+     the synced state, so it follows the account and rides along in Backup. */
+  var NAV_ORDER = ["dashboard", "transactions", "recurring", "loans", "cards", "categories", "goals", "todo", "transfer", "forecast"];
+  var NAV_ICONS = { dashboard: "pie", transactions: "list", recurring: "refresh", loans: "trend-down", cards: "card", categories: "tag", goals: "target", todo: "todo", transfer: "swap", forecast: "grid" };
+  var NAV_MIN_VISIBLE = 1;
+
+  function defaultNav() { return { order: NAV_ORDER.slice(), hidden: [] }; }
+  // Whatever comes in (old state without the field, unknown or duplicate pages,
+  // pages added later, everything hidden) comes out as a usable arrangement.
+  function normalizeNav(raw) {
+    var order = [], hidden = [];
+    if (raw && Array.isArray(raw.order)) raw.order.forEach(function (k) { if (NAV_ORDER.indexOf(k) !== -1 && order.indexOf(k) === -1) order.push(k); });
+    NAV_ORDER.forEach(function (k) { if (order.indexOf(k) === -1) order.push(k); }); // new pages join at the end
+    if (raw && Array.isArray(raw.hidden)) raw.hidden.forEach(function (k) { if (order.indexOf(k) !== -1 && hidden.indexOf(k) === -1) hidden.push(k); });
+    if (order.length - hidden.length < NAV_MIN_VISIBLE) hidden = [];
+    return { order: order, hidden: hidden };
+  }
+
   function defaultState() {
     return {
       // Categories are generic enough to be useful out of the box, but bank
@@ -1566,6 +1627,7 @@
       customBankCards: [],
       removedBankCards: BANK_CARDS.slice(),
       bankCardConfig: defaultBankCardConfig(),
+      nav: defaultNav(),
       settings: { currency: guessCurrency(), accentColor: "orange" }
     };
   }
@@ -1590,6 +1652,7 @@
     if (!parsed.customBankCards) parsed.customBankCards = [];
     if (!parsed.removedBankCards) parsed.removedBankCards = [];
     if (!parsed.bankCardConfig) parsed.bankCardConfig = defaultBankCardConfig();
+    parsed.nav = normalizeNav(parsed.nav);
     BANK_CARDS.concat(parsed.customBankCards.map(function (c) { return c.label; })).forEach(function (label) {
       if (!parsed.bankCardConfig[label]) parsed.bankCardConfig[label] = { value: 0 };
     });
@@ -2340,11 +2403,9 @@
        so dragging the dial, swiping a page and tapping all share one path.
      - Pages are slid with transforms (showTab); a page is only rendered when
        it lands, while dragging just moves the already-rendered neighbour. */
-  var DIAL_PAGES = [
-    ["dashboard", "pie"], ["transactions", "list"], ["recurring", "refresh"], ["loans", "trend-down"], ["cards", "card"],
-    ["categories", "tag"], ["goals", "target"], ["todo", "todo"], ["transfer", "swap"], ["forecast", "grid"]
-  ];
-  var DIAL_N = DIAL_PAGES.length;
+  var DIAL_PAGES = [], DIAL_N = 0;   // rebuilt from state.nav (order + hidden) by rebuildDial()
+  var tempTabs = [];                 // hidden pages opened on purpose (setTab); on the dial only while in use
+  var navSig = "", settingsView = "main"; // settingsView: "main" | "nav" (the Navigation sub-page)
   var mainEl = document.querySelector("main");
   var dialEl = document.getElementById("dial");
   var trackEl = document.getElementById("dial-track");
@@ -2358,17 +2419,31 @@
   function reducedMotion() { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
   function onSettings() { return currentTab === "settings"; }
 
-  DIAL_PAGES.forEach(function (p, i) {
-    var b = document.createElement("button");
-    b.type = "button"; b.className = "dial-item"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", "false"); b.tabIndex = -1;
-    b.id = "dial-tab-" + p[0];
-    b.innerHTML = icon(p[1]) + "<span>" + TAB_META[p[0]].title + "</span>";
-    b.addEventListener("click", function () { land(i); }); // keyboard Enter/Space (pointer taps are handled by the dial itself)
-    trackEl.appendChild(b); dialItems.push(b);
-  });
+  function navIsHidden(tab) { return state.nav.hidden.indexOf(tab) !== -1; }
+  function buildDialItems() {
+    var nav = state.nav, pages = [];
+    nav.order.forEach(function (k) { if (!navIsHidden(k) || tempTabs.indexOf(k) !== -1) pages.push([k, NAV_ICONS[k]]); });
+    DIAL_PAGES = pages; DIAL_N = pages.length; dialItems = []; trackEl.innerHTML = "";
+    pages.forEach(function (p) {
+      var b = document.createElement("button");
+      b.type = "button"; b.className = "dial-item"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", "false"); b.tabIndex = -1;
+      b.id = "dial-tab-" + p[0];
+      b.innerHTML = icon(p[1]) + "<span>" + TAB_META[p[0]].title + "</span>";
+      b.addEventListener("click", function () { land(dialItems.indexOf(b)); }); // keyboard Enter/Space (pointer taps are handled by the dial itself)
+      trackEl.appendChild(b); dialItems.push(b);
+    });
+  }
+  // The page to land on when `gone` has left the dial: the next visible one in
+  // the saved order, else the one before it, else the first.
+  function navFallback(gone) {
+    var order = state.nav.order, at = order.indexOf(gone), i;
+    for (i = at + 1; i < order.length; i++) if (!navIsHidden(order[i])) return order[i];
+    for (i = at - 1; i >= 0; i--) if (!navIsHidden(order[i])) return order[i];
+    return order[0];
+  }
 
   function measureDial() {
-    dialW = dialEl.clientWidth; var pos = 0;
+    dialW = dialEl.clientWidth; var pos = 0; dialCx = []; dialWd = [];
     for (var i = 0; i < DIAL_N; i++) { dialWd[i] = dialItems[i].offsetWidth; dialCx[i] = pos + dialWd[i] / 2; pos += dialWd[i]; }
   }
   function clampBand(v) { // a little rubber band past either end
@@ -2386,7 +2461,7 @@
   function nearestTo(v) { var best = 0, bd = 1e9; for (var i = 0; i < DIAL_N; i++) { var d = Math.abs(dialCx[i] - v); if (d < bd) { bd = d; best = i; } } return best; }
 
   function renderDial() {
-    if (!dialW) return;
+    if (!dialW || !DIAL_N) return;
     trackEl.style.transform = "translate3d(" + (dialW / 2 - dialX).toFixed(2) + "px,0,0)";
     var f = fracAt(dialX), i0 = Math.floor(f), i1 = Math.min(DIAL_N - 1, i0 + 1), t = f - i0, sett = onSettings();
     lensEl.style.width = Math.max(0, (dialWd[i0] * (1 - t) + dialWd[i1] * t) - 2).toFixed(1) + "px";
@@ -2438,6 +2513,16 @@
   function placeSection(sec, px, top) {
     sec.classList.remove("anim"); sec.classList.add("peek", "sliding"); sec.style.top = top + "px"; sec.style.transform = "translate3d(" + px + "px,0,0)";
   }
+  function applyFab(to) {
+    var actionBtn = document.getElementById("appbar-action");
+    // Cards and Forecast have nothing to add, so the + goes away and the calculator
+    // takes its place (the .solo class centres it where the + was). Settings has its
+    // own Quick Calculator button, so the floating one hides there too.
+    var noAdd = (to === "settings" || to === "forecast" || to === "cards");
+    actionBtn.style.display = noAdd ? "none" : "";
+    document.getElementById("calc-fab").style.visibility = (to === "settings") ? "hidden" : "visible";
+    document.getElementById("fab-stack").classList.toggle("solo", noAdd && to !== "settings");
+  }
   function showTab(to, dir, opts) { // slide `to` in from the side `dir` (1 = from the right)
     opts = opts || {};
     var from = currentTab; if (to === from) return;
@@ -2447,19 +2532,13 @@
     currentTab = to;
     if (to !== "settings") prevTab = to;
     setHeader(to); syncDialA11y();
-    var actionBtn = document.getElementById("appbar-action");
-    // Cards and Forecast have nothing to add, so the + goes away and the calculator
-    // takes its place (the .solo class centres it where the + was). Settings has its
-    // own Quick Calculator button, so the floating one hides there too.
-    var noAdd = (to === "settings" || to === "forecast" || to === "cards");
-    actionBtn.style.display = noAdd ? "none" : "";
-    document.getElementById("calc-fab").style.visibility = (to === "settings") ? "hidden" : "visible";
-    document.getElementById("fab-stack").classList.toggle("solo", noAdd && to !== "settings");
+    if (wasSettings) settingsView = "main"; // leaving Settings also leaves its sub-page
+    applyFab(to);
     renderAll(); // the destination is only (re)rendered once it lands
     if (opts.instant || reducedMotion() || !mainEl.clientWidth) {
       allSections().forEach(function (s) { if (s !== secTo) cleanSection(s); });
       secTo.classList.remove("peek", "anim", "sliding"); secTo.style.transform = ""; secTo.style.top = ""; secTo.classList.add("active");
-      scrollTop0(); return;
+      scrollTop0(); pruneTemps(); return;
     }
     var Wp = mainEl.clientWidth, top = scrollPos() + 16;
     if (!opts.placed) { placeSection(secTo, dir * Wp, top); void secTo.offsetWidth; }
@@ -2470,7 +2549,7 @@
       if (currentTab !== to) return;
       allSections().forEach(function (s) { if (s !== secTo) cleanSection(s); });
       secTo.classList.remove("peek", "anim", "sliding"); secTo.style.transform = ""; secTo.style.top = ""; secTo.classList.add("active");
-      scrollTop0();
+      scrollTop0(); pruneTemps();
     }, 340);
   }
 
@@ -2483,7 +2562,40 @@
   }
   function setTab(tab) {
     if (tab === "settings") { if (!onSettings()) openSettingsPage(); return; }
+    if (!TAB_META[tab] || !secOf(tab) || NAV_ORDER.indexOf(tab) === -1) return;
+    // A page hidden from the dial can still be opened by code (deep links, "Go to Goals"
+    // buttons): it joins the dial for as long as it is in use, then drops off again.
+    if (pageIndex(tab) < 0) { tempTabs.push(tab); rebuildDial(); }
     var i = pageIndex(tab); if (i >= 0) land(i);
+  }
+  // Temporary pages leave the dial once the person has moved on (Settings opened from one keeps it).
+  function pruneTemps() {
+    if (!tempTabs.length) return;
+    var keep = onSettings() ? prevTab : currentTab;
+    var left = tempTabs.filter(function (k) { return k === keep && navIsHidden(k); });
+    if (left.length === tempTabs.length) return;
+    tempTabs = left; rebuildDial();
+  }
+  // (Re)draws the dial from state.nav. If the page being viewed is no longer on it, move to a neighbour.
+  function rebuildDial() {
+    navSig = JSON.stringify(state.nav);
+    tempTabs = tempTabs.filter(function (k) { return navIsHidden(k); });
+    stopGlide(); buildDialItems();
+    var cur = onSettings() ? prevTab : currentTab;
+    if (pageIndex(cur) < 0) {
+      var fb = navBooting ? state.nav.order.filter(function (k) { return !navIsHidden(k); })[0] : navFallback(cur); // at start-up: the first page on the dial
+      tempTabs = tempTabs.filter(function (k) { return k !== cur; });
+      if (pageIndex(fb) < 0) { buildDialItems(); }
+      if (onSettings()) prevTab = fb;
+      else {
+        currentTab = prevTab = fb; settingsView = "main";
+        allSections().forEach(cleanSection); secOf(fb).classList.add("active");
+        setHeader(fb); applyFab(fb); scrollTop0();
+      }
+    }
+    measureDial();
+    var at = pageIndex(onSettings() ? prevTab : currentTab);
+    dialX = dialCx[at >= 0 ? at : 0] || 0; lastNear = -1; renderDial(); syncDialA11y();
   }
   function openSettingsPage() {
     if (onSettings()) return;
@@ -2601,9 +2713,8 @@
   mainEl.addEventListener("pointerup", endSwipe);
   mainEl.addEventListener("pointercancel", endSwipe);
 
-  function initDial() {
-    measureDial(); dialX = dialCx[Math.max(0, pageIndex(currentTab))] || 0; lastNear = -1; renderDial(); syncDialA11y();
-  }
+  var navBooting = true;
+  function initDial() { rebuildDial(); navBooting = false; }
   if (window.ResizeObserver) { var dialRO = new ResizeObserver(function () { measureDial(); if (!dialDrag && !dialRaf) dialX = Math.min(Math.max(dialX, dialCx[0]), dialCx[DIAL_N - 1]); renderDial(); }); dialRO.observe(dialEl); dialRO.observe(trackEl); }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measureDial(); var i = pageIndex(currentTab); if (i >= 0) dialX = dialCx[i]; renderDial(); });
   initDial();
@@ -2686,6 +2797,7 @@
   document.addEventListener("keydown", function (e) {
     if (e.key !== "Escape") return;
     if (document.getElementById("modal-overlay").classList.contains("open")) closeModal();
+    else if (onSettings() && settingsView === "nav") closeNavPage();
   });
 
   /* Custom confirm dialog — window.confirm() is blocked inside a sandboxed iframe
@@ -5575,7 +5687,101 @@
 
   /* ---------- render: settings ---------- */
 
+  function navShownCount() { return state.nav.order.length - state.nav.hidden.length; }
+  function navIsDefault() { var n = state.nav; return !n.hidden.length && n.order.join() === NAV_ORDER.join(); }
+
+  function navCountText() { return navShownCount() + " of " + NAV_ORDER.length + " pages on the dial"; }
+  function navPreviewHtml() {
+    var shown = state.nav.order.filter(function (k) { return !navIsHidden(k); });
+    var h = '<div class="nav-prev" id="nav-preview" aria-hidden="true"><div class="nav-prev-strip">';
+    shown.forEach(function (k, i) {
+      h += '<div class="nav-prev-item' + (i === 0 ? ' sel' : '') + '">' + icon(NAV_ICONS[k]) + '<span>' + escapeHtml(TAB_META[k].title) + '</span></div>';
+    });
+    return h + '</div></div>';
+  }
+
+  function navRowsHtml() {
+    var order = state.nav.order, shown = navShownCount(), h = '';
+    order.forEach(function (k, i) {
+      var on = !navIsHidden(k), locked = on && shown <= NAV_MIN_VISIBLE, name = escapeHtml(TAB_META[k].title);
+      h += '<div class="nav-row' + (on ? '' : ' off') + '" data-nav-key="' + k + '">';
+      h += '<span class="nav-icon">' + icon(NAV_ICONS[k]) + '</span><span class="nav-label">' + name + '</span>';
+      h += '<label class="switch nav-switch" title="Show on the dial"><input type="checkbox" data-nav-show="' + k + '" aria-label="Show ' + name + ' on the dial"' + (on ? " checked" : "") + (locked ? " disabled" : "") + ' /><span class="track"></span><span class="thumb"></span></label>';
+      h += '<button type="button" class="icon-btn ghost nav-move nav-up" data-nav-up="' + k + '" aria-label="Move ' + name + ' up"' + (i === 0 ? " disabled" : "") + '>' + icon("chevron") + '</button>';
+      h += '<button type="button" class="icon-btn ghost nav-move nav-down" data-nav-down="' + k + '" aria-label="Move ' + name + ' down"' + (i === order.length - 1 ? " disabled" : "") + '>' + icon("chevron") + '</button>';
+      h += '</div>';
+    });
+    return h;
+  }
+
+  // Settings has a main page and one sub-page (Navigation).
+  function openNavPage() {
+    settingsView = "nav";
+    document.getElementById("appbar-title").textContent = "Navigation";
+    document.getElementById("appbar-sub").textContent = "Settings";
+    renderSettings(); scrollTop0();
+    var b = document.getElementById("nav-back"); if (b) b.focus({ preventScroll: true });
+  }
+  function closeNavPage() {
+    if (settingsView !== "nav") return;
+    settingsView = "main";
+    setHeader("settings");
+    renderSettings(); scrollTop0();
+    var b = document.getElementById("nav-open"); if (b) b.focus({ preventScroll: true });
+  }
+
+  // Save a new arrangement, redraw the real dial at once, and refresh just this page's rows/preview.
+  function applyNav(nav, say) {
+    state.nav = normalizeNav(nav);
+    save(); rebuildDial();
+    document.getElementById("nav-list").innerHTML = navRowsHtml();
+    document.getElementById("nav-preview").outerHTML = navPreviewHtml();
+    document.getElementById("nav-count").textContent = navCountText();
+    document.getElementById("nav-reset").disabled = navIsDefault();
+    if (say) document.getElementById("nav-live").textContent = say;
+  }
+
+  function renderNavPage() {
+    var html = '<button type="button" class="nav-back" id="nav-back" aria-label="Back to Settings">' + icon("chevron", "chevron-flip") + '<span>Settings</span></button>';
+    html += '<div class="card"><h2>Navigation</h2>';
+    html += '<p class="footnote" style="margin-top:0">Set the order of the pages on the bottom dial and switch off the ones you never use (at least one stays on). Swiping between pages follows the same order. Settings is the gear in the top bar.</p>';
+    html += navPreviewHtml() + '<p class="nav-prev-count" id="nav-count">' + navCountText() + '</p>';
+    html += '<div class="nav-list" id="nav-list">' + navRowsHtml() + '</div>';
+    html += '<button type="button" class="btn plain nav-reset" id="nav-reset"' + (navIsDefault() ? " disabled" : "") + '>Reset to default</button>';
+    html += '<div class="sr-live" id="nav-live" role="status" aria-live="polite"></div>';
+    html += '</div>';
+    var el = document.getElementById("tab-settings");
+    el.innerHTML = html;
+    document.getElementById("nav-back").addEventListener("click", closeNavPage);
+    var list = document.getElementById("nav-list");
+    list.addEventListener("click", function (e) {
+      var up = e.target.closest("[data-nav-up]"), down = e.target.closest("[data-nav-down]");
+      var key = up ? up.getAttribute("data-nav-up") : down ? down.getAttribute("data-nav-down") : null;
+      if (!key) return;
+      var order = state.nav.order.slice(), i = order.indexOf(key), j = i + (up ? -1 : 1);
+      if (i < 0 || j < 0 || j >= order.length) return;
+      order[i] = order[j]; order[j] = key;
+      applyNav({ order: order, hidden: state.nav.hidden }, TAB_META[key].title + " moved " + (up ? "up" : "down") + " to position " + (j + 1) + " of " + order.length);
+      // keep keyboard focus on the same control (or its twin when it has hit an end)
+      var row = list.querySelector('[data-nav-key="' + key + '"]');
+      var btn = row && (row.querySelector(up ? "[data-nav-up]:not(:disabled)" : "[data-nav-down]:not(:disabled)") || row.querySelector(up ? "[data-nav-down]" : "[data-nav-up]"));
+      if (btn) btn.focus({ preventScroll: true });
+    });
+    list.addEventListener("change", function (e) {
+      var box = e.target.closest("[data-nav-show]"); if (!box) return;
+      var key = box.getAttribute("data-nav-show"), hidden = state.nav.hidden.filter(function (k) { return k !== key; });
+      if (!box.checked) hidden.push(key);
+      if (state.nav.order.length - hidden.length < NAV_MIN_VISIBLE) { box.checked = true; return; }
+      applyNav({ order: state.nav.order, hidden: hidden }, TAB_META[key].title + (box.checked ? " shown on the dial" : " hidden from the dial"));
+      var again = list.querySelector('[data-nav-show="' + key + '"]'); if (again) again.focus({ preventScroll: true });
+    });
+    document.getElementById("nav-reset").addEventListener("click", function () {
+      applyNav(defaultNav(), "Navigation reset to default");
+    });
+  }
+
   function renderSettings() {
+    if (settingsView === "nav") return renderNavPage();
     var html = '';
 
     html += '<div class="card"><h2>Currency</h2><select id="currency-select">';
@@ -5595,6 +5801,10 @@
     html += '<p class="footnote" style="margin-top:14px;margin-bottom:0">Curated presets rather than a full color wheel, so button text and the paid/overdue/warning colors stay legible against whatever you pick.</p>';
     html += '</div>';
 
+
+    html += '<div class="card"><h2>Navigation</h2>';
+    html += '<button type="button" class="nav-open" id="nav-open"><span class="nav-open-text"><span class="nav-open-title">Customise navigation</span><span class="nav-open-hint">Reorder the pages and choose which ones appear on the dial. ' + navShownCount() + ' of ' + NAV_ORDER.length + ' shown.</span></span>' + icon("chevron") + '</button>';
+    html += '</div>';
 
     html += '<div class="card"><h2>Account</h2>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in as " + escapeHtml(auth.currentUser.email) + " — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
@@ -5628,6 +5838,7 @@
     document.getElementById("tab-settings").innerHTML = html;
 
     document.getElementById("open-calc").addEventListener("click", function () { openCalculator(); });
+    document.getElementById("nav-open").addEventListener("click", openNavPage);
     document.getElementById("currency-select").addEventListener("change", function (e) {
       state.settings.currency = e.target.value;
       save(); renderAll();
@@ -6438,6 +6649,7 @@
   }
 
   function renderAll() {
+    if (JSON.stringify(state.nav) !== navSig) rebuildDial(); // new arrangement from sync / restore / reset
     renderDashboard();
     renderTransactions();
     renderRecurring();
