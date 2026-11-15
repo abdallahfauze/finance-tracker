@@ -781,6 +781,8 @@
   .add-fab:active { transform: scale(.88); }
   .calc-fab { width: 46px; height: 46px; flex-shrink: 0; margin-bottom: 9px; pointer-events: auto; }
   .calc-fab svg { width: 20px; height: 20px; }
+  /* Alone in the stack (no +): sit where the + would be, centred on its spot. */
+  .fab-stack.solo .calc-fab { margin-right: 9px; }
 
   /* The dial: every page on one strip, the selected one held in a recessed
      pill that resizes to its label. The edge-fade mask lives on the fixed
@@ -2459,9 +2461,13 @@
     if (to !== "settings") prevTab = to;
     setHeader(to); syncDialA11y();
     var actionBtn = document.getElementById("appbar-action");
-    actionBtn.style.visibility = (to === "settings" || to === "forecast" || to === "cards") ? "hidden" : "visible";
-    // Settings has its own Quick Calculator button, so the floating one hides there too.
+    // Cards and Forecast have nothing to add, so the + goes away and the calculator
+    // takes its place (the .solo class centres it where the + was). Settings has its
+    // own Quick Calculator button, so the floating one hides there too.
+    var noAdd = (to === "settings" || to === "forecast" || to === "cards");
+    actionBtn.style.display = noAdd ? "none" : "";
     document.getElementById("calc-fab").style.visibility = (to === "settings") ? "hidden" : "visible";
+    document.getElementById("fab-stack").classList.toggle("solo", noAdd && to !== "settings");
     renderAll(); // the destination is only (re)rendered once it lands
     if (opts.instant || reducedMotion() || !mainEl.clientWidth) {
       allSections().forEach(function (s) { if (s !== secTo) cleanSection(s); });
