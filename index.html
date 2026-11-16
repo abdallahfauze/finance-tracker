@@ -1493,6 +1493,52 @@
   @media (prefers-reduced-motion: reduce) {
     .home, .home.open, main, .navzone, .fab-anchor { transition: none; }
   }
+  /* First-run guide */
+  .guide { position: fixed; inset: 0; z-index: 45; pointer-events: none; }
+  .g-scrim, .g-card { pointer-events: auto; }
+  .guide[hidden] { display: none; }
+  .guide.away { display: none; }
+  .g-scrim { position: absolute; inset: 0; background: var(--soft-overlay, rgba(0,0,0,.5)); }
+  .g-spot { position: absolute; pointer-events: none; box-shadow: 0 0 0 2px var(--accent), 0 0 18px 4px color-mix(in srgb, var(--accent) 50%, transparent); animation: g-pulse 2s ease-in-out infinite; }
+  @keyframes g-pulse { 50% { box-shadow: 0 0 0 3px var(--accent), 0 0 26px 8px color-mix(in srgb, var(--accent) 35%, transparent); } }
+  .g-card { position: absolute; background: var(--page); color: var(--ink); border-radius: 24px; box-shadow: var(--soft-raise); padding: 16px 18px 18px; overflow-y: auto; overscroll-behavior: contain; }
+  .g-card.above::after, .g-card.below::after { content: ""; position: absolute; left: var(--ax, 40px); width: 16px; height: 16px; background: var(--page); transform: translateX(-50%) rotate(45deg); }
+  .g-card.below::after { top: -7px; } .g-card.above::after { bottom: -7px; }
+  .g-card h2 { margin: 12px 0 6px; font-size: 18px; letter-spacing: -.01em; line-height: 1.2; text-wrap: balance; }
+  .g-card h2:focus { outline: none; }
+  .g-card.center h2 { margin-top: 4px; font-size: 21px; }
+  .g-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .g-prog { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .g-pl { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  .g-dots { display: flex; gap: 5px; }
+  .g-dots i { width: 8px; height: 8px; border-radius: 99px; box-shadow: var(--soft-inset); }
+  .g-dots i.done { background: var(--accent); box-shadow: none; opacity: .55; }
+  .g-dots i.cur { width: 22px; background: var(--accent); box-shadow: none; }
+  .g-link { border: none; background: none; color: var(--ink-2); font: inherit; font-size: 13px; font-weight: 700; padding: 8px 6px; min-height: 36px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  .g-lede { margin: 0 0 10px; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+  .g-note { margin: 0 0 10px; padding: 10px 12px; border-radius: 14px; box-shadow: var(--soft-inset); font-size: 12.5px; line-height: 1.45; color: var(--ink); font-weight: 600; }
+  .g-status { margin: 0 0 10px; min-height: 0; display: flex; gap: 6px; align-items: center; font-size: 12.5px; font-weight: 700; color: var(--accent); }
+  .g-status:empty { display: none; } .g-status svg { width: 16px; height: 16px; flex: none; }
+  .g-acts { display: grid; gap: 8px; margin: 4px 0 4px; }
+  .g-card .btn { min-height: 44px; }
+  .g-ctl { display: flex; gap: 10px; justify-content: space-between; margin-top: 12px; }
+  .g-ctl .btn { flex: 1; }
+  .g-ctl.col { flex-direction: column; align-items: stretch; } .g-ctl.col .g-link { align-self: center; }
+  .g-ctl.wrap { flex-wrap: wrap; } .g-ctl .full { flex-basis: 100%; }
+  .g-steps { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 10px; }
+  .g-steps li { display: flex; gap: 12px; align-items: center; font-size: 14px; font-weight: 700; }
+  .g-steps small { display: block; font-weight: 500; color: var(--ink-muted); font-size: 12px; }
+  .g-dot { width: 34px; height: 34px; border-radius: 50%; box-shadow: var(--soft-raise-sm); display: grid; place-items: center; color: var(--accent); flex: none; }
+  .g-dot svg { width: 16px; height: 16px; }
+  .g-ok { width: 48px; height: 48px; border-radius: 50%; box-shadow: var(--soft-raise-sm); display: grid; place-items: center; color: var(--accent); margin-bottom: 8px; }
+  .g-ok svg { width: 24px; height: 24px; }
+  .g-mini { border-radius: 18px; box-shadow: var(--soft-raise-sm); padding: 12px 14px; margin-top: 10px; }
+  .g-mini h3 { margin: 0 0 6px; font-size: 13.5px; }
+  .g-mini ul { margin: 0; padding-inline-start: 18px; font-size: 12.5px; line-height: 1.5; color: var(--ink-2); } .g-mini li { margin-bottom: 3px; }
+  .g-pill { position: fixed; z-index: 45; left: 50%; transform: translateX(-50%); bottom: calc(96px + env(safe-area-inset-bottom)); border: none; border-radius: 999px; padding: 12px 20px; min-height: 44px; font: inherit; font-size: 14px; font-weight: 800; background: var(--accent); color: var(--accent-ink); box-shadow: var(--soft-raise); cursor: pointer; }
+  .g-pill[hidden] { display: none; }
+  .guide :focus-visible, .g-pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .g-spot { animation: none; } }
 </style>
 
 <svg width="0" height="0" style="position:absolute">
@@ -1716,6 +1762,14 @@
   <div class="modal-sheet" id="modal-sheet"></div>
 </div>
 
+<div class="guide" id="guide" role="dialog" aria-modal="true" aria-labelledby="guide-title" hidden>
+  <div class="g-scrim" id="guide-scrim"></div>
+  <div class="g-spot" id="guide-spot" hidden></div>
+  <div class="g-card" id="guide-card"></div>
+</div>
+<button type="button" class="g-pill" id="guide-pill" hidden>Back to the guide</button>
+<div class="sr-only" id="guide-live" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap"></div>
+
 <div class="lock-screen" id="lock-screen">
   <div class="lock-card">
     <div class="lock-eyebrow">FINANCE TRACKER</div>
@@ -1886,10 +1940,16 @@
 
   /* state.ui = { homeSeen, space }: homeSeen is false until the person has picked a space on the
      Home screen (so it shows once on a first launch); space is the one the app last used. */
-  function defaultUi() { return { homeSeen: false, space: "money" }; }
+  function defaultUi() { return { homeSeen: false, space: "money", guide: normalizeGuide(null) }; }
+  /* guide = the first-run "How to use" flag (once per person, synced): step 0 = never shown, 1-7 = where they got to. */
+  function normalizeGuide(raw) {
+    raw = raw && typeof raw === "object" ? raw : {};
+    var step = Math.max(0, Math.min(7, parseInt(raw.step, 10) || 0)), frame = Math.max(0, Math.min(40, parseInt(raw.frame, 10) || 0));
+    return { done: !!raw.done, skipped: !!raw.skipped, step: raw.done ? 7 : step, frame: frame };
+  }
   function normalizeUi(raw) {
     raw = raw && typeof raw === "object" ? raw : {};
-    return { homeSeen: !!raw.homeSeen, space: raw.space === "lists" ? "lists" : "money" };
+    return { homeSeen: !!raw.homeSeen, space: raw.space === "lists" ? "lists" : "money", guide: normalizeGuide(raw.guide) };
   }
 
   function defaultState() {
@@ -2034,9 +2094,10 @@
     unsubscribeSnapshot = db.collection("users").doc(uid).onSnapshot(function (snap) {
       if (snap.metadata.hasPendingWrites) return; // our own optimistic write echoing back
       var data = snap.data();
-      if (!data) { pushToCloud(); return; } // brand-new account, seed the cloud doc
+      if (!data) { gSynced = true; pushToCloud(); setTimeout(guideMaybeStart, 0); return; } // brand-new account, seed the cloud doc
       isApplyingRemoteUpdate = true;
       state = normalizeState(data);
+      gSynced = true;
       // A category-slot migration inside normalizeState only clears slots -
       // it doesn't reassign them, so a synced device needs this to avoid
       // showing every category as colorless "Other" until its next edit.
@@ -2046,6 +2107,7 @@
       renderAll();
       isApplyingRemoteUpdate = false;
       if (slotsChanged) save();
+      setTimeout(guideMaybeStart, 0);
     }, function (err) {
       console.error("Cloud sync listener error:", err);
     });
@@ -2907,6 +2969,7 @@
     allSections().forEach(cleanSection); secOf(tab).classList.add("active");
     rebuildDial(); setHeader(tab); applyFab(tab); updateSpaceUI(); renderAll(); scrollTop0();
     if (remember && state.ui.space !== name) { state.ui.space = name; save(); }
+    if (name === "money") setTimeout(guideMaybeStart, 400);
   }
   var spaceFadeTimer = 0;
   function switchSpace(name) {
@@ -5876,6 +5939,7 @@
     html += '<form id="add-bank-form">';
     html += '<div class="field"><label>Name</label><input type="text" name="label" placeholder="e.g. ' + (type === "debit" ? "Alinma Savings" : "ENBD Titanium") + '" required /></div>';
     html += '<div class="field"><label>' + (type === "debit" ? "Opening Balance" : "Credit Limit") + '</label><input type="number" step="0.01" min="0" name="value" value="0" required /></div>';
+    html += '<p class="footnote" style="margin:0 0 14px">Never enter a full card or bank account number. Use the last four digits only, as a reference, for example \u201cRAJHI 4821\u201d.</p>';
     html += '<button type="submit" class="btn primary">Add</button>';
     html += '</form>';
 
@@ -6140,6 +6204,8 @@
     html += '<button type="button" class="nav-open" id="nav-open"><span class="nav-open-text"><span class="nav-open-title">Customise navigation</span><span class="nav-open-hint">Reorder the pages and choose which ones appear on the dial. ' + navShownCount() + ' of ' + NAV_ORDER.length + ' shown.</span></span>' + icon("chevron") + '</button>';
     html += '</div>';
 
+    html += '<div class="card"><h2>Help</h2><button type="button" class="nav-open" id="guide-open"><span class="nav-open-text"><span class="nav-open-title">How to use</span><span class="nav-open-hint">' + guideStatus() + '</span></span>' + icon("chevron") + '</button></div>';
+
     html += '<div class="card"><h2>Account</h2>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">' + (cloudEnabled && auth && auth.currentUser ? "Signed in as " + escapeHtml(auth.currentUser.email) + " — your data syncs automatically across every device you unlock with this PIN." : "Cloud sync is unavailable right now; changes are only saved on this device.") + '</p>';
     if (cloudEnabled && auth && auth.currentUser) html += '<button class="btn plain" id="change-pin" style="margin-bottom:10px">Change PIN</button>';
@@ -6229,7 +6295,8 @@
     document.getElementById("export-csv").addEventListener("click", exportCSV);
     document.getElementById("reset-data").addEventListener("click", function () {
       confirmAction("Reset all data? This cannot be undone.", "Reset Everything", function () {
-        state = defaultState();
+        var keepGuide = state.ui.guide;
+        state = defaultState(); state.ui.guide = keepGuide; // starting over never re-runs the first-run guide
         save(); renderAll();
       });
     });
@@ -6342,7 +6409,9 @@
         return;
       }
       confirmAction("Restore this backup? It will replace all data currently in the app.", "Restore", function () {
+        var keepGuide = state.ui.guide;
         state = normalizeState(parsed);
+        if (!(parsed.ui && parsed.ui.guide)) state.ui.guide = keepGuide; // an older backup does not carry the flag
         save();
         renderAll();
       });
@@ -7027,6 +7096,7 @@
     document.getElementById("hc-" + k).addEventListener("click", function () {
       closeHome();
       if (k !== currentSpace || onSettings()) enterSpace(k, "", true); // under the fading Home, so no second fade
+      setTimeout(guideMaybeStart, 400); // the guide waits for Home to finish fading, never stacked on it
     });
   });
   document.addEventListener("keydown", function (e) {
@@ -7748,6 +7818,225 @@
     });
     if (changed) localStorage.setItem(NOTIFIED_KEY, JSON.stringify(notified));
   }
+
+
+  /* ---------- first-run guide ("How to use") ----------
+     state.ui.guide = { done, skipped, step (1-7, 0 = never shown), frame }. It lives in the synced state, so it
+     is once per person, not once per device: another device that syncs a started guide never runs it again.
+     It starts by itself only when never started, after Home is closed, the cloud copy has loaded, the person is
+     in Finances and the account holds no data yet. Replay from Settings never resets the flag. The forms are the
+     app's own (openAddBankCardForm, openRecurringForm, ...): the guide points at the real controls, opens the
+     real form and hides while it is open. */
+  var GUIDE_STEPS = ["Welcome", "Cards", "Recurring", "Goals and loans", "Transactions", "Settings", "All set"];
+  var GF = [
+    { step: 1, kind: "welcome" },
+    { step: 2, page: "cards", target: "#dial", title: "Pages live on this strip", body: "Flick or tap the strip at the bottom to move between pages. Cards is the first stop: add the accounts you spend from." },
+    { step: 2, page: "cards", target: "#tab-cards .disclosure", title: "Add your cards", track: "cards", note: "Never enter a full card or bank account number. Use the last four digits only, as a reference, for example “RAJHI 4821”.",
+      body: "A debit account takes an opening balance, a credit card takes its limit.",
+      actions: [{ label: "Add a debit account", open: function () { openAddBankCardForm("debit"); } }, { label: "Add a credit card", open: function () { openAddBankCardForm("credit"); } }] },
+    { step: 3, page: "recurring", target: "#appbar-action", title: "Recurring keeps bills honest", track: "recurring", body: "Subscriptions, rent and other payments that come back are added once and counted in every month ahead.",
+      actions: [{ label: "Add a recurring item", open: function () { openRecurringForm(null); } }] },
+    { step: 4, page: "goals", target: "#appbar-action", title: "Set a goal", track: "goals", body: "Goals tracks what you are saving for, with a progress ring that fills as you add funds.",
+      actions: [{ label: "Add a goal", open: function () { openGoalForm(null); } }] },
+    { step: 4, page: "loans", target: "#appbar-action", title: "Add a loan if you have one", track: "loans", body: "Loans tracks what you owe and when it ends. Nothing to add? Tap Not now.",
+      actions: [{ label: "Add a loan", open: function () { openLoanForm(null); } }] },
+    { step: 5, page: "transactions", target: "#appbar-action", title: "Log your first purchase", track: "transactions", body: "The + is on every page. Pick a category from the list; it is suggested from the merchant as you type. Save and add another keeps the form open for a pile of receipts.",
+      actions: [{ label: "Log a transaction", open: function () { openTransactionForm(null); } }] },
+    { step: 6, page: "dashboard", target: "#settings-btn", title: "Settings is the gear", body: "The gear in the header opens Settings. Next you will try the theme colour." },
+    { step: 6, page: "settings", target: "#tab-settings .accent-grid", wrap: ".card", interactive: true, title: "Pick a theme colour", body: "Tap a colour; the whole app follows. The moon button in the header switches light and dark." },
+    { step: 6, page: "settings", target: "#nav-open", wrap: ".card", title: "Reorder your pages", body: "Customise navigation lets you reorder the dial and hide pages you do not use. Backup, Change PIN and Bill reminders are further down.",
+      actions: [{ label: "Show me the navigation editor", nav: true }] },
+    { step: 7, page: "dashboard", kind: "done" }
+  ];
+  var gEl = document.getElementById("guide"), gCard = document.getElementById("guide-card"), gScrim = document.getElementById("guide-scrim"), gSpot = document.getElementById("guide-spot"),
+    gPill = document.getElementById("guide-pill"), gLive = document.getElementById("guide-live"), appRoot = document.querySelector(".app");
+  var gFrame = 0, gOpen = false, gSusp = "", gReplay = false, gAdded = {}, gBefore = null, gSynced = false, gSeq = 0, gReturnFocus = null;
+
+  function guideStatus() {
+    var g = state.ui.guide;
+    return g.done ? "Completed. Tap to replay" : g.step > 0 ? "Resume at step " + g.step + " of 7" : "Not started";
+  }
+  function guideHasData() {
+    return state.transactions.length || allBankCards().length || state.cards.length || state.recurring.length || state.loans.length || state.goals.length || state.tasks.length || state.grocery.items.length || state.grocery.trips.length;
+  }
+  function guideCloudReady() { return !cloudEnabled || gSynced; }
+  function guideMaybeStart() {
+    var g = state.ui.guide;
+    if (gOpen || g.done || g.skipped || g.step > 0) return;
+    if (homeIsOpen() || currentSpace !== "money" || !guideCloudReady() || guideHasData()) return;
+    if (document.getElementById("modal-overlay").classList.contains("open") || document.getElementById("lock-screen").classList.contains("open")) return;
+    guideOpen(false);
+  }
+  function guideSave(patch) {
+    var g = state.ui.guide;
+    if (g.done && !patch.done) return; // a replay never touches a finished flag
+    Object.keys(patch).forEach(function (k) { g[k] = patch[k]; });
+    save();
+  }
+  function guideOpen(replay) {
+    var g = state.ui.guide;
+    gReplay = !!replay; gAdded = {}; gSusp = ""; gReturnFocus = document.activeElement;
+    gFrame = replay && !g.done && g.step > 0 ? Math.max(0, Math.min(GF.length - 1, g.frame)) : 0;
+    gOpen = true; gEl.hidden = false; gEl.classList.remove("away");
+    if (!g.done && g.step === 0) guideSave({ step: 1, frame: 0 });
+    guideRender();
+  }
+  function guideClose(focusEl) {
+    gOpen = false; gSusp = ""; gEl.hidden = true; gPill.hidden = true; appRoot.inert = false; gSeq++;
+    var el = focusEl || gReturnFocus; if (el && el.focus && document.contains(el)) el.focus({ preventScroll: true });
+  }
+  function guideSkip() {
+    if (!state.ui.guide.done) guideSave({ skipped: true, step: GF[gFrame].step, frame: gFrame });
+    guideClose(gearBtn); say("Skipped. Reopen it from Settings, How to use.");
+  }
+  function guideFinish(toLists) {
+    guideSave({ done: true, skipped: false, step: 7, frame: GF.length - 1 });
+    guideClose(document.getElementById("space-switch"));
+    if (toLists) switchSpace("lists"); else if (currentTab !== "dashboard") setTab("dashboard");
+    say("Setup complete.");
+  }
+  function say(m) { gLive.textContent = ""; setTimeout(function () { gLive.textContent = m; }, 30); }
+  function guideGo(i) {
+    gFrame = Math.max(0, Math.min(GF.length - 1, i));
+    if (!state.ui.guide.done) guideSave({ step: GF[gFrame].step, frame: gFrame });
+    guideRender();
+  }
+  function guideShowPage(page) {
+    if (!page) return;
+    if (currentSpace !== "money") { enterSpace("money", page === "settings" ? "" : page, false); }
+    if (page === "settings") { if (!onSettings()) openSettingsPage(); else if (settingsView === "nav") closeNavPage(); }
+    else if (currentTab !== page || onSettings()) setTab(page);
+  }
+  function gItems(kind) {
+    var a = kind === "cards" ? allBankCards().map(function (l) { return [l, l]; })
+      : (state[kind] || []).map(function (x) { return [x.id, x.name || x.merchant]; });
+    return a;
+  }
+  function gCount() { var n = 0; Object.keys(gAdded).forEach(function (k) { n += gAdded[k].length; }); return n; }
+  function gDots(s) { var h = ""; for (var i = 1; i <= 7; i++) h += '<i class="' + (i < s ? "done" : i === s ? "cur" : "") + '"></i>'; return h; }
+  function gHead(f) {
+    return '<div class="g-top"><div class="g-prog"><span class="g-pl">Step ' + f.step + ' of 7 · ' + GUIDE_STEPS[f.step - 1] + '</span><div class="g-dots" aria-hidden="true">' + gDots(f.step) + '</div></div><button type="button" class="g-link" data-ga="skip">Skip</button></div>';
+  }
+  function gStatusHtml(f) {
+    var a = f.track && gAdded[f.track];
+    return '<p class="g-status" id="g-status" role="status">' + (a && a.length ? icon("check") + "<span>Added: " + a.map(escapeHtml).join(", ") + "</span>" : "") + "</p>";
+  }
+  function guideCardHtml(f) {
+    var h = "";
+    if (f.kind === "welcome") {
+      var rows = [["card", "Cards", "Debit and credit accounts"], ["refresh", "Recurring", "Bills and subscriptions"], ["target", "Goals and loans", "One goal, and a loan if you have one"], ["list", "Transactions", "Log your first purchase"], ["gear", "Settings", "Colour and page order"]];
+      h = '<h2 id="guide-title" tabindex="-1">Welcome to MoneyQuill</h2><p class="g-lede">A short setup, about 3 minutes. What you add is real, so you finish with your own data in place. Skip any time and pick it up again from Settings.</p><ol class="g-steps">' +
+        rows.map(function (r) { return '<li><span class="g-dot">' + icon(r[0]) + '</span><span>' + r[1] + '<small>' + r[2] + '</small></span></li>'; }).join("") + '</ol>' +
+        '<div class="g-ctl col"><button type="button" class="btn primary" data-ga="next">Let’s go</button><button type="button" class="g-link" data-ga="skip">Skip for now</button></div>';
+      return h;
+    }
+    if (f.kind === "done") {
+      var parts = []; [["cards", "card"], ["recurring", "recurring item"], ["goals", "goal"], ["loans", "loan"], ["transactions", "transaction"]].forEach(function (k) { var n = (gAdded[k[0]] || []).length; if (n) parts.push(n + " " + k[1] + (n > 1 ? "s" : "")); });
+      return '<div class="g-ok" aria-hidden="true">' + icon("check") + '</div><h2 id="guide-title" tabindex="-1">You are all set</h2><p class="g-lede">' + (parts.length ? "Added in this setup: " + parts.join(", ") + ". " : "") + 'Everything can be changed on its own page. One more thing: Lists.</p>' +
+        '<div class="g-mini"><h3>Do (to-do) in 3 tips</h3><ul><li>Quick add: type a task at the top and press Enter.</li><li>Top 3: star the three that matter most today.</li><li>Tabs: Today, Upcoming, All and Done show the same tasks from different angles.</li></ul></div>' +
+        '<div class="g-mini"><h3>Buy (groceries) in 4 tips</h3><ul><li>Items group by aisle, so you walk the shop once.</li><li>Tick Got as you go, or mark an item Unavailable.</li><li>Complete trip moves what you collected into History.</li><li>Compare shows the price per kg or litre for two sizes.</li></ul></div>' +
+        '<div class="g-ctl wrap"><button type="button" class="btn primary full" data-ga="lists">Switch to Lists</button><button type="button" class="btn plain" data-ga="back">Back</button><button type="button" class="btn plain" data-ga="finish">Done</button></div>';
+    }
+    var added = f.track && gAdded[f.track] && gAdded[f.track].length;
+    h = gHead(f) + '<h2 id="guide-title" tabindex="-1">' + f.title + '</h2><p class="g-lede">' + f.body + '</p>' + (f.note ? '<p class="g-note">' + escapeHtml(f.note) + '</p>' : "") + (f.track ? gStatusHtml(f) : "");
+    if (f.actions) h += '<div class="g-acts">' + f.actions.map(function (a, i) { return '<button type="button" class="btn ' + (added ? "plain" : "primary") + '" data-ga="act" data-i="' + i + '">' + a.label + '</button>'; }).join("") + '</div>';
+    var nextLabel = f.actions && f.track && !added ? "Not now" : f.step === 6 && gFrame === GF.length - 2 ? "Finish setup" : "Next";
+    h += '<div class="g-ctl"><button type="button" class="btn plain" data-ga="back"' + (gFrame <= 1 ? "" : "") + '>Back</button><button type="button" class="btn ' + (f.actions && f.track && !added ? "plain" : "primary") + '" data-ga="next">' + nextLabel + '</button></div>';
+    return h;
+  }
+  function guideRender(keepFocus) {
+    var f = GF[gFrame], my = ++gSeq;
+    gEl.hidden = false; gEl.classList.remove("away"); gPill.hidden = true; gSusp = "";
+    appRoot.inert = !f.interactive;
+    gCard.className = "g-card" + (f.kind ? " center" : ""); gCard.innerHTML = guideCardHtml(f); gCard.style.visibility = "hidden";
+    gEl.classList.toggle("notarget", !f.target);
+    say(f.kind === "welcome" ? "Welcome to MoneyQuill" : f.kind === "done" ? "You are all set" : "Step " + f.step + " of 7: " + GUIDE_STEPS[f.step - 1]);
+    guideShowPage(f.page);
+    var tries = 0, last = "";
+    (function wait() {
+      if (my !== gSeq) return;
+      var el = guideTarget(f), sig = el ? JSON.stringify(el.getBoundingClientRect()) : "none";
+      if (++tries < 40 && (sig !== last || tries < 3) && f.page && !reducedMotion()) { last = sig; return setTimeout(wait, 40); }
+      guidePlace(f);
+      gCard.style.visibility = "";
+      if (!keepFocus) { var h = document.getElementById("guide-title"); if (h) h.focus({ preventScroll: true }); }
+    })();
+  }
+  function guideTarget(f) {
+    if (!f.target) return null;
+    var el = document.querySelector(f.target); if (!el) return null;
+    if (f.wrap) el = el.closest(f.wrap) || el;
+    return el.offsetParent === null && getComputedStyle(el).position !== "fixed" ? null : (el.getClientRects().length ? el : null);
+  }
+  function guidePlace(f) {
+    var el = guideTarget(f), W = window.innerWidth, H = window.innerHeight, cw = Math.min(420, W - 32);
+    gCard.style.width = cw + "px"; gCard.style.maxHeight = (H - 24) + "px";
+    if (!el) { gScrim.style.clipPath = "none"; gSpot.hidden = true; gCard.style.left = ((W - cw) / 2) + "px"; gCard.style.top = Math.max(12, (H - gCard.offsetHeight) / 2) + "px"; return; }
+    if (f.interactive || f.page === "settings") { el.scrollIntoView({ block: "start" }); window.scrollBy(0, -(document.querySelector(".appbar").offsetHeight + 12)); }
+    var r = el.getBoundingClientRect(), pad = 7, x = r.left - pad, y = r.top - pad, w = r.width + pad * 2, h = r.height + pad * 2;
+    var rad = Math.min(parseFloat(getComputedStyle(el).borderTopLeftRadius) || 16, w / 2, h / 2) + pad; rad = Math.min(rad, w / 2, h / 2);
+    var hole = "M" + (x + rad) + "," + y + "H" + (x + w - rad) + "A" + rad + "," + rad + " 0 0 1 " + (x + w) + "," + (y + rad) + "V" + (y + h - rad) + "A" + rad + "," + rad + " 0 0 1 " + (x + w - rad) + "," + (y + h) + "H" + (x + rad) + "A" + rad + "," + rad + " 0 0 1 " + x + "," + (y + h - rad) + "V" + (y + rad) + "A" + rad + "," + rad + " 0 0 1 " + (x + rad) + "," + y + "Z";
+    gScrim.style.clipPath = 'path(evenodd, "M0,0H' + W + "V" + H + "H0Z " + hole + '")';
+    gSpot.hidden = false; gSpot.style.cssText = "left:" + x + "px;top:" + y + "px;width:" + w + "px;height:" + h + "px;border-radius:" + rad + "px";
+    var ch = gCard.offsetHeight, below = H - (y + h) - 12, above = y - 12, top, arrow = true;
+    if (below >= ch + 14 || (below >= above && above < ch + 14)) top = y + h + 14; else top = y - 14 - ch;
+    if (top < 12 || top + ch > H - 12) { arrow = false; top = Math.max(12, Math.min(top, H - 12 - ch)); }
+    var left = Math.max(16, Math.min(x + w / 2 - cw / 2, W - 16 - cw));
+    gCard.style.left = left + "px"; gCard.style.top = top + "px";
+    gCard.classList.toggle("above", arrow && top < y); gCard.classList.toggle("below", arrow && top > y);
+    gCard.style.setProperty("--ax", Math.max(26, Math.min(cw - 26, x + w / 2 - left)) + "px");
+  }
+  function guideAway(mode) { gSusp = mode; gEl.classList.add("away"); appRoot.inert = mode === "form"; gPill.hidden = mode !== "nav"; }
+  function guideRunAction(i) {
+    var f = GF[gFrame], a = f.actions[i];
+    if (a.nav) { guideAway("nav"); openNavPage(); return; }
+    gBefore = f.track ? gItems(f.track).map(function (p) { return p[0]; }) : [];
+    guideAway("form"); a.open();
+    if (!document.getElementById("modal-overlay").classList.contains("open")) guideBack();
+  }
+  function guideBack() {
+    if (!gOpen || !gSusp) return;
+    var f = GF[gFrame];
+    if (f.track && gBefore) {
+      var fresh = gItems(f.track).filter(function (p) { return gBefore.indexOf(p[0]) === -1; }).map(function (p) { return p[1]; });
+      if (fresh.length) gAdded[f.track] = (gAdded[f.track] || []).concat(fresh);
+      gBefore = null;
+    }
+    var added = f.track && gAdded[f.track] && gAdded[f.track].length;
+    guideRender();
+    if (added) say("Added " + gAdded[f.track].join(", "));
+  }
+  new MutationObserver(function () {
+    if (gOpen && gSusp === "form" && !document.getElementById("modal-overlay").classList.contains("open")) guideBack();
+  }).observe(document.getElementById("modal-overlay"), { attributes: true, attributeFilter: ["class"] });
+  new MutationObserver(function () {
+    if (gOpen && gSusp === "nav" && settingsView === "main") guideBack();
+  }).observe(document.getElementById("tab-settings"), { childList: true });
+  gPill.addEventListener("click", function () { if (settingsView === "nav") closeNavPage(); guideBack(); });
+  gEl.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-ga]"); if (!b) return; var a = b.getAttribute("data-ga");
+    if (a === "next") guideGo(gFrame + 1); else if (a === "back") guideGo(gFrame - 1); else if (a === "skip") guideSkip();
+    else if (a === "act") guideRunAction(+b.getAttribute("data-i")); else if (a === "finish") guideFinish(false); else if (a === "lists") guideFinish(true);
+  });
+  document.addEventListener("keydown", function (e) {
+    if (!gOpen || gSusp) return;
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); guideSkip(); return; }
+    if (e.key !== "Tab") return;
+    var f = GF[gFrame], list = Array.prototype.slice.call(gCard.querySelectorAll("button"));
+    var t = guideTarget(f); if (f.interactive && t) list = list.concat(Array.prototype.slice.call(t.querySelectorAll("button")));
+    if (!list.length) return;
+    var i = list.indexOf(document.activeElement);
+    if (e.shiftKey && i <= 0) { e.preventDefault(); list[list.length - 1].focus(); }
+    else if (!e.shiftKey && i === list.length - 1) { e.preventDefault(); list[0].focus(); }
+    else if (i === -1) { e.preventDefault(); list[0].focus(); }
+  }, true);
+  var gRz = 0;
+  window.addEventListener("resize", function () { clearTimeout(gRz); gRz = setTimeout(function () { if (gOpen && !gSusp) guidePlace(GF[gFrame]); }, 120); });
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest && e.target.closest("#guide-open"); if (b) { guideOpen(true); }
+    else if (gOpen && !gSusp && GF[gFrame].interactive && e.target.closest("[data-accent-pick]")) setTimeout(function () { guidePlace(GF[gFrame]); }, 30);
+  });
+  setTimeout(guideMaybeStart, 0);
 
   if (!state.ui.homeSeen) openHome();
 
