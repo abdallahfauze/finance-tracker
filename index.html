@@ -6229,6 +6229,10 @@
     html += '</div>';
 
     html += '<div class="card"><h2>Data</h2>';
+    html += '<p class="footnote" style="margin-top:0">Download a multi-sheet Excel report: summary, forecast, transactions, bills, loans, goals, tasks and grocery trips.</p>';
+    html += '<div class="field"><label for="report-period">Period (transactions and summary)</label><select id="report-period"><option value="month">This month</option><option value="year">This year</option><option value="all">All time</option></select></div>';
+    html += '<button class="btn plain" id="export-report" style="margin-bottom:10px">' + icon("download", "") + ' Download Full Report (.xlsx)</button>';
+    html += '<p class="footnote" id="report-status" style="margin-top:0;margin-bottom:12px"></p>';
     html += '<button class="btn plain" id="export-csv" style="margin-bottom:10px">' + icon("download", "") + ' Export Transactions as CSV</button>';
     html += '<button class="btn danger" id="reset-data">Reset All Data</button>';
     html += '</div>';
@@ -6293,6 +6297,7 @@
       e.target.value = "";
     });
     document.getElementById("export-csv").addEventListener("click", exportCSV);
+    document.getElementById("export-report").addEventListener("click", exportReport);
     document.getElementById("reset-data").addEventListener("click", function () {
       confirmAction("Reset all data? This cannot be undone.", "Reset Everything", function () {
         var keepGuide = state.ui.guide;
@@ -6392,6 +6397,315 @@
 
   function exportBackup() {
     saveFile("finance-tracker-backup.json", JSON.stringify(state, null, 2), "application/json");
+  }
+
+  /* ---------- Full Report (.xlsx) ----------
+     One workbook: Summary, Forecast, Transactions, Recurring, Loans, Goals,
+     Tasks, Grocery. The spreadsheet library (exceljs, pinned, ~0.9 MB) is only
+     fetched when the button is pressed. Chosen over SheetJS community because
+     that edition cannot style cells (header fill) or freeze the header row.
+     Numbers are numbers, dates are real dates, money uses the currency's number
+     format, and any text starting with = + - @ is prefixed so it can't run as
+     a formula. */
+  var REPORT_LIB_URL = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
+  var REPORT_LIB_SRI = "sha384-Pqp51FUN2/qzfxZxBCtF0stpc9ONI6MYZpVqmo8m20SoaQCzf+arZvACkLkirlPz";
+  var REPORT_PERIODS = { month: "This month", year: "This year", all: "All time" };
+  var reportLibPromise = null;
+
+  function loadReportLib() {
+    if (window.ExcelJS) return Promise.resolve(window.ExcelJS);
+    if (reportLibPromise) return reportLibPromise;
+    reportLibPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = REPORT_LIB_URL;
+      s.integrity = REPORT_LIB_SRI;
+      s.crossOrigin = "anonymous";
+      s.onload = function () { window.ExcelJS ? resolve(window.ExcelJS) : reject(new Error("lib")); };
+      s.onerror = function () { s.remove(); reportLibPromise = null; reject(new Error("lib")); };
+      document.head.appendChild(s);
+    });
+    return reportLibPromise;
+  }
+
+  function xlGuard(v) {
+    var s = String(v == null ? "" : v);
+    return /^[=+\-@\t\r]/.test(s) ? "'" + s : s;
+  }
+  function xlDate(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return null;
+    var d = new Date(iso.slice(0, 10) + "T00:00:00Z");
+    return isNaN(d) ? null : d;
+  }
+  function xlStamp(stamp) {
+    if (!stamp || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(stamp)) return null;
+    var d = new Date(stamp.slice(0, 16) + ":00Z");
+    return isNaN(d) ? null : d;
+  }
+  function xlMoneyFormat(code) {
+    var sym = code;
+    if (code !== "SAR") {
+      try {
+        var parts = new Intl.NumberFormat("en-US", { style: "currency", currency: code, currencyDisplay: "narrowSymbol" }).formatToParts(1);
+        for (var i = 0; i < parts.length; i++) if (parts[i].type === "currency") sym = parts[i].value;
+      } catch (e) { sym = code; }
+    }
+    return '"' + String(sym).replace(/"/g, "") + '" #,##0.00';
+  }
+  function xlInPeriod(date, period) {
+    var today = todayISO();
+    if (period === "month") return date.slice(0, 7) === today.slice(0, 7);
+    if (period === "year") return date.slice(0, 4) === today.slice(0, 4);
+    return true;
+  }
+  function xlShownLen(v, fmt) {
+    if (v == null) return 0;
+    if (v instanceof Date) return /h/.test(fmt || "") ? 16 : /mmm/.test(fmt || "") ? 8 : 10;
+    if (typeof v === "number") {
+      var f = (fmt || "").indexOf("%") !== -1 ? (v * 100).toFixed(1) + "%" : v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return f.length + ((fmt || "").indexOf('"') !== -1 ? 5 : 0);
+    }
+    return String(v).split("\n").reduce(function (m, l) { return Math.max(m, l.length); }, 0);
+  }
+  function xlStyleHeader(row, n) {
+    for (var i = 1; i <= n; i++) {
+      var c = row.getCell(i);
+      c.font = { bold: true, color: { argb: "FF0F3D38" } };
+      c.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFDCEBE8" } };
+      c.border = { bottom: { style: "thin", color: { argb: "FF7FB5AC" } } };
+      c.alignment = { vertical: "middle", horizontal: "center" };
+    }
+    row.height = 22;
+  }
+  // Rows are added through one writer so every sheet gets the same guard,
+  // number formats and content-based column widths.
+  function xlSheet(wb, name) {
+    var ws = wb.addWorksheet(name, { views: [{ state: "frozen", ySplit: 1 }] });
+    var widths = [];
+    return {
+      ws: ws,
+      add: function (vals, fmts, style, wrapCols) {
+        fmts = fmts || [];
+        var row = ws.addRow(vals.map(function (v) { return typeof v === "string" ? xlGuard(v) : v; }));
+        vals.forEach(function (v, i) {
+          if (fmts[i] && v != null && typeof v !== "string") row.getCell(i + 1).numFmt = fmts[i];
+          if (wrapCols && wrapCols[i]) row.getCell(i + 1).alignment = { wrapText: true, vertical: "top" };
+          widths[i] = Math.max(widths[i] || 0, xlShownLen(v, fmts[i]) + (style === "head" ? 4 : 2));
+        });
+        if (style === "head") xlStyleHeader(row, vals.length);
+        if (style === "strong") row.font = { bold: true };
+        return row;
+      },
+      blank: function () { ws.addRow([]); },
+      finish: function (maxW) {
+        widths.forEach(function (w, i) { ws.getColumn(i + 1).width = Math.min(Math.max(w, 10), maxW || 48); });
+      }
+    };
+  }
+  function xlTable(wb, name, cols, rows) {
+    var sh = xlSheet(wb, name);
+    sh.add(cols.map(function (c) { return c.h; }), [], "head");
+    var fmts = cols.map(function (c) { return c.f; });
+    var wrap = cols.map(function (c) { return !!c.wrap; });
+    rows.forEach(function (r) { sh.add(r, fmts, null, wrap); });
+    sh.finish(60);
+    return sh.ws;
+  }
+
+  // Every occurrence of an active recurring payment / income / loan instalment
+  // from the first of this month for 12 months - the same walk renderForecast() does.
+  function reportOccurrences() {
+    var now = new Date();
+    var base = new Date(now.getFullYear(), now.getMonth(), 1);
+    var windowStart = base.getFullYear() + "-" + pad(base.getMonth() + 1) + "-01";
+    var endD = new Date(base.getFullYear(), base.getMonth() + 12, 1);
+    var windowEnd = endD.getFullYear() + "-" + pad(endD.getMonth() + 1) + "-01";
+    var out = [];
+    state.recurring.filter(function (r) { return r.isActive; }).forEach(function (r) {
+      var d = r.nextDueDate, g = 0;
+      if (d >= windowStart) while (d >= windowStart && g < 500) { d = subtractInterval(d, r.frequency); g++; }
+      g = 0;
+      while (d < windowStart && g < 500) { d = addInterval(d, r.frequency); g++; }
+      g = 0;
+      while (d < windowEnd && g < 500) {
+        if (r.endDate && d > r.endDate) break;
+        if (!r.startDate || d >= r.startDate) out.push({ date: d, name: r.name, type: r.kind === "income" ? "income" : "bill", categoryId: r.categoryId || null, card: r.bankCard || "", amount: r.amount });
+        d = addInterval(d, r.frequency); g++;
+      }
+    });
+    state.loans.filter(function (l) { return l.isActive; }).forEach(function (l) {
+      var d = l.nextPaymentDate, paid = l.paymentsMade || 0, g = 0;
+      if (d >= windowStart) while (d >= windowStart && paid > 0 && g < 500) { d = subtractInterval(d, "monthly"); paid--; g++; }
+      g = 0;
+      while (d < windowStart && paid * l.monthlyPayment < l.totalAmount && g < 500) { d = addInterval(d, "monthly"); paid++; g++; }
+      g = 0;
+      while (d < windowEnd && paid * l.monthlyPayment < l.totalAmount && g < 500) {
+        out.push({ date: d, name: l.name, type: "loan", categoryId: l.categoryId || null, card: l.bankCard || "", amount: l.monthlyPayment });
+        d = addInterval(d, "monthly"); paid++; g++;
+      }
+    });
+    out.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    return { occurrences: out, base: base };
+  }
+
+  function buildReportWorkbook(ExcelJS, period) {
+    var currency = state.settings.currency || "SAR";
+    var money = xlMoneyFormat(currency);
+    var DATE = "yyyy-mm-dd", STAMP = "yyyy-mm-dd hh:mm", MONTH = "mmm yyyy", PCT = "0.0%";
+    var today = todayISO();
+    var catOf = function (id) { if (!id) return "Uncategorized"; var c = byId(state.categories, id); return c ? c.name : ""; };
+    var yes = function (b) { return b ? "Yes" : "No"; };
+    var wb = new ExcelJS.Workbook();
+    wb.creator = "Finance Tracker";
+    wb.created = new Date();
+
+    // Summary
+    var inRange = state.transactions.filter(function (x) { return xlInPeriod(x.date, period); });
+    var real = inRange.filter(function (x) { return !x.isTransfer && !x.isGoalContribution; });
+    var sum = function (arr) { return arr.reduce(function (s, x) { return s + Number(x.amount); }, 0); };
+    var income = sum(real.filter(function (x) { return x.type === "income"; }));
+    var spent = sum(real.filter(function (x) { return x.type === "expense"; }));
+    var toGoals = sum(inRange.filter(function (x) { return x.isGoalContribution && x.type === "expense"; }));
+    var byCat = {};
+    real.filter(function (x) { return x.type === "expense"; }).forEach(function (x) { var k = x.categoryId || "__none"; byCat[k] = (byCat[k] || 0) + Number(x.amount); });
+    var top = Object.keys(byCat).map(function (k) { return [k, byCat[k]]; }).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 8);
+    var monthSpend = {};
+    state.transactions.filter(function (x) { return !x.isTransfer && !x.isGoalContribution && x.type === "expense" && x.date.slice(0, 7) === today.slice(0, 7); })
+      .forEach(function (x) { monthSpend[x.categoryId] = (monthSpend[x.categoryId] || 0) + Number(x.amount); });
+    var budgeted = state.categories.filter(function (c) { return Number(c.budget) > 0; });
+
+    var su = xlSheet(wb, "Summary");
+    su.add(["Summary", "Value"], [], "head");
+    su.add(["Period", REPORT_PERIODS[period]]);
+    var gen = su.add(["Generated on", xlDate(today)], [null, DATE]); gen.getCell(2).alignment = { horizontal: "left" };
+    su.add(["Currency", currency]);
+    su.add(["Income", income], [null, money]);
+    su.add(["Spending", spent], [null, money]);
+    su.add(["Net savings (income - spending)", income - spent], [null, money], "strong");
+    su.add(["Savings rate", income > 0 ? (income - spent) / income : null], [null, PCT]);
+    su.add(["Set aside for goals", toGoals], [null, money]);
+    su.add(["Transactions in period", inRange.length], [null, "#,##0"]);
+    su.blank();
+    su.add(["Top spending categories", "Spent", "Share of spending"], [], "head");
+    if (top.length) top.forEach(function (e) { su.add([e[0] === "__none" ? "Uncategorized" : catOf(e[0]), e[1], spent > 0 ? e[1] / spent : 0], [null, money, PCT]); });
+    else su.add(["No spending in this period"]);
+    su.blank();
+    su.add(["Budget left this month", "Budget", "Spent", "Left"], [], "head");
+    if (budgeted.length) {
+      var tb = 0, ts = 0;
+      budgeted.forEach(function (c) { var s = monthSpend[c.id] || 0; tb += Number(c.budget); ts += s; su.add([c.name, Number(c.budget), s, Number(c.budget) - s], [null, money, money, money]); });
+      su.add(["Total", tb, ts, tb - ts], [null, money, money, money], "strong");
+    } else su.add(["No category budgets set"]);
+    su.finish(44);
+
+    // Forecast
+    var fc = reportOccurrences();
+    var months = [];
+    for (var i = 0; i < 12; i++) {
+      var md = new Date(fc.base.getFullYear(), fc.base.getMonth() + i, 1);
+      var mk = md.getFullYear() + "-" + pad(md.getMonth() + 1);
+      months.push({ key: mk, date: xlDate(mk + "-01") });
+    }
+    var mSum = function (type, key) { return fc.occurrences.filter(function (o) { return o.type === type && o.date.slice(0, 7) === key; }).reduce(function (s, o) { return s + o.amount; }, 0); };
+    var wf = xlSheet(wb, "Forecast");
+    wf.add(["Month", "Expected income", "Bills & recurring", "Loan instalments", "Total expenses", "Balance"], [], "head");
+    var tot = [0, 0, 0, 0, 0];
+    months.forEach(function (m) {
+      var inc = mSum("income", m.key), bills = mSum("bill", m.key), loan = mSum("loan", m.key);
+      var row = [inc, bills, loan, bills + loan, inc - bills - loan];
+      row.forEach(function (v, j) { tot[j] += v; });
+      wf.add([m.date].concat(row), [MONTH, money, money, money, money, money]);
+    });
+    wf.add(["Total"].concat(tot), [null, money, money, money, money, money], "strong");
+    wf.blank();
+    var sec = function (title) { wf.add([title]).getCell(1).font = { bold: true, color: { argb: "FF0F3D38" } }; };
+    sec("Upcoming payments");
+    wf.add(["Date", "Name", "Type", "Category", "Bank/Card", "Amount"], [], "head");
+    var TYPE = { income: "Income", bill: "Bill / recurring", loan: "Loan instalment" };
+    fc.occurrences.filter(function (o) { return o.date >= today; }).forEach(function (o) {
+      wf.add([xlDate(o.date), o.name, TYPE[o.type], catOf(o.categoryId), o.card, o.amount], [DATE, null, null, null, null, money]);
+    });
+    wf.blank();
+    sec("Forecast by category");
+    wf.add(["Category"].concat(months.map(function (m) { return m.date; }), ["Total"]), [null].concat(months.map(function () { return MONTH; })), "head");
+    var keys = []; fc.occurrences.forEach(function (o) { if (o.type !== "income") { var k = o.categoryId || "__none"; if (keys.indexOf(k) === -1) keys.push(k); } });
+    var matrix = function (k) { return months.map(function (m) { return fc.occurrences.filter(function (o) { return o.type !== "income" && (o.categoryId || "__none") === k && o.date.slice(0, 7) === m.key; }).reduce(function (s, o) { return s + o.amount; }, 0); }); };
+    var total = function (a) { return a.reduce(function (s, v) { return s + v; }, 0); };
+    keys.sort(function (a, b) { return total(matrix(b)) - total(matrix(a)); });
+    keys.forEach(function (k) { var r = matrix(k); wf.add([k === "__none" ? "Uncategorized" : catOf(k)].concat(r, [total(r)]), [null].concat(r.map(function () { return money; }), [money])); });
+    wf.finish(48);
+
+    // Transactions
+    var txRows = inRange.slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; }).map(function (x) {
+      return [xlDate(x.date), x.type === "income" ? "Income" : "Expense", x.merchant, catOf(x.categoryId), x.bankCard || "", Number(x.amount), x.note || ""];
+    });
+    xlTable(wb, "Transactions", [{ h: "Date", f: DATE }, { h: "Type" }, { h: "Merchant" }, { h: "Category" }, { h: "Bank/Card" }, { h: "Amount", f: money }, { h: "Note" }], txRows);
+
+    // Recurring
+    var KIND = { fixed: "Fixed bill", subscription: "Subscription", income: "Income" };
+    var FREQ = { weekly: "Weekly", monthly: "Monthly", quarterly: "Quarterly", biannual: "Bi-Annually", yearly: "Yearly" };
+    xlTable(wb, "Recurring", [{ h: "Name" }, { h: "Kind" }, { h: "Frequency" }, { h: "Amount", f: money }, { h: "Next due", f: DATE }, { h: "Start date", f: DATE }, { h: "End date", f: DATE }, { h: "Category" }, { h: "Bank/Card" }, { h: "Active" }],
+      state.recurring.map(function (r) { return [r.name, KIND[r.kind] || r.kind, FREQ[r.frequency] || r.frequency, Number(r.amount), xlDate(r.nextDueDate), xlDate(r.startDate), xlDate(r.endDate), catOf(r.categoryId), r.bankCard || "", yes(r.isActive)]; }));
+
+    // Loans
+    xlTable(wb, "Loans", [{ h: "Name" }, { h: "Total", f: money }, { h: "Monthly payment", f: money }, { h: "Payments made", f: "0" }, { h: "Total payments", f: "0" }, { h: "Paid so far", f: money }, { h: "Balance left", f: money }, { h: "Progress", f: PCT },
+      { h: "Next payment", f: DATE }, { h: "Start date", f: DATE }, { h: "End date", f: DATE }, { h: "Category" }, { h: "Bank/Card" }, { h: "Active" }],
+      state.loans.map(function (l) {
+        var p = loanProgress(l);
+        return [l.name, Number(l.totalAmount), Number(l.monthlyPayment), l.paymentsMade || 0, p.estTotalPayments, p.amountPaid, p.balance, p.pct, xlDate(l.nextPaymentDate), xlDate(l.startDate), xlDate(l.endDate), catOf(l.categoryId), l.bankCard || "", yes(l.isActive)];
+      }));
+
+    // Goals
+    xlTable(wb, "Goals", [{ h: "Name" }, { h: "Target", f: money }, { h: "Saved", f: money }, { h: "Remaining", f: money }, { h: "Progress", f: PCT }, { h: "Target date", f: DATE }, { h: "Created", f: DATE }, { h: "Status" }],
+      state.goals.map(function (g) {
+        var p = goalProgress(g);
+        var overdue = !p.isReached && g.targetDate && g.targetDate < today;
+        return [g.name, Number(g.targetAmount), p.saved, Math.max(g.targetAmount - p.saved, 0), p.pct, xlDate(g.targetDate), xlDate(g.createdAt), p.isReached ? "Reached" : overdue ? "Overdue" : "In progress"];
+      }));
+
+    // Tasks
+    var PRIO = { high: "High", med: "Medium", low: "Low" };
+    var REP = { daily: "Daily", weekly: "Weekly", monthly: "Monthly", yearly: "Yearly" };
+    xlTable(wb, "Tasks", [{ h: "Task" }, { h: "Due date", f: DATE }, { h: "Time" }, { h: "Priority" }, { h: "Tag" }, { h: "Done" }, { h: "Repeats" }, { h: "Completed at", f: STAMP }, { h: "Note", wrap: true }],
+      (state.tasks || []).map(function (k) { return [k.title, xlDate(k.dueDate), k.dueTime || "", PRIO[k.priority] || "", k.tag || "", yes(k.done), REP[k.repeat] || "", xlStamp(k.completedAt), k.notes || ""]; }));
+
+    // Grocery trips
+    var trips = ((state.grocery && state.grocery.trips) || []).slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    xlTable(wb, "Grocery", [{ h: "Date", f: STAMP }, { h: "Items", f: "0" }, { h: "Total", f: money }, { h: "What was bought", wrap: true }],
+      trips.map(function (p) { return [xlStamp(p.date), p.items.length, p.total == null ? null : Number(p.total), p.items.map(function (i) { return i.name; }).join(", ")]; }));
+    return wb;
+  }
+
+  function saveBinaryFile(filename, buffer, mime) {
+    var blob = new Blob([buffer], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function exportReport() {
+    var btn = document.getElementById("export-report");
+    var status = document.getElementById("report-status");
+    var period = document.getElementById("report-period").value;
+    btn.disabled = true;
+    status.textContent = "Preparing...";
+    loadReportLib().then(function (ExcelJS) {
+      var wb = buildReportWorkbook(ExcelJS, period);
+      return wb.xlsx.writeBuffer().then(function (buf) {
+        var d = new Date();
+        var name = "FinanceTracker-report-" + d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + ".xlsx";
+        saveBinaryFile(name, buf, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        status.textContent = "Full report saved (" + name + ") - " + wb.worksheets.length + " sheets.";
+      });
+    }).catch(function (e) {
+      status.textContent = e && e.message === "lib"
+        ? "Couldn't load the spreadsheet tool. Check your internet connection and try again."
+        : "Could not build the report: " + ((e && e.message) || "unknown error");
+    }).then(function () { btn.disabled = false; });
   }
 
   function restoreBackupFromFile(file) {
