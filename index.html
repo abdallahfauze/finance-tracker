@@ -1464,7 +1464,7 @@
   .hello { padding: 8px 22px 12px; }
   .hello small { display: block; font-size: 12.5px; color: var(--ink-muted); font-weight: 600; }
   .hello b { display: block; font-size: 24px; font-weight: 800; letter-spacing: -.02em; margin-top: 2px; }
-  .hcards { flex: 1; display: grid; grid-auto-rows: minmax(200px, 1fr); gap: 16px; padding: 4px 18px 0; }
+  .hcards { flex: 1; display: grid; grid-auto-rows: minmax(176px, 1fr); gap: 16px; padding: 4px 18px 0; }
   .hc {
     position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; min-width: 0; padding: 18px 20px;
     border: none; border-radius: 28px; background: var(--page); color: var(--ink); font: inherit; text-align: left; cursor: pointer; box-shadow: var(--soft-raise);
@@ -1491,6 +1491,137 @@
   .hc .go { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; box-shadow: var(--soft-raise-sm); flex: none; }
   .hc .go svg { width: 16px; height: 16px; }
   .home-hint { margin: 0; text-align: center; font-size: 12px; color: var(--ink-muted); padding: 14px 24px 0; line-height: 1.5; font-weight: 600; }
+  /* PMCSS:BEGIN */
+  /* ================= Properties space ================= */
+  :root { --pm-good: #26704A; --pm-warn: #8F5400; --pm-bad: #B3261E; }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) { --pm-good: #6FCB92; --pm-warn: #F0B35A; --pm-bad: #FF8A80; } }
+  :root[data-theme="dark"] { --pm-good: #6FCB92; --pm-warn: #F0B35A; --pm-bad: #FF8A80; }
+  :root[data-theme="light"] { --pm-good: #26704A; --pm-warn: #8F5400; --pm-bad: #B3261E; }
+  .pm-h { font-size: 12.5px; font-weight: 700; color: var(--ink-2); margin: 0 2px 12px; line-height: 1.45; }
+  .pm-card { background: var(--page); border-radius: 22px; box-shadow: var(--soft-raise); padding: 16px 16px 15px; margin-bottom: 18px; }
+  .pm-card > h2 { margin: 0 0 10px; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 800; }
+  .pm-card > h2 .hr { font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--ink-muted); font-size: 11.5px; text-align: right; }
+  .pm-big { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; overflow-wrap: anywhere; }
+  .pm-big small { font-size: 12px; font-weight: 700; color: var(--ink-muted); letter-spacing: 0; }
+  .pm-muted { color: var(--ink-muted); } .pm-ink2 { color: var(--ink-2); }
+  .pm-pos { color: var(--pm-good); } .pm-neg { color: var(--pm-bad); } .pm-wrn { color: var(--pm-warn); }
+  .pm-small { font-size: 12px; line-height: 1.5; }
+  .pm-note { font-size: 12px; line-height: 1.55; color: var(--ink-2); margin: 10px 0 0; }
+  .pm-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--soft-groove); box-shadow: 0 1px 0 var(--soft-groove-hi); min-height: 44px; }
+  .pm-row:last-child { border-bottom: none; box-shadow: none; padding-bottom: 2px; }
+  .pm-row .m { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 700; overflow-wrap: anywhere; }
+  .pm-row .m small { display: block; color: var(--ink-2); font-weight: 600; font-size: 11.5px; margin-top: 1px; }
+  .pm-row .a { font-size: 13.5px; font-weight: 800; text-align: right; white-space: nowrap; }
+  .pm-row .a small { display: block; font-size: 11px; font-weight: 600; color: var(--ink-2); }
+  .pm-row.wrap { flex-wrap: wrap; align-items: flex-start; }
+  .pm-dot { width: 30px; height: 30px; border-radius: 50%; box-shadow: var(--soft-raise-sm); display: grid; place-items: center; font-size: 13px; font-weight: 800; flex: none; }
+  .pm-dot.in { color: var(--pm-good); } .pm-dot.out { color: var(--accent); } .pm-dot.info { color: var(--ink-2); } .pm-dot.wrn { color: var(--pm-warn); }
+  .pm-kv { display: grid; grid-template-columns: auto 1fr; gap: 9px 14px; margin: 0; font-size: 13px; }
+  .pm-kv dt { color: var(--ink-2); font-weight: 600; } .pm-kv dd { margin: 0; font-weight: 700; text-align: right; min-width: 0; overflow-wrap: anywhere; }
+  .pm-bar { height: 11px; border-radius: 99px; box-shadow: var(--soft-inset); margin-top: 10px; padding: 2px; position: relative; }
+  .pm-bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+  .pm-bar .mk { position: absolute; top: -3px; width: 2px; height: 17px; background: var(--ink-muted); border-radius: 2px; }
+  .pm-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pm-stat { padding: 10px 12px; border-radius: 16px; box-shadow: var(--soft-inset); min-width: 0; }
+  .pm-stat small { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+  .pm-stat b { display: block; font-size: 16px; font-weight: 800; margin-top: 2px; letter-spacing: -.01em; overflow-wrap: anywhere; }
+  .pm-stat span { display: block; font-size: 11px; color: var(--ink-2); font-weight: 600; margin-top: 1px; }
+  .pm-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; color: var(--ink-2); padding: 3px 10px; border-radius: 99px; box-shadow: var(--soft-inset); white-space: nowrap; }
+  .pm-chip.ok { color: var(--pm-good); } .pm-chip.warn { color: var(--pm-warn); } .pm-chip.bad { color: var(--pm-bad); } .pm-chip.acc { color: var(--accent); }
+  .pm-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .pm-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: none; background: var(--page); box-shadow: var(--soft-raise-sm); color: var(--accent); font: inherit; font-size: 12.5px; font-weight: 800; padding: 0 16px; min-height: 44px; border-radius: 99px; white-space: nowrap; cursor: pointer; }
+  .pm-btn:active { box-shadow: var(--soft-inset); }
+  .pm-btn.pri { background: var(--accent); color: var(--accent-ink); box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent), var(--soft-raise-sm); }
+  .pm-btn.ghost { color: var(--ink-2); }
+  .pm-btn.block { width: 100%; }
+  .pm-btn:disabled { opacity: .5; cursor: default; }
+  .pm-btn svg { width: 16px; height: 16px; }
+  .pm-btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  .pm-seg { display: flex; margin: 2px 0 14px; padding: 4px; border-radius: 18px; box-shadow: var(--soft-inset); gap: 4px; overflow-x: auto; scrollbar-width: none; }
+  .pm-seg::-webkit-scrollbar { display: none; }
+  .pm-seg button { flex: 1 0 auto; border: none; background: none; border-radius: 14px; padding: 0 10px; min-height: 40px; font: inherit; font-size: 12px; font-weight: 700; color: var(--ink-2); display: flex; justify-content: center; gap: 5px; align-items: center; white-space: nowrap; cursor: pointer; }
+  .pm-seg button[aria-selected="true"], .pm-seg button[aria-checked="true"] { background: var(--page); color: var(--accent); box-shadow: var(--soft-raise-sm); }
+  .pm-seg .n { font-size: 10px; padding: 1px 6px; border-radius: 99px; box-shadow: var(--soft-inset); }
+  .pm-sw { border: none; background: none; padding: 0 0 0 8px; min-width: 56px; min-height: 44px; display: grid; place-items: center; flex: none; cursor: pointer; }
+  .pm-sw i { display: block; width: 44px; height: 26px; border-radius: 99px; box-shadow: var(--soft-inset); position: relative; }
+  .pm-sw i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--soft-thumb); box-shadow: var(--soft-raise-sm); transition: transform .18s, background .18s; }
+  .pm-sw[aria-checked="true"] i::after { transform: translateX(18px); background: var(--accent); box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent); }
+  .pm-in { width: 100%; min-height: 44px; border: none; border-radius: 14px; background: var(--page); box-shadow: var(--soft-inset); padding: 0 14px; font: inherit; font-size: 16px; font-weight: 600; color: var(--ink); }
+  .pm-time { min-height: 44px; width: 130px; border: none; border-radius: 12px; background: var(--page); box-shadow: var(--soft-inset); padding: 0 8px; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink); }
+  .pm-time:disabled { opacity: .5; }
+  .pm-ring { width: 104px; height: 104px; border-radius: 50%; background: conic-gradient(var(--accent) calc(var(--p) * 1%), transparent 0); display: grid; place-items: center; box-shadow: var(--soft-inset); flex: none; }
+  .pm-ring span { width: 80px; height: 80px; border-radius: 50%; background: var(--page); display: grid; place-items: center; text-align: center; font-size: 19px; font-weight: 800; line-height: 1.1; box-shadow: var(--soft-raise-sm); }
+  .pm-ring span small { display: block; font-size: 10px; font-weight: 700; color: var(--ink-2); letter-spacing: .05em; text-transform: uppercase; }
+  .pm-hero { display: flex; gap: 16px; align-items: center; }
+  .pm-hero dl { margin: 0; display: grid; gap: 7px; flex: 1; min-width: 0; }
+  .pm-hero dl div { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; }
+  .pm-hero dt { color: var(--ink-2); font-weight: 600; } .pm-hero dd { margin: 0; font-weight: 800; }
+  .pm-add { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; min-height: 64px; border: 2px dashed var(--ink-muted); border-radius: 22px; background: none; font: inherit; color: var(--ink-2); font-weight: 800; font-size: 13.5px; margin-bottom: 18px; cursor: pointer; }
+  .pm-add svg { width: 18px; height: 18px; color: var(--accent); }
+  .pm-alert { display: flex; gap: 10px; align-items: flex-start; border-radius: 18px; padding: 12px 14px; box-shadow: var(--soft-inset); margin-bottom: 14px; font-size: 12.5px; line-height: 1.5; }
+  .pm-alert b { display: block; font-size: 13.5px; margin-bottom: 2px; }
+  .pm-alert .ai { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; flex: none; box-shadow: var(--soft-raise-sm); }
+  .pm-alert.bad .ai { color: var(--pm-bad); } .pm-alert.warn .ai { color: var(--pm-warn); } .pm-alert.ok .ai { color: var(--pm-good); }
+  .pm-rng { width: 100%; accent-color: var(--accent); min-height: 44px; margin: 0; }
+  .pm-num { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pm-num label { font-size: 11px; font-weight: 700; color: var(--ink-2); display: grid; gap: 4px; }
+  .pm-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--ink-2); font-weight: 600; margin-top: 4px; }
+  .pm-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .pm-card svg text { font-family: inherit; }
+  .pm-ax { fill: var(--ink-2); font-size: 9px; font-weight: 600; }
+  .pm-mnav { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 10px 0 2px; }
+  .pm-mnav b { font-size: 14px; }
+  .pm-ib { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--page); box-shadow: var(--soft-raise-sm); color: var(--accent); display: grid; place-items: center; flex: none; cursor: pointer; }
+  .pm-ib:active { box-shadow: var(--soft-inset); }
+  .pm-ib svg { width: 18px; height: 18px; }
+  .pm-docs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .pm-doct { border: none; text-align: left; background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 18px; padding: 12px; display: grid; gap: 6px; min-height: 112px; align-content: start; font: inherit; color: inherit; cursor: pointer; min-width: 0; }
+  .pm-doct:active { box-shadow: var(--soft-inset); }
+  .pm-doct .di { width: 34px; height: 34px; border-radius: 11px; box-shadow: var(--soft-inset); display: grid; place-items: center; color: var(--accent); }
+  .pm-doct .di svg { width: 18px; height: 18px; }
+  .pm-doct b { font-size: 12.5px; line-height: 1.3; overflow-wrap: anywhere; } .pm-doct small { font-size: 11px; color: var(--ink-2); font-weight: 600; overflow-wrap: anywhere; }
+  .pm-rg { font-size: 11px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-2); margin: 4px 2px 8px; }
+  .pm-prop { width: 100%; text-align: left; font: inherit; color: inherit; border: none; background: var(--page); border-radius: 22px; box-shadow: var(--soft-raise); padding: 14px 16px; margin-bottom: 16px; cursor: pointer; display: block; }
+  .pm-prop[aria-checked="true"] { box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 65%, transparent); }
+  .pm-prop .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .pm-prop h3 { margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
+  .pm-prop .sub { font-size: 12px; color: var(--ink-2); font-weight: 600; margin: 2px 0 0; overflow-wrap: anywhere; }
+  .pm-prop .ln { font-size: 12px; font-weight: 700; margin-top: 8px; color: var(--ink-2); }
+  .pm-chipsel { display: flex; gap: 8px; overflow-x: auto; padding: 4px 4px 12px; margin: 0 -4px 6px; scrollbar-width: none; }
+  .pm-chipsel::-webkit-scrollbar { display: none; }
+  .pm-chipsel button { flex: 0 0 auto; border: none; background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 99px; padding: 0 16px; min-height: 40px; font: inherit; font-size: 12.5px; font-weight: 800; color: var(--ink-2); cursor: pointer; max-width: 70vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pm-chipsel button[aria-checked="true"] { color: var(--accent); box-shadow: var(--soft-inset), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
+  .pm-empty { text-align: center; padding: 38px 18px 30px; border-radius: 22px; background: var(--page); box-shadow: var(--soft-raise); margin-bottom: 18px; }
+  .pm-empty > svg { width: 38px; height: 38px; color: var(--accent); margin-bottom: 10px; }
+  .pm-empty h3 { margin: 0 0 6px; font-size: 17px; }
+  .pm-empty p { margin: 0 auto 16px; max-width: 34ch; color: var(--ink-2); font-size: 13px; line-height: 1.5; }
+  .pm-empty .pm-btns { justify-content: center; }
+  .pm-steps { display: grid; gap: 10px; margin-top: 4px; }
+  .pm-link { display: flex; align-items: center; gap: 8px; border: none; width: 100%; text-align: left; background: var(--page); box-shadow: var(--soft-raise-sm); border-radius: 18px; padding: 0 14px; min-height: 48px; font: inherit; font-size: 12.5px; font-weight: 700; color: var(--ink); cursor: pointer; }
+  .pm-link span { flex: 1; } .pm-link svg { width: 16px; height: 16px; color: var(--accent); flex: none; }
+  .pm-live { font-size: 12.5px; line-height: 1.5; font-weight: 700; padding: 10px 12px; border-radius: 14px; box-shadow: var(--soft-inset); margin-bottom: 12px; }
+  .pm-err { font-size: 12.5px; color: var(--pm-bad); font-weight: 700; margin: 0 0 10px; }
+  .pm-fsub { font-size: 12.5px; color: var(--ink-2); margin: -6px 0 14px; line-height: 1.5; }
+  .pm-table { width: 100%; border-collapse: collapse; font-size: 11.5px; min-width: 300px; }
+  .pm-table th, .pm-table td { padding: 6px 4px; text-align: right; } .pm-table th:first-child { text-align: left; } .pm-table tbody tr { border-top: 1px solid var(--soft-groove); }
+  .pm-sum { min-height: 44px; display: flex; align-items: center; cursor: pointer; font-size: 12px; color: var(--ink-2); }
+  /* The header's space menu */
+  .ss-wrap { position: relative; flex: none; }
+  .space-switch .ss-chev { width: 12px; height: 12px; opacity: .8; transition: transform .15s; }
+  .space-switch[aria-expanded="true"] .ss-chev { transform: rotate(180deg); }
+  .space-menu { position: absolute; right: 0; top: calc(100% + 10px); z-index: 30; min-width: 232px; max-width: calc(100vw - 28px); padding: 8px; border-radius: 22px; background: var(--page); box-shadow: var(--soft-raise), 0 14px 34px rgba(0,0,0,.22), 0 0 0 1px var(--line); display: grid; gap: 4px; }
+  .space-menu[hidden] { display: none; }
+  .space-menu button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 6px 12px 6px 8px; border: none; border-radius: 16px; background: none; font: inherit; color: var(--ink); text-align: left; cursor: pointer; }
+  .space-menu button:hover, .space-menu button:focus-visible { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+  .space-menu button[aria-checked="true"] { box-shadow: var(--soft-inset); }
+  .space-menu .sm-ic { width: 34px; height: 34px; border-radius: 12px; box-shadow: var(--soft-raise-sm); display: grid; place-items: center; color: var(--accent); flex: none; background: var(--page); }
+  .space-menu .sm-ic svg { width: 18px; height: 18px; }
+  .space-menu .sm-t { flex: 1; min-width: 0; font-size: 13.5px; font-weight: 800; }
+  .space-menu .sm-t small { display: block; font-size: 11px; font-weight: 600; color: var(--ink-muted); margin-top: 1px; }
+  .space-menu .sm-ck { width: 16px; height: 16px; color: var(--accent); flex: none; }
+  .appbar .brand .sub { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  @media (max-width: 439px) { .space-switch .ss-name { display: none; } .space-switch { padding: 0 10px 0 9px; gap: 4px; } }
+  /* PMCSS:END */
   /* ---------- version history, sync notices, backup reminder ---------- */
   .vh-backup { margin: 0 0 12px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
   .vh-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
@@ -1713,6 +1844,12 @@
   <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M5 12h14M13 6l6 6-6 6"/>
   </symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6M9 10h.01M15 10h.01"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M17 12v3M20 12v2"/></symbol>
+  <symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 3 8-9"/><path d="M15 6h5v5"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/></symbol>
   <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
     <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>
   </symbol>
@@ -1725,7 +1862,8 @@
       <span class="bt"><span class="sub" id="appbar-sub">Finances</span><span class="ttl" id="appbar-title">Dashboard</span></span>
     </button>
     <div class="appbar-acts">
-      <button type="button" class="space-switch" id="space-switch" aria-label="Switch to Lists"></button>
+      <div class="ss-wrap"><button type="button" class="space-switch" id="space-switch" aria-haspopup="menu" aria-expanded="false" aria-controls="space-menu" aria-label="Spaces menu"></button>
+        <div class="space-menu" id="space-menu" role="menu" aria-label="Spaces" hidden></div></div>
       <button class="icon-btn ghost" id="theme-toggle" aria-label="Toggle light/dark theme">
         <svg><use href="#i-moon"/></svg>
       </button>
@@ -1747,6 +1885,13 @@
     <section class="tab" id="tab-goals"></section>
     <section class="tab" id="tab-todo"></section>
     <section class="tab" id="tab-grocery"></section>
+    <section class="tab" id="tab-pr-overview"></section>
+    <section class="tab" id="tab-pr-inst"></section>
+    <section class="tab" id="tab-pr-tenancy"></section>
+    <section class="tab" id="tab-pr-costs"></section>
+    <section class="tab" id="tab-pr-cash"></section>
+    <section class="tab" id="tab-pr-docs"></section>
+    <section class="tab" id="tab-pr-rem"></section>
     <section class="tab" id="tab-cards"></section>
     <section class="tab" id="tab-categories"></section>
     <section class="tab" id="tab-transfer"></section>
@@ -1785,8 +1930,9 @@
     <div class="hcards">
       <button type="button" class="hc" id="hc-money"></button>
       <button type="button" class="hc" id="hc-lists"></button>
+      <button type="button" class="hc" id="hc-properties"></button>
     </div>
-    <p class="home-hint" id="home-hint">The app opens where you left off. Tap the logo for this screen, or the button in the header to switch between Finances and Lists. Lists holds Do (to-do) and Buy (groceries).</p>
+    <p class="home-hint" id="home-hint">The app opens where you left off. Tap the logo for this screen, or the space button in the header to switch between Finances, Lists and Properties. Lists holds Do (to-do) and Buy (groceries); Properties is for homes you own or rent.</p>
   </div>
 </div>
 
@@ -1954,8 +2100,9 @@
      state.nav = { order: [page ids], hidden: [page ids] } is saved per user in
      the synced state, so it follows the account and rides along in Backup. */
   var NAV_ORDER = ["dashboard", "transactions", "recurring", "loans", "cards", "categories", "goals", "transfer", "forecast"]; // the Money space; To-Do and Grocery live in Lists
-  var NAV_ICONS = { dashboard: "pie", transactions: "list", recurring: "refresh", loans: "trend-down", cards: "card", categories: "tag", goals: "target", todo: "todo", grocery: "grocery", transfer: "swap", forecast: "grid" };
+  var NAV_ICONS = { dashboard: "pie", transactions: "list", recurring: "refresh", loans: "trend-down", cards: "card", categories: "tag", goals: "target", todo: "todo", grocery: "grocery", transfer: "swap", forecast: "grid", "pr-overview": "building", "pr-inst": "cal", "pr-tenancy": "key", "pr-costs": "receipt", "pr-cash": "chart", "pr-docs": "file", "pr-rem": "bell" };
   var LISTS_ORDER = ["todo", "grocery"]; // fixed order for now
+  var PROPS_ORDER = ["pr-overview", "pr-inst", "pr-tenancy", "pr-costs", "pr-cash", "pr-docs", "pr-rem"]; // the Properties space: fixed dial, one page per area
   var NAV_MIN_VISIBLE = 1;
 
   function defaultNav() { return { order: NAV_ORDER.slice(), hidden: [] }; }
@@ -1972,7 +2119,7 @@
 
   /* state.ui = { homeSeen, space }: homeSeen is false until the person has picked a space on the
      Home screen (so it shows once on a first launch); space is the one the app last used. */
-  function defaultUi() { return { homeSeen: false, space: "money", guide: normalizeGuide(null) }; }
+  function defaultUi() { return { homeSeen: false, space: "money", guide: normalizeGuide(null), prop: normalizePropUi(null) }; }
   /* guide = the first-run "How to use" flag (once per person, synced): step 0 = never shown, 1-7 = where they got to. */
   function normalizeGuide(raw) {
     raw = raw && typeof raw === "object" ? raw : {};
@@ -1981,7 +2128,7 @@
   }
   function normalizeUi(raw) {
     raw = raw && typeof raw === "object" ? raw : {};
-    return { homeSeen: !!raw.homeSeen, space: raw.space === "lists" ? "lists" : "money", guide: normalizeGuide(raw.guide) };
+    return { homeSeen: !!raw.homeSeen, space: raw.space === "lists" || raw.space === "properties" ? raw.space : "money", guide: normalizeGuide(raw.guide), prop: normalizePropUi(raw.prop) };
   }
 
   function defaultState() {
@@ -1997,6 +2144,7 @@
       goals: [],
       tasks: [],
       grocery: defaultGrocery(),
+      properties: [],
       cards: [],
       customBankCards: [],
       removedBankCards: BANK_CARDS.slice(),
@@ -2093,6 +2241,8 @@
       if (r.endDate === undefined) r.endDate = null;
       if (!r.kind) r.kind = "subscription";
     });
+    // Properties (the third space) arrived later: old state loads with none; anything malformed is repaired or dropped.
+    parsed.properties = normalizeProperties(parsed.properties, parsed.settings.currency);
     return parsed;
   }
 
@@ -3274,6 +3424,13 @@
     categories: { title: "Categories", sub: "Spending categories & budgets" },
     transfer: { title: "Transfer", sub: "Move funds between accounts" },
     grocery: { title: "Buy", note: "Groceries", sub: "Shopping lists" },
+    "pr-overview": { title: "Overview", sub: "Property overview" },
+    "pr-inst": { title: "Installments", sub: "Developer payment plan" },
+    "pr-tenancy": { title: "Tenancy", sub: "Tenant, contract and rent" },
+    "pr-costs": { title: "Costs", sub: "Service charge, cooling and more" },
+    "pr-cash": { title: "Cash flow", sub: "Rent in, payments out" },
+    "pr-docs": { title: "Docs", sub: "Document notes" },
+    "pr-rem": { title: "Reminders", sub: "Dates to remember" },
     settings: { title: "Settings", sub: "Finance Tracker" }
   };
   var currentTab = "dashboard";
@@ -3306,8 +3463,8 @@
   function navIsHidden(tab) { return state.nav.hidden.indexOf(tab) !== -1; }
   function buildDialItems() {
     var nav = state.nav, pages = [];
-    var lists = currentSpace === "lists";
-    (lists ? LISTS_ORDER : nav.order).forEach(function (k) { if (lists || !navIsHidden(k) || tempTabs.indexOf(k) !== -1) pages.push([k, NAV_ICONS[k]]); });
+    var fixed = fixedOrder(currentSpace);
+    (fixed || nav.order).forEach(function (k) { if (fixed || !navIsHidden(k) || tempTabs.indexOf(k) !== -1) pages.push([k, NAV_ICONS[k]]); });
     DIAL_PAGES = pages; DIAL_N = pages.length; dialItems = []; trackEl.innerHTML = "";
     pages.forEach(function (p) {
       var b = document.createElement("button");
@@ -3360,7 +3517,8 @@
   }
   function setHeader(tab) {
     document.getElementById("appbar-title").textContent = TAB_META[tab].title;
-    document.getElementById("appbar-sub").textContent = SPACES[currentSpace].name + (TAB_META[tab].note ? " \u00b7 " + TAB_META[tab].note : "");
+    var note = currentSpace === "properties" ? pmHeaderNote() : (TAB_META[tab].note || "");
+    document.getElementById("appbar-sub").textContent = SPACES[currentSpace].name + (note ? " \u00b7 " + note : "");
   }
   function syncDialA11y() {
     var sel = onSettings() ? -1 : pageIndex(currentTab);
@@ -3403,7 +3561,7 @@
     // Cards and Forecast have nothing to add, so the + goes away and the calculator
     // takes its place (the .solo class centres it where the + was). Settings has its
     // own Quick Calculator button, so the floating one hides there too.
-    var noAdd = (to === "settings" || to === "forecast" || to === "cards");
+    var noAdd = (to === "settings" || to === "forecast" || to === "cards" || to === "pr-cash" || to === "pr-rem");
     actionBtn.style.display = noAdd ? "none" : "";
     document.getElementById("calc-fab").style.visibility = to === "settings" ? "hidden" : "visible";
     document.getElementById("fab-stack").classList.toggle("solo", noAdd && to !== "settings");
@@ -3484,19 +3642,58 @@
     var at = pageIndex(onSettings() ? prevTab : currentTab);
     dialX = dialCx[at >= 0 ? at : 0] || 0; lastNear = -1; renderDial(); syncDialA11y();
   }
-  /* ----- spaces: Money and Lists, each with its own dial -----
-     enterSpace swaps the dial and the visible page in one go (no slide); switchSpace wraps it in a short fade. */
-  var SPACES = { money: { name: "Finances", other: "lists", icon: "wallet" }, lists: { name: "Lists", other: "money", icon: "tasks" } };
-  function spaceOfTab(tab) { return LISTS_ORDER.indexOf(tab) !== -1 ? "lists" : NAV_ORDER.indexOf(tab) !== -1 ? "money" : ""; }
-  function firstOfSpace(name) { return name === "lists" ? LISTS_ORDER[0] : (state.nav.order.filter(function (k) { return !navIsHidden(k); })[0] || NAV_ORDER[0]); }
+  /* ----- spaces: Finances, Lists and Properties, each with its own dial -----
+     enterSpace swaps the dial and the visible page in one go (no slide); switchSpace wraps it in a short fade.
+     The header button opens a small menu of the spaces (the current one is ticked). */
+  var SPACES = { money: { name: "Finances", sub: "Finance tracker", icon: "wallet" }, lists: { name: "Lists", sub: "Do and Buy", icon: "tasks" }, properties: { name: "Properties", sub: "Property manager", icon: "building" } };
+  var SPACE_KEYS = ["money", "lists", "properties"];
+  function fixedOrder(space) { return space === "lists" ? LISTS_ORDER : space === "properties" ? PROPS_ORDER : null; }
+  function spaceOfTab(tab) { return LISTS_ORDER.indexOf(tab) !== -1 ? "lists" : PROPS_ORDER.indexOf(tab) !== -1 ? "properties" : NAV_ORDER.indexOf(tab) !== -1 ? "money" : ""; }
+  function firstOfSpace(name) { return fixedOrder(name) ? fixedOrder(name)[0] : (state.nav.order.filter(function (k) { return !navIsHidden(k); })[0] || NAV_ORDER[0]); }
+  var ssBtn = document.getElementById("space-switch"), ssMenu = document.getElementById("space-menu");
   function updateSpaceUI() {
-    var o = SPACES[SPACES[currentSpace].other], b = document.getElementById("space-switch");
-    b.innerHTML = icon(o.icon) + "<span>" + o.name + "</span>";
-    b.setAttribute("aria-label", "Switch to " + o.name);
-    b.title = "Switch to " + o.name;
+    var c = SPACES[currentSpace];
+    ssBtn.innerHTML = icon(c.icon) + '<span class="ss-name">' + c.name + "</span>" + icon("chevron", "ss-chev");
+    ssBtn.setAttribute("aria-label", "Spaces menu, now in " + c.name);
+    ssBtn.title = "Switch space";
+    ssMenu.innerHTML = SPACE_KEYS.map(function (k) {
+      var on = k === currentSpace;
+      return '<button type="button" role="menuitemradio" aria-checked="' + on + '" data-space="' + k + '" tabindex="-1"><span class="sm-ic">' + icon(SPACES[k].icon) + '</span><span class="sm-t">' + SPACES[k].name + "<small>" + SPACES[k].sub + "</small></span>" + (on ? icon("check", "sm-ck") : "") + "</button>";
+    }).join("");
   }
+  function spaceMenuItems() { return Array.prototype.slice.call(ssMenu.querySelectorAll("[role=menuitemradio]")); }
+  function openSpaceMenu(focusCurrent) {
+    if (!ssMenu.hidden) return;
+    ssMenu.hidden = false; ssBtn.setAttribute("aria-expanded", "true");
+    var it = spaceMenuItems(), cur = it.filter(function (b) { return b.getAttribute("data-space") === currentSpace; })[0] || it[0];
+    if (focusCurrent !== false && cur) cur.focus({ preventScroll: true });
+  }
+  function closeSpaceMenu(refocus) {
+    if (ssMenu.hidden) return;
+    ssMenu.hidden = true; ssBtn.setAttribute("aria-expanded", "false");
+    if (refocus) ssBtn.focus({ preventScroll: true });
+  }
+  ssBtn.addEventListener("click", function () { if (ssMenu.hidden) openSpaceMenu(false); else closeSpaceMenu(true); });
+  ssBtn.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (ssMenu.hidden) openSpaceMenu(true); else { var it = spaceMenuItems(); (e.key === "ArrowDown" ? it[0] : it[it.length - 1]).focus(); } }
+    else if (e.key === "Escape" && !ssMenu.hidden) { e.preventDefault(); e.stopPropagation(); closeSpaceMenu(true); }
+  });
+  ssMenu.addEventListener("keydown", function (e) {
+    var it = spaceMenuItems(), i = it.indexOf(document.activeElement);
+    if (e.key === "ArrowDown") { e.preventDefault(); it[(i + 1) % it.length].focus(); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); it[(i + it.length - 1) % it.length].focus(); }
+    else if (e.key === "Home") { e.preventDefault(); it[0].focus(); }
+    else if (e.key === "End") { e.preventDefault(); it[it.length - 1].focus(); }
+    else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); closeSpaceMenu(true); }
+    else if (e.key === "Tab") closeSpaceMenu(false);
+  });
+  ssMenu.addEventListener("click", function (e) {
+    var b = e.target.closest("[data-space]"); if (!b) return;
+    var name = b.getAttribute("data-space"); closeSpaceMenu(true); switchSpace(name);
+  });
+  document.addEventListener("pointerdown", function (e) { if (!ssMenu.hidden && !e.target.closest(".ss-wrap")) closeSpaceMenu(false); });
   function enterSpace(name, tab, remember) {
-    clearTimeout(settleTimer); stopGlide();
+    clearTimeout(settleTimer); stopGlide(); closeSpaceMenu(false);
     currentSpace = name; tab = tab || firstOfSpace(name);
     tempTabs = (name === "money" && navIsHidden(tab)) ? [tab] : [];
     currentTab = prevTab = tab; settingsView = "main";
@@ -3514,7 +3711,6 @@
     clearTimeout(spaceFadeTimer);
     spaceFadeTimer = setTimeout(function () { enterSpace(name, "", true); appEl.classList.remove("fading"); }, 150);
   }
-  document.getElementById("space-switch").addEventListener("click", function () { switchSpace(SPACES[currentSpace].other); });
   document.addEventListener("click", function (e) { var g = e.target.closest && e.target.closest("[data-go-space]"); if (g) switchSpace(g.getAttribute("data-go-space")); });
 
   function openSettingsPage() {
@@ -3637,8 +3833,8 @@
   function initDial() { rebuildDial(); navBooting = false; }
   if (window.ResizeObserver) { var dialRO = new ResizeObserver(function () { measureDial(); if (!dialDrag && !dialRaf) dialX = Math.min(Math.max(dialX, dialCx[0]), dialCx[DIAL_N - 1]); renderDial(); }); dialRO.observe(dialEl); dialRO.observe(trackEl); }
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measureDial(); var i = pageIndex(currentTab); if (i >= 0) dialX = dialCx[i]; renderDial(); });
-  if (state.ui.space === "lists") { // reopen where the person left off
-    currentSpace = "lists"; currentTab = prevTab = LISTS_ORDER[0];
+  if (state.ui.space === "lists" || state.ui.space === "properties") { // reopen where the person left off
+    currentSpace = state.ui.space; currentTab = prevTab = fixedOrder(currentSpace)[0];
     allSections().forEach(cleanSection); secOf(currentTab).classList.add("active"); setHeader(currentTab); applyFab(currentTab);
   }
   updateSpaceUI();
@@ -3653,6 +3849,7 @@
     else if (currentTab === "grocery") { var gq = document.getElementById("gro-q"); if (gq) gq.focus(); }
     else if (currentTab === "categories") openCategoryForm(null);
     else if (currentTab === "transfer") openTransferForm();
+    else if (spaceOfTab(currentTab) === "properties") pmFab();
   });
   document.getElementById("calc-fab").addEventListener("click", function () { openCalculator(); });
 
@@ -5907,6 +6104,9 @@
       }
     });
 
+    // Properties (optional, Properties settings): installments, service charge, cooling and other property costs.
+    pmForecastItems(windowStart, windowEnd).forEach(function (it) { addToMatrix(it.catKey, it.date.slice(0, 7), it.amount); });
+
     // Actual: what's really been logged as transactions in this window,
     // regardless of whether that category has any forecast entry at all
     // (e.g. Dining has no recurring bill or loan, but still belongs in
@@ -6177,9 +6377,10 @@
     html += '<form id="tx-form">';
     html += '<div class="field"><input class="amount-input num" type="number" step="0.01" min="0" inputmode="decimal" name="amount" placeholder="0.00" value="' + (pre ? pre.amount : "") + '" required /></div>';
     html += '<div class="field"><div class="segmented" id="tx-type-seg">';
-    html += '<button type="button" data-val="expense" class="' + (!existing || existing.type === "expense" ? "active" : "") + '">Expense</button>';
-    html += '<button type="button" data-val="income" class="' + (existing && existing.type === "income" ? "active" : "") + '">Income</button>';
-    html += '</div><input type="hidden" name="type" value="' + (existing ? existing.type : "expense") + '" /></div>';
+    var initType = existing ? existing.type : (prefill && prefill.type === "income" ? "income" : "expense");
+    html += '<button type="button" data-val="expense" class="' + (initType === "expense" ? "active" : "") + '">Expense</button>';
+    html += '<button type="button" data-val="income" class="' + (initType === "income" ? "active" : "") + '">Income</button>';
+    html += '</div><input type="hidden" name="type" value="' + initType + '" /></div>';
     html += '<div class="field"><label>Merchant</label><input type="text" name="merchant" placeholder="e.g. Carrefour" value="' + escapeAttr(pre ? pre.merchant : "") + '" required /></div>';
     html += '<div class="field"><label>Category</label><select name="categoryId" id="tx-cat-select"><option value="">None</option>';
     state.categories.forEach(function (c) {
@@ -7931,7 +8132,8 @@
     document.getElementById("home-greet").textContent = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
     document.getElementById("hc-money").innerHTML = homeMoneyHtml();
     document.getElementById("hc-lists").innerHTML = homeListsHtml();
-    ["money", "lists"].forEach(function (k) { document.getElementById("hc-" + k).classList.toggle("last", !homeFirst && currentSpace === k); });
+    document.getElementById("hc-properties").innerHTML = homePropsHtml();
+    ["money", "lists", "properties"].forEach(function (k) { document.getElementById("hc-" + k).classList.toggle("last", !homeFirst && currentSpace === k); });
     renderHomeBackupNote();
   }
   function openHome() {
@@ -7949,7 +8151,7 @@
     b.focus({ preventScroll: true });
   }
   document.getElementById("brand-btn").addEventListener("click", openHome);
-  ["money", "lists"].forEach(function (k) {
+  ["money", "lists", "properties"].forEach(function (k) {
     document.getElementById("hc-" + k).addEventListener("click", function () {
       closeHome();
       if (k !== currentSpace || onSettings()) enterSpace(k, "", true); // under the fading Home, so no second fade
@@ -7967,6 +8169,1184 @@
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
 
+
+  /* PM:BEGIN */
+  /* =========================================================================
+     Properties (the third space): a rental property you own (optionally still
+     paying the developer by installments) or rent. state.properties = [{ id, name,
+     type "off-plan"|"ready", address, role "owner"|"tenant", status "rented"|"vacant"|"owner-occupied",
+     purchasePrice, currency, hasInstallments, installments, tenancy, costs, documents, settings }].
+     It lives in the one synced state blob, so save() carries it to the cloud, Version history and Backup.
+     Dates are "YYYY-MM-DD" strings. Everything below this line up to "Properties UI" is plain data logic.
+     normalizeProperty runs from load(), before the var declarations further down have executed,
+     so this block only uses hoisted function declarations (no module-level constants).
+     ========================================================================= */
+  function pmDay(iso) { var p = String(iso || "").split("-"); return p.length === 3 ? Math.round(Date.UTC(+p[0], +p[1] - 1, +p[2]) / 864e5) : NaN; }
+  function pmIsIso(s) { return typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s) && !isNaN(pmDay(s)); }
+  function pmIso(n) { var d = new Date(n * 864e5); return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); }
+  function pmAddDays(iso, n) { return pmIso(pmDay(iso) + n); }
+  function pmAddMonths(iso, n) { // keeps the day of the month, clamped to the month's end (31 Jan + 1 month = 28 Feb)
+    var y = +iso.slice(0, 4), m = +iso.slice(5, 7) - 1, d = +iso.slice(8, 10), t = m + n;
+    y += Math.floor(t / 12); m = ((t % 12) + 12) % 12;
+    return y + "-" + pad(m + 1) + "-" + pad(Math.min(d, new Date(Date.UTC(y, m + 1, 0)).getUTCDate()));
+  }
+  function pmMonthEnd(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); } // m is 1-12
+  function pmDiff(a, b) { return pmDay(a) - pmDay(b); }
+  function pmMonName(i) { return ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i]; }
+  function pmFmt(iso, withYear) { if (!pmIsIso(iso)) return ""; return +iso.slice(8, 10) + " " + pmMonName(+iso.slice(5, 7) - 1) + (withYear ? " " + iso.slice(0, 4) : ""); }
+  function pmFreqMonths(f) { return f === "monthly" ? 1 : f === "semiannual" ? 6 : f === "annual" ? 12 : 3; }
+  function pmFreqLabel(f) { return f === "monthly" ? "monthly" : f === "semiannual" ? "every 6 months" : f === "annual" ? "yearly" : "quarterly"; }
+  function pmMoney0(v, max) { v = parseFloat(v); return isFinite(v) && v > 0 ? Math.min(v, max || 1e12) : 0; }
+  function pmStr(v, n) { return String(v == null ? "" : v).slice(0, n || 200); }
+  function pmInt(v, lo, hi, d) { v = parseInt(v, 10); return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d; }
+  function pmIdOf(v) { return v != null && v !== "" ? String(v).slice(0, 64) : uid(); }
+  function pmIsoOr(v) { return pmIsIso(v) ? v : ""; }
+  function pmRound2(n) { return Math.round(n * 100) / 100; }
+  function pmArr(v) { return Array.isArray(v) ? v : []; }
+  function pmObj(v) { return v && typeof v === "object" && !Array.isArray(v) ? v : {}; }
+  function pmTime(v, d) { return typeof v === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(v) ? v : d; }
+
+  function normalizeInstallments(r) {
+    r = pmObj(r);
+    var count = pmInt(r.count, 0, 600, 0), seen = {};
+    return {
+      total: pmMoney0(r.total), count: count, firstDate: pmIsoOr(r.firstDate), amount: pmMoney0(r.amount), prepaid: pmMoney0(r.prepaid),
+      paid: pmArr(r.paid).map(function (x) {
+        x = pmObj(x); var n = pmInt(x.n, 1, 600, 0);
+        if (!n || seen[n]) return null; seen[n] = 1;
+        return { n: n, on: pmIsoOr(x.on), amount: pmMoney0(x.amount), txId: pmStr(x.txId, 64) };
+      }).filter(Boolean).sort(function (a, b) { return a.n - b.n; }),
+      extra: pmArr(r.extra).map(function (x) {
+        x = pmObj(x); if (!pmIsIso(x.date) || !pmMoney0(x.amount)) return null;
+        return { id: pmIdOf(x.id), date: x.date, amount: pmMoney0(x.amount), note: pmStr(x.note, 200), txId: pmStr(x.txId, 64) };
+      }).filter(Boolean)
+    };
+  }
+  function normalizePayment(x, i) {
+    x = pmObj(x); if (!pmIsIso(x.due)) return null;
+    var st = ["due", "received", "overdue", "postdated"].indexOf(x.status) !== -1 ? x.status : "due";
+    return { id: pmIdOf(x.id), due: x.due, amount: pmMoney0(x.amount), status: st, receivedOn: st === "received" ? pmIsoOr(x.receivedOn) : "", no: pmInt(x.no, 0, 600, 0), cheque: pmStr(x.cheque, 40), txId: pmStr(x.txId, 64) };
+  }
+  function normalizeTenancy(r) {
+    r = pmObj(r);
+    var rem = pmObj(r.reminders), ut = pmObj(r.utilitiesInTenantName);
+    var pays = pmArr(r.payments).map(normalizePayment).filter(Boolean).sort(function (a, b) { return a.due < b.due ? -1 : a.due > b.due ? 1 : 0; });
+    return {
+      tenant: pmStr(r.tenant, 120), landlord: pmStr(r.landlord, 120), contactNote: pmStr(r.contactNote, 400), ejari: pmStr(r.ejari, 60),
+      start: pmIsoOr(r.start), end: pmIsoOr(r.end), annualRent: pmMoney0(r.annualRent),
+      frequency: ["monthly", "quarterly", "semiannual", "annual"].indexOf(r.frequency) !== -1 ? r.frequency : "quarterly",
+      deposit: pmMoney0(r.deposit), payments: pays,
+      reminders: { d90: rem.d90 !== false, d60: rem.d60 !== false, d30: rem.d30 !== false, time: pmTime(rem.time, "09:00") },
+      utilitiesInTenantName: { water: ut.water !== false, electricity: ut.electricity !== false, checkedOn: pmIsoOr(ut.checkedOn), remind: ut.remind !== false },
+      history: pmArr(r.history).map(function (h) {
+        h = pmObj(h); if (!pmIsIso(h.from)) return null;
+        return { id: pmIdOf(h.id), kind: ["vacancy", "contract", "tenant"].indexOf(h.kind) !== -1 ? h.kind : "vacancy", from: h.from, to: pmIsoOr(h.to), rent: pmMoney0(h.rent), note: pmStr(h.note, 200) };
+      }).filter(Boolean)
+    };
+  }
+  function normalizeCosts(r) {
+    r = pmObj(r); var sc = pmObj(r.serviceCharge), seenM = {};
+    return {
+      serviceCharge: {
+        amount: pmMoney0(sc.amount), dueMonth: pmInt(sc.dueMonth, 1, 12, 11), dueDay: pmInt(sc.dueDay, 1, 31, 30),
+        paidYears: pmArr(sc.paidYears).map(function (y) {
+          if (typeof y === "number" || typeof y === "string") { y = { year: y }; }
+          y = pmObj(y); var yr = pmInt(y.year, 1990, 2200, 0); if (!yr) return null;
+          return { year: yr, on: pmIsoOr(y.on), amount: pmMoney0(y.amount), txId: pmStr(y.txId, 64) };
+        }).filter(Boolean)
+      },
+      cooling: pmArr(r.cooling).map(function (c) {
+        c = pmObj(c); if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(c.month || "")) return null;
+        return { id: pmIdOf(c.id), month: c.month, amount: pmMoney0(c.amount), on: pmIsoOr(c.on), txId: pmStr(c.txId, 64) };
+      }).filter(function (c) { if (!c || seenM[c.month]) return false; seenM[c.month] = 1; return true; }).sort(function (a, b) { return a.month < b.month ? -1 : 1; }),
+      other: pmArr(r.other).map(function (o) {
+        o = pmObj(o); if (!pmIsIso(o.date)) return null;
+        return { id: pmIdOf(o.id), name: pmStr(o.name, 120) || "Cost", amount: pmMoney0(o.amount), date: o.date, recurring: ["monthly", "quarterly", "yearly"].indexOf(o.recurring) !== -1 ? o.recurring : "", txId: pmStr(o.txId, 64) };
+      }).filter(Boolean)
+    };
+  }
+  function normalizeProperty(r, defCur) {
+    r = pmObj(r); if (!Object.keys(r).length) return null;
+    var role = r.role === "tenant" ? "tenant" : "owner", type = r.type === "ready" ? "ready" : "off-plan";
+    var st = ["rented", "vacant", "owner-occupied"].indexOf(r.status) !== -1 ? r.status : (role === "tenant" ? "rented" : "vacant"), se = pmObj(r.settings);
+    var cur = /^[A-Za-z]{3}$/.test(r.currency || "") ? String(r.currency).toUpperCase() : (defCur || "SAR");
+    return {
+      id: pmIdOf(r.id), name: pmStr(r.name, 120) || "Property", type: type, address: pmStr(r.address, 400), role: role, status: st,
+      purchasePrice: pmMoney0(r.purchasePrice), currency: cur,
+      hasInstallments: role === "tenant" ? false : (typeof r.hasInstallments === "boolean" ? r.hasInstallments : type === "off-plan"),
+      installments: normalizeInstallments(r.installments), tenancy: normalizeTenancy(r.tenancy), costs: normalizeCosts(r.costs),
+      documents: pmArr(r.documents).map(function (d) {
+        d = pmObj(d); return { id: pmIdOf(d.id), type: pmStr(d.type, 40) || "Other", title: pmStr(d.title, 160) || "Document", date: pmIsoOr(d.date), note: pmStr(d.note, 1000) };
+      }),
+      settings: {
+        buffer: pmMoney0(se.buffer), potStart: pmMoney0(se.potStart), potDate: pmIsoOr(se.potDate), coolDay: pmInt(se.coolDay, 1, 28, 5),
+        remOn: (function () { var o = {}, s = pmObj(se.remOn); Object.keys(s).slice(0, 80).forEach(function (k) { if (s[k] === false) o[k.slice(0, 80)] = false; }); return o; })(),
+        remTime: (function () { var o = {}, s = pmObj(se.remTime); Object.keys(s).slice(0, 80).forEach(function (k) { var t = pmTime(s[k], ""); if (t) o[k.slice(0, 80)] = t; }); return o; })()
+      }
+    };
+  }
+  function normalizeProperties(arr, defCur) {
+    var seen = {};
+    return pmArr(arr).slice(0, 50).map(function (p) { return normalizeProperty(p, defCur); }).filter(function (p) { if (!p || seen[p.id]) return false; seen[p.id] = 1; return true; });
+  }
+  function normalizePropUi(r) {
+    r = pmObj(r);
+    return { alsoTx: r.alsoTx === true, forecast: r.forecast === true };
+  }
+
+  /* ----- derived numbers ----- */
+  function pmSched(p) { // the developer schedule: one row per installment, the last unpaid ones capped by what is still owed
+    var I = p.installments, today = todayISO(), paidBy = {}, paidSum = I.prepaid, rows = [], remain, i;
+    I.paid.forEach(function (x) { paidBy[x.n] = x; paidSum += x.amount; });
+    I.extra.forEach(function (x) { paidSum += x.amount; });
+    remain = I.total > 0 ? Math.max(0, I.total - paidSum) : Infinity;
+    if (!I.count || !I.firstDate) return rows;
+    for (i = 1; i <= I.count; i++) {
+      var date = pmAddMonths(I.firstDate, i - 1), rec = paidBy[i], amt, st;
+      if (rec) { amt = rec.amount; st = "paid"; }
+      else {
+        amt = Math.min(I.amount, remain); if (remain !== Infinity) remain -= amt;
+        var dd = pmDiff(date, today);
+        st = amt <= 0 ? "covered" : dd < 0 ? "overdue" : dd <= 30 ? "due" : "upcoming";
+      }
+      rows.push({ n: i, date: date, amt: amt, st: st, paid: !!rec, on: rec ? rec.on : "", txId: rec ? rec.txId : "" });
+    }
+    return rows;
+  }
+  function pmPaidTotal(p) { var I = p.installments, s = I.prepaid; I.paid.forEach(function (x) { s += x.amount; }); I.extra.forEach(function (x) { s += x.amount; }); return s; }
+  function pmPlanTotal(p) { return p.installments.total || p.purchasePrice || 0; }
+  function pmGenPayments(start, end, annual, freq) {
+    var step = pmFreqMonths(freq), per = 12 / step, amt = pmRound2(annual / per), out = [], i, no = 0;
+    if (!pmIsIso(start) || !pmIsIso(end)) return out;
+    for (i = 0; i < 400; i++) {
+      var due = pmAddMonths(start, i * step); if (pmDiff(due, end) > 0) break;
+      out.push({ id: uid(), due: due, amount: amt, status: "due", receivedOn: "", no: ++no, cheque: "", txId: "" });
+    }
+    return out;
+  }
+  function pmRentTag(p, pay) {
+    var f = p.tenancy.frequency, m = +pay.due.slice(5, 7) - 1;
+    return f === "monthly" ? pmMonName(m) : f === "quarterly" ? "Q" + (pay.no || 1) : f === "semiannual" ? "H" + (pay.no || 1) : "yearly";
+  }
+  function pmRentLabel(p, pay) { return "Rent " + pmRentTag(p, pay); }
+  function pmPayStatus(pay) { // what to show: received, overdue, postdated, due (within 14 days) or upcoming
+    if (pay.status === "received") return "received";
+    var dd = pmDiff(pay.due, todayISO());
+    if (dd < 0) return "overdue";
+    if (pay.status === "postdated") return "postdated";
+    return dd <= 14 ? "due" : "upcoming";
+  }
+  function pmHasTenancy(p) { return !!(p.tenancy.start && p.tenancy.end); }
+  function pmCoolAvg(p) { var c = p.costs.cooling.slice(-12); if (!c.length) return 0; var s = 0; c.forEach(function (x) { s += x.amount; }); return s / c.length; }
+  function pmScDue(p) { // the service charge still to pay: this year's, or next year's once this year's is paid
+    var sc = p.costs.serviceCharge; if (!sc.amount) return null;
+    var y = +todayISO().slice(0, 4), tries = 0;
+    while (tries++ < 3) {
+      var paid = sc.paidYears.some(function (x) { return x.year === y; });
+      if (!paid) { var due = y + "-" + pad(sc.dueMonth) + "-" + pad(Math.min(sc.dueDay, pmMonthEnd(y, sc.dueMonth))); return { year: y, date: due, amount: sc.amount, days: pmDiff(due, todayISO()) }; }
+      y++;
+    }
+    return null;
+  }
+  function pmOtherStep(o) { return o.recurring === "monthly" ? 1 : o.recurring === "quarterly" ? 3 : o.recurring === "yearly" ? 12 : 0; }
+  function pmOtherOcc(o, from, to) { // dates the cost falls on between from and to (inclusive)
+    var out = [], step = pmOtherStep(o), i, d;
+    if (!step) { if (o.date >= from && o.date <= to) out.push(o.date); return out; }
+    for (i = 0; i < 1200; i++) { d = pmAddMonths(o.date, i * step); if (d > to) break; if (d >= from) out.push(d); }
+    return out;
+  }
+  function pmOtherNext(o) { var d = pmOtherOcc(o, pmAddDays(todayISO(), 1), pmAddMonths(todayISO(), 25)); return d.length ? d[0] : ""; }
+  function pmCurTenancyIdx() { return 0; }
+  function pmRenewDates(p) { var T = p.tenancy; if (!pmIsIso(T.end)) return []; return [90, 60, 30].map(function (n) { return { n: n, date: pmAddDays(T.end, -n), on: T.reminders["d" + n] }; }); }
+  function pmPot(p) { // the rent pot now: the balance you entered on its date, plus what came in and went out since, in date order, never below zero
+    var S = p.settings, from = S.potDate || "0000-00-00", today = todayISO(), fx = [];
+    if (p.role === "owner") {
+      p.tenancy.payments.forEach(function (x) { if (x.status === "received" && x.receivedOn && x.receivedOn >= from && x.receivedOn <= today) fx.push([x.receivedOn, x.amount]); });
+      p.installments.paid.forEach(function (x) { if (p.hasInstallments && x.on && x.on >= from && x.on <= today) fx.push([x.on, -x.amount]); });
+      if (p.hasInstallments) p.installments.extra.forEach(function (x) { if (x.date >= from && x.date <= today) fx.push([x.date, -x.amount]); });
+      p.costs.serviceCharge.paidYears.forEach(function (x) { if (x.on && x.on >= from && x.on <= today) fx.push([x.on, -x.amount]); });
+    }
+    p.costs.cooling.forEach(function (x) { var d = x.on || (x.month + "-28"); if (d >= from && d <= today) fx.push([d, -x.amount]); });
+    p.costs.other.forEach(function (o) { pmOtherOcc(o, from, today).forEach(function (d) { fx.push([d, -o.amount]); }); });
+    fx.sort(function (a, b) { return a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : b[1] - a[1]; }); // on the same day, money in first
+    var pot = S.potStart;
+    fx.forEach(function (e) { pot = e[1] > 0 ? pot + e[1] : Math.max(0, pot + e[1]); });
+    return pot;
+  }
+  function pmWindow() { var t = todayISO(), s = t.slice(0, 8) + "01"; return { start: s, end: pmAddMonths(s, 12) }; } // this month and the next 11; end is exclusive
+  function pmEvents(p, late) { // every money event still to come, in the next 12 months. amt > 0 in, < 0 out. proj = an estimate
+    var today = todayISO(), W = pmWindow(), ev = [], avg = pmCoolAvg(p), T = p.tenancy, i;
+    late = late || 0;
+    function push(d, k, label, amt, o) { ev.push({ d: d, k: k, label: label, amt: amt, proj: !!(o && o.proj), ref: o && o.ref }); }
+    var owner = p.role === "owner";
+    if (owner && p.hasInstallments) pmSched(p).forEach(function (x) { if (!x.paid && x.amt > 0 && x.date < W.end) push(x.date < today ? today : x.date, "inst", "Installment " + x.n + " of " + p.installments.count, -x.amt, { ref: x.n }); });
+    if (pmHasTenancy(p) && T.annualRent > 0) {
+      T.payments.forEach(function (x) {
+        if (x.status === "received" || x.due >= W.end) return;
+        var d = pmAddDays(x.due < today ? today : x.due, owner ? late : 0);
+        push(d, "rent", pmRentLabel(p, x), owner ? x.amount : -x.amount, { ref: x.id });
+      });
+      if (p.status !== "vacant") { // the contract is assumed to renew on the same terms
+        var s = pmAddDays(T.end, 1), guard = 0;
+        while (s < W.end && guard++ < 3) {
+          var e = pmAddDays(pmAddMonths(s, 12), -1);
+          pmGenPayments(s, e, T.annualRent, T.frequency).forEach(function (x) { var d = pmAddDays(x.due < today ? today : x.due, owner ? late : 0); if (d < W.end) push(d, "rent", pmRentLabel(p, x) + " (renewal assumed)", owner ? x.amount : -x.amount, { proj: true }); });
+          s = pmAddDays(e, 1);
+        }
+      }
+    }
+    if (owner) { var sc = p.costs.serviceCharge; if (sc.amount) for (i = 0; i < 2; i++) {
+      var y = +today.slice(0, 4) + i; if (sc.paidYears.some(function (z) { return z.year === y; })) continue;
+      var due = y + "-" + pad(sc.dueMonth) + "-" + pad(Math.min(sc.dueDay, pmMonthEnd(y, sc.dueMonth)));
+      if (due < W.end) push(due < today ? today : due, "sc", "Service charge " + y, -sc.amount, { proj: due > pmScDue(p).date });
+    } }
+    var byMonth = {}; p.costs.cooling.forEach(function (c) { byMonth[c.month] = c; });
+    for (i = 0; i < 12; i++) {
+      var m0 = pmAddMonths(W.start, i), key = m0.slice(0, 7), bill = byMonth[key];
+      if (bill) { var bd = bill.on || key + "-28"; if (bd > today) push(bd, "cool", "Cooling bill, " + pmMonName(+key.slice(5) - 1), -bill.amount, {}); continue; }
+      if (avg > 0) { var cd = key + "-28"; push(cd < today ? today : cd, "cool", "Cooling bill, " + pmMonName(+key.slice(5) - 1) + " (estimate)", -Math.round(avg), { proj: true }); }
+    }
+    p.costs.other.forEach(function (o) { pmOtherOcc(o, pmAddDays(today, 1), pmAddDays(W.end, -1)).forEach(function (d) { push(d, "other", o.name + (o.recurring ? " (recurring)" : ""), -o.amount, { proj: !!o.recurring }); }); });
+    ev.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : b.amt - a.amt; });
+    return ev;
+  }
+  function pmSim(p, late) { // the rent pot month by month: rent in, payments out of the pot, the rest is a top-up from you
+    var ev = pmEvents(p, late), pot = pmPot(p), buffer = p.settings.buffer, top = 0, W = pmWindow(), months = [], i, prev = pot;
+    ev.forEach(function (e) {
+      if (e.amt > 0) { pot += e.amt; e.topup = 0; e.fromPot = 0; }
+      else { var need = -e.amt, f = Math.min(pot, need); pot -= f; e.fromPot = f; e.topup = need - f; top += e.topup; }
+      e.pot = pot;
+    });
+    for (i = 0; i < 12; i++) {
+      var m0 = pmAddMonths(W.start, i), key = m0.slice(0, 7);
+      var me = ev.filter(function (e) { return e.d.slice(0, 7) === key; }), inn = 0, out = 0, tu = 0, proj = false;
+      me.forEach(function (e) { if (e.amt > 0) { inn += e.amt; if (e.proj) proj = true; } else out += -e.amt; tu += e.topup || 0; });
+      var end = me.length ? me[me.length - 1].pot : prev; prev = end;
+      months.push({ key: key, y: +key.slice(0, 4), m: +key.slice(5) - 1, inn: inn, out: out, end: end, topup: tu, proj: proj, ev: me });
+    }
+    var inT = 0, outT = 0; months.forEach(function (x) { inT += x.inn; outT += x.out; });
+    return { ev: ev, months: months, top: top, pot0: pmPot(p), buffer: buffer,
+      firstShort: ev.filter(function (e) { return e.topup > 0; })[0] || null,
+      firstBuf: buffer > 0 ? (ev.filter(function (e) { return e.pot < buffer; })[0] || null) : null,
+      inT: inT, outT: outT, covers: outT ? inT / outT * 100 : 0 };
+  }
+  function pmLedger(p, year, proj) { // what really happened in a year (and, with proj, what is still expected in it)
+    var L = { rent: 0, inst: 0, sc: 0, cool: 0, other: 0 }, yS = year + "-01-01", yE = year + "-12-31", today = todayISO();
+    p.tenancy.payments.forEach(function (x) { if (x.status === "received" && (x.receivedOn || x.due).slice(0, 4) === String(year)) L.rent += x.amount; });
+    if (p.hasInstallments) {
+      p.installments.paid.forEach(function (x) { if ((x.on || pmAddMonths(p.installments.firstDate || yS, x.n - 1)).slice(0, 4) === String(year)) L.inst += x.amount; });
+      p.installments.extra.forEach(function (x) { if (x.date.slice(0, 4) === String(year)) L.inst += x.amount; });
+    }
+    p.costs.serviceCharge.paidYears.forEach(function (x) { if ((x.on || (x.year + "-12-31")).slice(0, 4) === String(year)) L.sc += x.amount; });
+    p.costs.cooling.forEach(function (x) { if (x.month.slice(0, 4) === String(year)) L.cool += x.amount; });
+    p.costs.other.forEach(function (o) { pmOtherOcc(o, yS, today < yE ? today : yE).forEach(function () { L.other += o.amount; }); });
+    if (proj) pmEvents(p, 0).forEach(function (e) {
+      if (e.d.slice(0, 4) !== String(year)) return;
+      if (e.k === "rent") L.rent += Math.abs(e.amt); else if (e.k === "inst") L.inst += -e.amt; else if (e.k === "sc") L.sc += -e.amt; else if (e.k === "cool") L.cool += -e.amt; else L.other += -e.amt;
+    });
+    if (p.role === "tenant") { L.net = -(L.rent + L.cool + L.other); L.op = L.net; }
+    else { L.net = L.rent - L.inst - L.sc - L.cool - L.other; L.op = L.rent - L.sc - L.cool - L.other; }
+    return L;
+  }
+  function pmYield(p) {
+    var T = p.tenancy, price = p.purchasePrice; if (!price || !T.annualRent) return null;
+    var oth = 0; p.costs.other.forEach(function (o) { var st = pmOtherStep(o); oth += st ? o.amount * 12 / st : (o.date.slice(0, 4) === todayISO().slice(0, 4) ? o.amount : 0); });
+    var cost = p.costs.serviceCharge.amount + pmCoolAvg(p) * 12 + oth;
+    return { gross: T.annualRent / price * 100, net: (T.annualRent - cost) / price * 100, cost: cost };
+  }
+  function pmReminders(p) { // the reminders made from this property's dates
+    var r = [], today = todayISO(), T = p.tenancy, S = p.settings, owner = p.role === "owner", i;
+    var nx = T.payments.filter(function (x) { return x.status !== "received"; })[0];
+    if (nx) r.push({ id: "rent", grp: owner ? "Money in" : "Money out", title: owner ? "Rent due" : "Rent to pay", date: nx.due, lead: 2, sub: pmMoney(nx.amount, p.currency) + (owner && T.tenant ? " from " + T.tenant : !owner && T.landlord ? " to " + T.landlord : "") });
+    if (owner && p.hasInstallments) { var ni = pmSched(p).filter(function (x) { return !x.paid && x.amt > 0; })[0]; if (ni) r.push({ id: "inst", grp: "Money out", title: "Installment due", date: ni.date, lead: 3, sub: pmMoney(ni.amt, p.currency) + ", number " + ni.n + " of " + p.installments.count }); }
+    if (owner) { var sd = pmScDue(p); if (sd) r.push({ id: "sc", grp: "Money out", title: "Service charge due", date: sd.date, lead: 7, sub: pmMoney(sd.amount, p.currency) + ", every year on " + pmFmt(sd.date) }); }
+    var cd = today.slice(0, 7) + "-" + pad(S.coolDay); if (cd < today) cd = pmAddMonths(today.slice(0, 7) + "-01", 1).slice(0, 8) + pad(S.coolDay);
+    r.push({ id: "cool", grp: owner ? "Money out" : "Costs", title: "Enter the cooling bill", date: cd, lead: 0, sub: "Monthly on day " + S.coolDay + ", the amount changes each month" });
+    pmRenewDates(p).forEach(function (x) { r.push({ id: "ren" + x.n, grp: "Contract", title: "Renewal in " + x.n + " days", date: x.date, lead: 0, sub: "Contract ends " + pmFmt(T.end, true), ren: x.n }); });
+    if (owner && pmHasTenancy(p)) r.push({ id: "util", grp: "Contract", title: "Check tenant utilities", date: pmAddDays(T.utilitiesInTenantName.checkedOn || today, 90), lead: 0, sub: "Water and electricity in the tenant’s name, every 90 days" });
+    p.costs.other.forEach(function (o) { var d = pmOtherNext(o); if (d) r.push({ id: "oc" + o.id, grp: "Costs", title: o.name + " due", date: d, lead: 14, sub: pmMoney(o.amount, p.currency) + (o.recurring ? ", " + (o.recurring === "yearly" ? "every year" : o.recurring === "monthly" ? "every month" : "every quarter") : "") }); });
+    return r;
+  }
+  function pmRemOn(p, r) { return r.ren ? !!p.tenancy.reminders["d" + r.ren] : r.id === "util" ? p.tenancy.utilitiesInTenantName.remind : p.settings.remOn[r.id] !== false; }
+  function pmRemTime(p, r) { return p.settings.remTime[r.id] || (r.ren ? p.tenancy.reminders.time : "09:00") || "09:00"; }
+  function pmMoney(n, cur) { return (cur || "") + " " + (Math.round(n) < 0 || n < 0 ? "−" : "") + Math.abs(Math.round(n)).toLocaleString("en-US"); }
+
+  /* =========================================================================
+     Properties UI: seven dial pages (Overview, Installments, Tenancy, Costs, Cash flow, Docs, Reminders),
+     a property selector, sheets for every action, and the Home card. Nothing is created in Transactions
+     unless the person turns on "Also add to my transactions" (it opens the normal Add Transaction sheet).
+     ========================================================================= */
+  var PM_UI = { inst: "up", instAll: false, cost: "sc", ov: "so", coolAll: false, docf: "All", month: -1, late: 0 };
+  var pmSelV = "", PM_DOC_TYPES = ["Contract", "Ejari", "Payment plan", "Service charge", "Cooling bill", "Receipt", "Other"];
+  var PM_PAGE_FNS = { "pr-overview": function () { return pmPgOverview(); }, "pr-inst": function () { return pmPgInst(); }, "pr-tenancy": function () { return pmPgTenancy(); }, "pr-costs": function () { return pmPgCosts(); }, "pr-cash": function () { return pmPgCash(); }, "pr-docs": function () { return pmPgDocs(); }, "pr-rem": function () { return pmPgRem(); } };
+
+  function pmCur() { var l = state.properties; for (var i = 0; i < l.length; i++) if (l[i].id === pmSelV) return l[i]; return l[0] || null; }
+  function pmHeaderNote() { var p = state && state.properties && state.properties.length ? pmCur() : null; return p ? p.name : ""; }
+  function pmUntil(iso) { var n = pmDiff(iso, todayISO()); return n === 0 ? "today" : n === 1 ? "tomorrow" : n > 0 ? "in " + n + " days" : Math.abs(n) + (n === -1 ? " day" : " days") + " ago"; }
+  function pmN(n) { var r = Math.round(Math.abs(n)).toLocaleString("en-US"); return (n < 0 && Math.round(n) !== 0 ? "−" : "") + r; }
+  function pmSg(n) { return (n >= 0 ? "+" : "−") + Math.round(Math.abs(n)).toLocaleString("en-US"); }
+  function pmPct(n, d) { return n.toFixed(d == null ? 1 : d) + "%"; }
+  function pmE(s) { return escapeHtml(s); }
+  function pmSvg(name) { return icon(name); }
+  function pmChip(t, c) { return '<span class="pm-chip ' + (c || "") + '">' + t + "</span>"; }
+  function pmBtn(label, act, o) {
+    o = o || {}; var at = "";
+    Object.keys(o.data || {}).forEach(function (k) { at += " data-" + k + '="' + escapeAttr(o.data[k]) + '"'; });
+    return '<button class="pm-btn ' + (o.cls || "") + '" type="button" data-pa="' + act + '" data-fk="' + act + (o.fk || "") + '"' + at + (o.aria ? ' aria-label="' + escapeAttr(o.aria) + '"' : "") + ">" + (o.icon ? pmSvg(o.icon) : "") + label + "</button>";
+  }
+  function pmSw(on, act, id, label) { return '<button class="pm-sw" type="button" role="switch" aria-checked="' + !!on + '" aria-label="' + escapeAttr(label) + '" data-pa="' + act + '" data-id="' + escapeAttr(id) + '" data-fk="' + act + escapeAttr(id) + '"><i></i></button>'; }
+  function pmSeg(group, tabs, cur) {
+    return '<div class="pm-seg" role="tablist" aria-label="' + group + '">' + tabs.map(function (t) {
+      return '<button type="button" role="tab" aria-selected="' + (t[0] === cur) + '" data-pa="seg" data-g="' + group + '" data-v="' + t[0] + '" data-fk="seg' + group + t[0] + '">' + t[1] + (t[2] != null ? ' <span class="n">' + t[2] + "</span>" : "") + "</button>";
+    }).join("") + "</div>";
+  }
+  function pmHead(t) { return '<p class="pm-h">' + t + "</p>"; }
+  function pmGo(tab, label) { return '<button class="pm-link" type="button" data-pa="go" data-v="' + tab + '" data-fk="go' + tab + '"><span>' + label + "</span>" + pmSvg("arrow") + "</button>"; }
+  function pmTxLogged(txId) { return txId && byId(state.transactions, txId) ? pmChip("In transactions", "acc") : ""; }
+
+  /* ----- property selector ----- */
+  function pmSelector(cards) {
+    var l = state.properties, cur = pmCur();
+    if (!cards) {
+      if (l.length < 2) return "";
+      return '<div class="pm-chipsel" role="radiogroup" aria-label="Property">' + l.map(function (p) { return '<button type="button" role="radio" aria-checked="' + (p === cur) + '" data-pa="sel" data-id="' + escapeAttr(p.id) + '" data-fk="sel' + escapeAttr(p.id) + '">' + pmE(p.name) + "</button>"; }).join("") + "</div>";
+    }
+    return '<div role="radiogroup" aria-label="Your properties">' + l.map(function (p) {
+      var L = pmLedger(p, +todayISO().slice(0, 4), false), nx = pmNextEvent(p), over = nx && pmDiff(nx.date, todayISO()) < 0;
+      var st = p.role === "tenant" ? "I rent this" : p.status === "rented" ? "Rented" : p.status === "vacant" ? "Vacant" : "Owner-occupied";
+      return '<button type="button" class="pm-prop" role="radio" aria-checked="' + (p === cur) + '" data-pa="sel" data-id="' + escapeAttr(p.id) + '" data-fk="sel' + escapeAttr(p.id) + '"><div class="top"><div><h3>' + pmE(p.name) + '</h3><div class="sub">' + pmE([p.address, p.role === "tenant" ? "rented by you" : p.type === "off-plan" ? "bought off-plan" : "ready property"].filter(Boolean).join(" · ")) + "</div></div>" + pmChip(st, p.status === "vacant" ? "warn" : "ok") + "</div>" +
+        '<div class="ln">' + (p.role === "tenant" ? "Paid this year " + pmMoney(-L.net, p.currency) : "Net this year " + pmMoney(L.net, p.currency)) + (nx ? " · " + (over ? "overdue: " : "next: ") + pmE(nx.text) + ", " + pmFmt(nx.date) : "") + "</div></button>";
+    }).join("") + "</div>";
+  }
+  function pmNextEvent(p) { // the nearest money event that is not an estimate: rent, an installment or the service charge
+    var c = [], nx = p.tenancy.payments.filter(function (x) { return x.status !== "received"; })[0], owner = p.role === "owner";
+    if (nx) c.push({ date: nx.due, text: pmRentLabel(p, nx), kind: "rent" });
+    if (owner && p.hasInstallments) { var ni = pmSched(p).filter(function (x) { return !x.paid && x.amt > 0; })[0]; if (ni) c.push({ date: ni.date, text: "Installment " + ni.n, kind: "inst" }); }
+    if (owner) { var sd = pmScDue(p); if (sd) c.push({ date: sd.date, text: "Service charge", kind: "sc" }); }
+    c.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
+    return c[0] || null;
+  }
+  function pmEmptyNoProp() {
+    return '<div class="pm-empty">' + pmSvg("building") + "<h3>Add your first property</h3><p>Keep the installments you pay the developer, the rent you collect, the yearly service charge, cooling bills and contract renewals in one place.</p>" +
+      '<div class="pm-btns">' + pmBtn("Add property", "padd", { cls: "pri", icon: "plus" }) + pmBtn("Load sample property", "demo", { cls: "ghost" }) + '</div><p class="pm-note">The sample is a demo with made-up numbers, clearly named, and you can delete it any time.</p></div>';
+  }
+  function pmRender(id, html) {
+    var sec = document.getElementById("tab-" + id); if (!sec) return;
+    var ae = document.activeElement, key = ae && sec.contains(ae) && ae.getAttribute ? ae.getAttribute("data-fk") : "";
+    sec.innerHTML = html;
+    if (key) { var el = sec.querySelector('[data-fk="' + key + '"]'); if (el) el.focus({ preventScroll: true }); }
+  }
+  function renderProperties() {
+    if (currentSpace !== "properties") return;
+    var p = pmCur();
+    Object.keys(PM_PAGE_FNS).forEach(function (id) {
+      var h = p ? PM_PAGE_FNS[id]() : (id === "pr-overview" ? pmHead("Properties you own or rent.") : pmHead("Add a property to start.")) + pmEmptyNoProp();
+      pmRender(id, h);
+    });
+    if (p) pmCashUpdate();
+    document.getElementById("appbar-sub").textContent = SPACES.properties.name + (pmHeaderNote() ? " · " + pmHeaderNote() : "");
+  }
+
+  /* ----- Overview ----- */
+  function pmSetupCard(p) {
+    var s = [];
+    if (p.role === "owner" && p.hasInstallments && !(p.installments.count && p.installments.firstDate)) s.push(pmGo("pr-inst", "Add the installment plan"));
+    if (p.status === "rented" && !pmHasTenancy(p)) s.push(pmGo("pr-tenancy", p.role === "tenant" ? "Add your tenancy contract" : "Add the tenancy and rent"));
+    if (p.role === "owner" && !p.costs.serviceCharge.amount) s.push(pmGo("pr-costs", "Add the yearly service charge"));
+    if (!s.length) return "";
+    return '<section class="pm-card" aria-label="Finish setting up"><h2>Finish setting up</h2><div class="pm-steps">' + s.join("") + "</div></section>";
+  }
+  function pmUpcoming(p) {
+    var today = todayISO(), up = [], T = p.tenancy;
+    pmEvents(p, 0).forEach(function (e) { if (pmDiff(e.d, today) <= 90) up.push({ d: e.d, label: e.label.replace(" (renewal assumed)", ""), amt: e.amt, est: e.proj && e.k !== "rent" }); });
+    pmRenewDates(p).forEach(function (x) { var n = pmDiff(x.date, today); if (n >= 0 && n <= 90 && x.on) up.push({ d: x.date, label: "Renewal reminder, " + x.n + " days to go", amt: 0 }); });
+    if (p.role === "owner" && pmHasTenancy(p) && T.utilitiesInTenantName.remind) { var ud = pmAddDays(T.utilitiesInTenantName.checkedOn || today, 90); if (pmDiff(ud, today) <= 90) up.push({ d: ud, label: "Check tenant utilities", amt: 0 }); }
+    up.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+    return up;
+  }
+  function pmPgOverview() {
+    var p = pmCur(), L = pmLedger(p, +todayISO().slice(0, 4), PM_UI.ov === "fy"), owner = p.role === "owner", y = +todayISO().slice(0, 4);
+    var h = pmHead(owner ? "Everything about " + pmE(p.name) + " in one place." : "Your rented home, " + pmE(p.name) + ".");
+    h += pmSelector(true) + '<button class="pm-add" type="button" data-pa="padd" data-fk="padd">' + pmSvg("plus") + "Add property</button>";
+    h += pmSetupCard(p);
+    var I = p.installments;
+    if (owner && p.hasInstallments && I.count && I.firstDate) {
+      var tot = pmPlanTotal(p), paid = pmPaidTotal(p), pc = tot ? Math.min(100, paid / tot * 100) : 0, rows = pmSched(p), left = rows.filter(function (x) { return !x.paid && x.amt > 0; });
+      h += '<section class="pm-card" aria-label="Installment progress"><h2>Installment progress '  + '<span class="hr">' + pmE(p.currency) + '</span></h2><div class="pm-hero"><div class="pm-ring" style="--p:' + pc.toFixed(1) + '" role="img" aria-label="' + pc.toFixed(0) + ' percent paid"><span><div>' + pmPct(pc, 0) + "<small>paid</small></div></span></div>";
+      h += "<dl><div><dt>Paid</dt><dd>" + pmN(paid) + "</dd></div><div><dt>Remaining</dt><dd>" + pmN(Math.max(0, tot - paid)) + "</dd></div><div><dt>Total price</dt><dd>" + pmN(tot) + "</dd></div></dl></div>";
+      h += '<p class="pm-note">' + (left.length ? left.length + " monthly installment" + (left.length === 1 ? "" : "s") + " of " + pmMoney(I.amount, p.currency) + " left, the last on " + pmFmt(left[left.length - 1].date, true) + "." : "All installments are paid.") + "</p></section>";
+    } else if (owner && !p.hasInstallments) {
+      h += '<section class="pm-card" aria-label="Installments"><h2>Installments</h2><p class="pm-note" style="margin:0">No installment plan for this property. You can add one in Edit property.</p></section>';
+    }
+    if (!owner) {
+      var T = p.tenancy, nx = T.payments.filter(function (x) { return x.status !== "received"; })[0];
+      h += '<section class="pm-card" aria-label="Your rent"><h2>Your rent <span class="hr">' + pmE(p.currency) + '</span></h2>' + (pmHasTenancy(p) ? '<div class="pm-big">' + pmN(T.annualRent) + ' <small>a year, ' + pmFreqLabel(T.frequency) + "</small></div>" +
+        '<dl class="pm-kv" style="margin-top:12px"><dt>Landlord</dt><dd>' + (pmE(T.landlord) || "Not set") + "</dd><dt>Next payment</dt><dd>" + (nx ? pmFmt(nx.due) + ", " + pmUntil(nx.due) + " · " + pmN(nx.amount) : "None left") + "</dd><dt>Contract ends</dt><dd>" + pmFmt(T.end, true) + ", " + pmUntil(T.end) + "</dd></dl>" : '<p class="pm-note" style="margin:0">Add your tenancy contract to see rent and renewal dates.</p>') + "</section>";
+    }
+    h += '<section class="pm-card" aria-label="This year"><h2>' + y + ' <span class="hr">' + pmE(p.currency) + "</span></h2>" + pmSeg("Period", [["so", "So far"], ["fy", "Full year, projected"]], PM_UI.ov);
+    var rows2 = owner ? [["in", "↓", "Rent in", L.rent, "+"], ["out", "↑", "Installments", L.inst, "−", "Builds ownership, not a cost"], ["out", "↑", "Service charge", L.sc, "−"], ["out", "↑", "Cooling", L.cool, "−"], ["out", "↑", "Other costs", L.other, "−"]]
+      : [["out", "↑", "Rent paid", L.rent, "−"], ["out", "↑", "Cooling and utilities", L.cool, "−"], ["out", "↑", "Other costs", L.other, "−"]];
+    if (owner && !p.hasInstallments) rows2.splice(1, 1);
+    rows2.forEach(function (r) { h += '<div class="pm-row"><span class="pm-dot ' + r[0] + '" aria-hidden="true">' + r[1] + '</span><span class="m">' + r[2] + (r[5] ? "<small>" + r[5] + "</small>" : "") + '</span><span class="a ' + (r[0] === "in" ? "pm-pos" : "") + '">' + (r[3] === 0 ? "0" : r[4] + pmN(r[3])) + "</span></div>"; });
+    h += '<div class="pm-row"><span class="m"><b>' + (owner ? "Net" : "Total cost") + "</b><small>" + (owner ? "Cash in minus cash out" : "What your home costs you") + '</small></span><span class="a pm-big ' + (L.net < 0 ? "pm-neg" : "pm-pos") + '" style="font-size:20px">' + pmSg(L.net) + "</span></div>";
+    if (owner && p.hasInstallments) h += '<p class="pm-note">Before installments, the property earns <b class="' + (L.op >= 0 ? "pm-pos" : "pm-neg") + '">' + pmSg(L.op) + "</b>. The installments are what turn the net negative.</p>";
+    h += "</section>";
+    var yl = owner ? pmYield(p) : null;
+    if (yl) h += '<section class="pm-card" aria-label="Yield"><h2>Yield on the purchase price</h2><div class="pm-stats"><div class="pm-stat"><small>Gross</small><b>' + pmPct(yl.gross, 2) + "</b><span>rent / price</span></div><div class=\"pm-stat\"><small>Net</small><b>" + pmPct(yl.net, 2) + "</b><span>after " + pmN(yl.cost) + " a year of costs</span></div></div></section>";
+    var up = pmUpcoming(p), today = todayISO();
+    h += '<section class="pm-card" aria-label="Next 90 days"><h2>Next 90 days <span class="hr">to ' + pmFmt(pmAddDays(today, 90)) + "</span></h2>";
+    if (!up.length) h += '<p class="pm-note" style="margin:0">Nothing is due in the next 90 days.</p>';
+    up.forEach(function (e) {
+      var n = pmDiff(e.d, today), cls = e.amt > 0 ? "in" : e.amt < 0 ? (n <= 7 ? "wrn" : "out") : "info", g = e.amt > 0 ? "↓" : e.amt < 0 ? "↑" : "•";
+      h += '<div class="pm-row"><span class="pm-dot ' + cls + '" aria-hidden="true">' + g + '</span><span class="m">' + pmE(e.label) + "<small>" + pmFmt(e.d) + ", " + pmUntil(e.d) + (e.est ? ", estimate" : "") + '</small></span><span class="a ' + (e.amt > 0 ? "pm-pos" : "") + '">' + (e.amt ? pmSg(e.amt) : "") + "</span></div>";
+    });
+    h += '<p class="pm-note">Green is money in, orange is money out, amber is due within a week.</p></section>';
+    return h + '<div class="pm-btns" style="margin:0 0 6px">' + pmBtn("Edit property", "pedit", { icon: "pencil" }) + pmBtn("Property settings", "pset", {}) + "</div>";
+  }
+
+  /* ----- Installments ----- */
+  function pmInstRow(p, x, ev, lastPaid, firstUnpaid) {
+    var tag = "", e;
+    if (!x.paid) { e = ev.filter(function (z) { return z.k === "inst" && z.ref === x.n; })[0]; if (e) tag = e.topup === 0 ? pmChip("Funded from rent", "ok") : e.fromPot > 0 ? pmChip("Rent + top-up " + pmN(e.topup), "warn") : pmChip("Top-up " + pmN(e.topup), "bad"); }
+    var dd = pmDiff(x.date, todayISO());
+    var cs = x.paid ? pmChip("Paid" + (x.on ? " " + pmFmt(x.on) : ""), "ok") : x.st === "overdue" ? pmChip("Overdue " + Math.abs(dd) + (Math.abs(dd) === 1 ? " day" : " days"), "bad") : x.st === "due" ? pmChip("Due " + pmUntil(x.date), "warn") : pmChip("Upcoming", "");
+    var b = !x.paid && (x.st === "due" || x.st === "overdue" || x.n === firstUnpaid) ? pmBtn("Mark paid", "instpay", { data: { n: x.n }, fk: x.n, aria: "Mark installment " + x.n + " paid" }) : "";
+    if (x.paid && x.n === lastPaid) b = pmBtn("Undo", "instundo", { cls: "ghost", data: { n: x.n }, fk: x.n, aria: "Undo installment " + x.n });
+    return '<div class="pm-row wrap" data-n="' + x.n + '"><span class="m">Installment ' + x.n + " of " + p.installments.count + "<small>" + pmFmt(x.date, true) + " · " + pmN(x.amt) + '</small><span class="pm-chips" style="margin-top:6px">' + cs + tag + pmTxLogged(x.txId) + "</span></span>" + b + "</div>";
+  }
+  function pmPgInst() {
+    var p = pmCur(), I = p.installments, h = pmSelector(false);
+    if (p.role === "tenant") return h + pmHead("You rent this home.") + '<div class="pm-empty">' + pmSvg("cal") + "<h3>No installments</h3><p>Installments are for a property you own and pay off. You pay rent, see Tenancy.</p>" + pmGo("pr-tenancy", "Open Tenancy") + "</div>";
+    if (!p.hasInstallments) return h + pmHead("The developer payment plan.") + '<div class="pm-empty">' + pmSvg("cal") + "<h3>No installment plan</h3><p>This property has no payment plan, so installments are left out of the cash flow and the rent pot. Add one if you are still paying the developer.</p>" + '<div class="pm-btns">' + pmBtn("Add installment plan", "pinst", { cls: "pri", icon: "plus" }) + "</div></div>";
+    if (!I.count || !I.firstDate) return h + pmHead("The developer payment plan.") + '<div class="pm-empty">' + pmSvg("cal") + "<h3>Set up the payment plan</h3><p>Enter the total price, the number of monthly installments, the amount and the date of the first one. Tell us how many you have paid.</p>" + '<div class="pm-btns">' + pmBtn("Add installment plan", "pinst", { cls: "pri", icon: "plus" }) + "</div></div>";
+    var sc = pmSched(p), ev = pmSim(p, 0).ev, left = sc.filter(function (x) { return !x.paid && x.amt > 0; }), paid = sc.filter(function (x) { return x.paid; }), tot = pmPlanTotal(p), pt = pmPaidTotal(p);
+    var lastPaid = paid.length ? paid[paid.length - 1].n : 0, firstUnpaid = left.length ? left[0].n : 0;
+    h += pmHead("The developer payment plan, paid monthly on day " + +I.firstDate.slice(8, 10) + ".");
+    h += '<section class="pm-card" aria-label="Plan summary"><h2>Payment plan <span class="hr">' + pmE(p.currency) + '</span></h2><div class="pm-stats">';
+    h += '<div class="pm-stat"><small>Paid so far</small><b>' + paid.length + " of " + I.count + "</b><span>" + pmN(pt) + (I.prepaid ? " incl. " + pmN(I.prepaid) + " up front" : "") + "</span></div>";
+    h += '<div class="pm-stat"><small>Remaining</small><b>' + left.length + " month" + (left.length === 1 ? "" : "s") + "</b><span>" + pmN(Math.max(0, tot - pt)) + " to pay</span></div>";
+    h += '<div class="pm-stat"><small>Final payment</small><b>' + (left.length ? pmFmt(left[left.length - 1].date, true) : "Done") + "</b><span>if nothing changes</span></div>";
+    var funded = ev.filter(function (e) { return e.k === "inst"; }), fp = 0, ft = 0; funded.forEach(function (e) { fp += e.fromPot || 0; ft += -e.amt; });
+    h += '<div class="pm-stat"><small>Funded from rent</small><b>' + (ft ? pmPct(fp / ft * 100, 0) : "0%") + "</b><span>next 12 months, rest is top-up</span></div></div>";
+    h += '<div class="pm-bar" role="img" aria-label="' + (tot ? (pt / tot * 100).toFixed(0) : 0) + ' percent of the price paid"><i style="width:' + (tot ? Math.min(100, pt / tot * 100).toFixed(1) : 0) + '%"></i></div></section>';
+    h += pmSeg("Schedule", [["up", "Upcoming", left.length], ["paid", "Paid", paid.length]], PM_UI.inst);
+    h += '<section class="pm-card" aria-label="Schedule">';
+    if (PM_UI.inst === "up") {
+      var list = PM_UI.instAll ? left : left.slice(0, 6);
+      if (!left.length) h += '<p class="pm-note" style="margin:0">Every installment is paid.</p>';
+      list.forEach(function (x) { h += pmInstRow(p, x, ev, lastPaid, firstUnpaid); });
+      if (left.length > 6) h += '<div class="pm-btns">' + pmBtn(PM_UI.instAll ? "Show fewer" : "Show all " + left.length, "install", { cls: "ghost" }) + "</div>";
+    } else {
+      paid.slice().reverse().forEach(function (x) { h += pmInstRow(p, x, ev, lastPaid, firstUnpaid); });
+      if (!paid.length) h += '<p class="pm-note" style="margin:0">Nothing marked paid yet.</p>';
+      I.extra.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).forEach(function (x) { h += '<div class="pm-row"><span class="m">Extra payment<small>' + pmFmt(x.date, true) + (x.note ? " · " + pmE(x.note) : "") + '</small></span><span class="a">' + pmN(x.amount) + '</span><button class="pm-btn ghost" type="button" data-pa="extradel" data-id="' + escapeAttr(x.id) + '" aria-label="Remove extra payment of ' + pmN(x.amount) + '">Remove</button></div>'; });
+    }
+    h += '<div class="pm-btns">' + pmBtn("Add extra payment", "instextra", { icon: "plus" }) + pmBtn("Edit plan", "pinst", {}) + "</div>";
+    return h + '<p class="pm-note">Marking an installment paid lowers the rent pot, because the rent is rolled into these installments. Extra payments reduce what you still owe.</p></section>';
+  }
+
+  /* ----- Tenancy ----- */
+  function pmPayRow(p, x, lastRec, owner) {
+    var st = pmPayStatus(x), tag = pmRentTag(p, x), word = owner ? "received" : "paid";
+    var cs = st === "received" ? pmChip(owner ? "Received" : "Paid", "ok") + (x.receivedOn ? pmChip(pmFmt(x.receivedOn), "") : "") : st === "overdue" ? pmChip("Overdue " + Math.abs(pmDiff(x.due, todayISO())) + " days", "bad") : st === "postdated" ? pmChip("Postdated cheque", "warn") : st === "due" ? pmChip("Due " + pmUntil(x.due), "warn") : pmChip("Upcoming", "");
+    var b = x.status !== "received" && pmDiff(x.due, todayISO()) <= 14 ? pmBtn(owner ? "Mark received" : "Mark paid", "rentrec", { data: { id: x.id }, fk: x.id, aria: "Mark " + pmRentLabel(p, x) + " " + word }) : x.status === "received" && x.id === lastRec ? pmBtn("Undo", "rentundo", { cls: "ghost", data: { id: x.id }, fk: x.id, aria: "Undo " + pmRentLabel(p, x) }) : "";
+    return '<div class="pm-row wrap"><span class="m">' + pmE(tag === "yearly" ? "Yearly rent" : (p.tenancy.frequency === "monthly" ? "Rent " + tag : tag)) + " · " + pmFmt(x.due, true) + "<small>" + pmN(x.amount) + (x.cheque ? " · cheque " + pmE(x.cheque) : "") + '</small><span class="pm-chips" style="margin-top:6px">' + cs + pmTxLogged(x.txId) + "</span></span>" + b + "</div>";
+  }
+  function pmPgTenancy() {
+    var p = pmCur(), T = p.tenancy, owner = p.role === "owner", h = pmSelector(false), today = todayISO();
+    if (!owner) h += pmHead("Your landlord, contract and the rent you pay.");
+    else h += pmHead("Who lives there, what they pay, and when the contract ends.");
+    if (!pmHasTenancy(p)) {
+      var vac = p.status !== "rented";
+      return h + '<div class="pm-empty">' + pmSvg("key") + "<h3>" + (owner ? (vac ? "No tenant right now" : "No tenancy yet") : "No tenancy contract yet") + "</h3><p>" + (owner ? "Add the tenant, contract dates, rent and how often it is paid. The payment schedule is made for you." : "Add your landlord, contract dates and rent. The payment schedule is made for you.") + "</p>" + '<div class="pm-btns">' + pmBtn(owner ? "Add tenancy" : "Add contract", "tedit", { cls: "pri", icon: "plus" }) + "</div></div>" + pmHistoryCard(p);
+    }
+    var dr = pmDiff(T.end, today), tot = pmDiff(T.end, T.start) + 1, el = Math.min(100, Math.max(0, pmDiff(today, T.start) / tot * 100)), cur = pmE(p.currency);
+    h += '<section class="pm-card" aria-label="Contract"><h2>Contract <span class="hr">' + (T.ejari ? pmChip("Ejari " + pmE(T.ejari), "ok") : pmChip("No Ejari number", "warn")) + '</span></h2><dl class="pm-kv"><dt>' + (owner ? "Tenant" : "Landlord") + "</dt><dd>" + (pmE(owner ? T.tenant : T.landlord) || "Not set") + "</dd><dt>Contract</dt><dd>" + pmFmt(T.start, true) + " to " + pmFmt(T.end, true) + "</dd><dt>Rent</dt><dd>" + cur + " " + pmN(T.annualRent) + " a year</dd><dt>Payments</dt><dd>" + pmFreqLabel(T.frequency) + ", " + pmN(T.annualRent / (12 / pmFreqMonths(T.frequency))) + " each</dd><dt>Security deposit</dt><dd>" + cur + " " + pmN(T.deposit) + (owner ? " held" : " paid") + "</dd>" + (T.contactNote ? "<dt>Contact</dt><dd>" + pmE(T.contactNote) + "</dd>" : "") + '</dl><div class="pm-btns">' + pmBtn("Edit " + (owner ? "tenancy" : "contract"), "tedit", { icon: "pencil" }) + "</div></section>";
+    h += '<section class="pm-card" aria-label="Renewal"><h2>Renewal <span class="hr">ends ' + pmFmt(T.end, true) + '</span></h2><div class="pm-big" id="pm-renewal-days">' + dr + " <small>" + (dr === 1 ? "day" : "days") + " " + (dr < 0 ? "since it ended" : "left") + '</small></div><div class="pm-bar" role="img" aria-label="' + el.toFixed(0) + ' percent of the contract has passed"><i style="width:' + el.toFixed(1) + '%"></i>';
+    [90, 60, 30].forEach(function (n) { h += '<span class="mk" style="left:' + (100 - n / tot * 100).toFixed(1) + '%" title="' + n + ' days"></span>'; });
+    h += '</div><div class="pm-legend" style="margin-top:8px"><span>Marks show the 90, 60 and 30 day reminders</span></div>';
+    pmRenewDates(p).forEach(function (x) { h += '<div class="pm-row"><span class="m">Remind me at ' + x.n + ' days<small>' + (pmDiff(x.date, today) < 0 ? "Date has passed" : pmFmt(x.date, true) + ", " + pmUntil(x.date)) + "</small></span>" + pmSw(x.on, "ren", x.n, "Reminder at " + x.n + " days") + "</div>"; });
+    h += '<div class="pm-btns">' + pmBtn("Renew contract", "renew", { cls: "pri" }) + "</div></section>";
+    var pays = T.payments.slice().sort(function (a, b) { return a.due < b.due ? -1 : 1; }), lastRec = ""; pays.forEach(function (x) { if (x.status === "received") lastRec = x.id; });
+    var shown = pays.filter(function (x) { return x.due >= T.start || x.status === "received"; });
+    h += '<section class="pm-card" aria-label="Rent payments"><h2>' + (owner ? "Rent payments" : "Rent you pay") + ' <span class="hr">' + cur + "</span></h2>";
+    shown.slice(-12).forEach(function (x) { h += pmPayRow(p, x, lastRec, owner); });
+    h += '<p class="pm-note">' + (owner ? "Marking a payment received raises the rent pot. You can also add it to your transactions." : "Marking a payment paid can also add it to your transactions.") + "</p></section>";
+    if (owner) {
+      var U = T.utilitiesInTenantName, dsl = U.checkedOn ? pmDiff(today, U.checkedOn) : null;
+      h += '<section class="pm-card" aria-label="Tenant utilities"><h2>Tenant utilities <span class="hr">paid by tenant</span></h2><dl class="pm-kv"><dt>Water</dt><dd>' + (U.water ? pmChip("In tenant’s name", "ok") : pmChip("Not in tenant’s name", "warn")) + "</dd><dt>Electricity</dt><dd>" + (U.electricity ? pmChip("In tenant’s name", "ok") : pmChip("Not in tenant’s name", "warn")) + "</dd><dt>Last checked</dt><dd class=\"" + (dsl == null || dsl > 90 ? "pm-wrn" : "") + '">' + (dsl == null ? "Never" : pmFmt(U.checkedOn, true) + " (" + dsl + " days ago)") + "</dd></dl>";
+      h += '<p class="pm-note">You only confirm the bills are in the tenant’s name and up to date. Cooling is billed to you, see Costs.</p><div class="pm-row"><span class="m">Remind me every 90 days</span>' + pmSw(U.remind, "utilrem", "u", "Utilities check reminder") + '</div><div class="pm-btns">' + pmBtn("Mark checked today", "utilchk", {}) + pmBtn("Edit status", "utiledit", { cls: "ghost" }) + "</div></section>";
+    } else {
+      h += '<section class="pm-card" aria-label="Utilities you pay"><h2>Utilities you pay</h2><p class="pm-note" style="margin:0">Water, electricity and cooling are yours as the tenant. Log the bills under Costs, then they show in your totals.</p><div class="pm-btns">' + pmGo("pr-costs", "Open Costs") + "</div></section>";
+    }
+    return h + pmHistoryCard(p);
+  }
+  function pmHistoryCard(p) {
+    var hist = p.tenancy.history.slice().sort(function (a, b) { return a.from < b.from ? 1 : -1; }), vd = 0;
+    hist.forEach(function (v) { if (v.kind === "vacancy" && v.to) vd += pmDiff(v.to, v.from) + 1; });
+    var h = '<section class="pm-card" aria-label="History"><h2>Vacancy and renewals</h2>';
+    if (!hist.length) h += '<p class="pm-note" style="margin:0">Renewals and gaps with no tenant are recorded here.</p>';
+    hist.forEach(function (v) {
+      var n = v.to ? pmDiff(v.to, v.from) + 1 : 0;
+      h += '<div class="pm-row"><span class="m">' + pmFmt(v.from, true) + (v.to ? " to " + pmFmt(v.to, true) : " onwards") + "<small>" + (v.kind === "vacancy" ? "Vacant" : "Contract") + (v.note ? ", " + pmE(v.note) : "") + (v.rent ? ", rent " + pmN(v.rent) : "") + '</small></span><span class="a">' + (n ? n + " days" : "") + "</span></div>";
+    });
+    if (vd && p.role === "owner" && p.tenancy.annualRent) h += '<p class="pm-note">' + vd + " days vacant in total, about " + pmMoney(vd / 365 * p.tenancy.annualRent, p.currency) + " of rent not earned at today’s rent. Cooling and service charge still had to be paid.</p>";
+    return h + '<div class="pm-btns">' + pmBtn("Add vacancy period", "vacadd", { cls: "ghost", icon: "plus" }) + "</div></section>";
+  }
+
+  /* ----- Costs ----- */
+  function pmCoolBars(p, keys, avg) {
+    var vals = {}; p.costs.cooling.forEach(function (c) { vals[c.month] = c.amount; });
+    var ks = Object.keys(vals).sort().slice(-12), W = 316, H = 96, T = 6, B = 16, mx = 1, bw = 15, g = ks.length > 1 ? (W - ks.length * bw) / (ks.length - 1) : 0;
+    ks.forEach(function (k) { mx = Math.max(mx, vals[k]); }); mx = Math.max(mx, avg) * 1.1;
+    var s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Cooling bills by month, average ' + Math.round(avg) + " " + pmE(p.currency) + '" style="margin-top:12px">', ya = T + (H - T - B) * (1 - avg / mx);
+    s += '<line x1="0" x2="' + W + '" y1="' + ya + '" y2="' + ya + '" stroke="var(--ink-muted)" stroke-dasharray="3 3" stroke-width="1"/>';
+    ks.forEach(function (k, i) { var x = ks.length > 1 ? i * (bw + g) : (W - bw) / 2, hh = (H - T - B) * vals[k] / mx; s += '<rect x="' + x + '" y="' + (H - B - hh) + '" width="' + bw + '" height="' + hh + '" rx="3" style="fill:var(--accent)"/><text class="pm-ax" x="' + (x + bw / 2) + '" y="' + (H - 3) + '" text-anchor="middle">' + pmMonName(+k.slice(5) - 1)[0] + "</text>"; });
+    return s + '<text class="pm-ax" x="' + (W - 2) + '" y="' + (ya - 3) + '" text-anchor="end">avg ' + Math.round(avg) + "</text></svg>";
+  }
+  function pmPgCosts() {
+    var p = pmCur(), owner = p.role === "owner", C = p.costs, h = pmSelector(false), cur = pmE(p.currency), today = todayISO();
+    h += pmHead(owner ? "What you pay as the owner. The tenant pays water and electricity." : "What you pay as the tenant: cooling, utilities and other costs.");
+    var tabs = owner ? [["sc", "Service charge"], ["cool", "Cooling"], ["oth", "Other"]] : [["cool", "Cooling"], ["oth", "Other"]];
+    var view = tabs.some(function (t) { return t[0] === PM_UI.cost; }) ? PM_UI.cost : tabs[0][0];
+    h += pmSeg("Costs", tabs, view);
+    if (view === "sc") {
+      var sc = C.serviceCharge, due = pmScDue(p), last = sc.paidYears.slice().sort(function (a, b) { return b.year - a.year; })[0];
+      if (!sc.amount) return h + '<div class="pm-empty">' + pmSvg("receipt") + "<h3>No service charge yet</h3><p>The developer or owners association charges a fixed amount once a year for the common areas. Add the amount and the due date and you will be reminded.</p>" + '<div class="pm-btns">' + pmBtn("Add service charge", "scedit", { cls: "pri", icon: "plus" }) + "</div></div>";
+      var dd = due ? due.days : 0;
+      h += '<section class="pm-card" aria-label="Service charge"><h2>Service charge ' + (due ? due.year : "") + ' <span class="hr">once a year</span></h2><div class="pm-big">' + cur + " " + pmN(sc.amount) + '</div><div class="pm-chips" style="margin-top:8px">' + (due ? (dd < 0 ? pmChip("Overdue", "bad") : pmChip("Due " + pmFmt(due.date) + ", " + pmUntil(due.date), dd <= 30 ? "warn" : "")) : "") + pmChip("Every year on " + sc.dueDay + " " + pmMonName(sc.dueMonth - 1), "acc") + "</div>";
+      h += '<dl class="pm-kv" style="margin-top:14px"><dt>Next due</dt><dd>' + (due ? pmFmt(due.date, true) : "") + "</dd>" + (last ? "<dt>Last paid</dt><dd>" + last.year + (last.on ? ", " + pmFmt(last.on, true) : "") + (last.amount ? " · " + pmN(last.amount) : "") + "</dd>" : "") + "</dl>";
+      h += '<p class="pm-note">A fixed amount for the common areas (pool, parking, reception, lifts). You pay it, not the tenant.</p><div class="pm-btns">' + (due ? pmBtn("Mark paid", "scpay", { cls: "pri" }) : "") + (last && last.year === +today.slice(0, 4) ? pmBtn("Undo " + last.year, "scundo", { cls: "ghost" }) : "") + pmBtn("Edit service charge", "scedit", {}) + "</div></section>";
+    } else if (view === "cool") {
+      var keys = C.cooling.map(function (c) { return c.month; }), avg = pmCoolAvg(p);
+      if (!keys.length) return h + '<div class="pm-empty">' + pmSvg("receipt") + "<h3>No cooling bills yet</h3><p>District cooling is billed monthly and changes with the weather. Add each bill; the average is used as the estimate in Cash flow.</p>" + '<div class="pm-btns">' + pmBtn("Add bill", "billadd", { cls: "pri", icon: "plus" }) + "</div></div>";
+      var lastB = C.cooling[C.cooling.length - 1], tot = 0, mx = C.cooling[0]; C.cooling.forEach(function (c) { if (c.month.slice(0, 4) === lastB.month.slice(0, 4)) tot += c.amount; if (c.amount > mx.amount) mx = c; });
+      h += '<section class="pm-card" aria-label="Cooling bills"><h2>Cooling <span class="hr">' + (owner ? "district cooling, " : "") + cur + '</span></h2><div class="pm-stats"><div class="pm-stat"><small>Average</small><b>' + pmN(avg) + "</b><span>per month</span></div><div class=\"pm-stat\"><small>Last bill</small><b>" + pmN(lastB.amount) + "</b><span>" + pmMonName(+lastB.month.slice(5) - 1) + ", " + (lastB.amount >= avg ? "+" : "−") + Math.abs((avg ? lastB.amount / avg - 1 : 0) * 100).toFixed(0) + "% vs average</span></div>";
+      h += '<div class="pm-stat"><small>Total ' + lastB.month.slice(0, 4) + "</small><b>" + pmN(tot) + "</b><span>" + keys.length + ' bills</span></div><div class="pm-stat"><small>Peak</small><b>' + pmN(mx.amount) + "</b><span>" + pmMonName(+mx.month.slice(5) - 1) + "</span></div></div>";
+      h += pmCoolBars(p, keys, avg) + '<p class="pm-note">Billed monthly and it changes with the weather. The average is the estimate in Cash flow for a month with no bill yet.</p></section>';
+      h += '<section class="pm-card" aria-label="Bill list"><h2>Bills <span class="hr">newest first</span></h2>';
+      var kk = C.cooling.slice().reverse();
+      (PM_UI.coolAll ? kk : kk.slice(0, 5)).forEach(function (c) { var d = avg ? (c.amount / avg - 1) * 100 : 0; h += '<div class="pm-row"><span class="m">' + pmMonName(+c.month.slice(5) - 1) + " " + c.month.slice(0, 4) + "<small>" + (d >= 0 ? "▲ " : "▼ ") + Math.abs(d).toFixed(0) + "% vs average</small>" + pmTxLogged(c.txId) + '</span><span class="a">' + pmN(c.amount) + '</span><button class="pm-btn ghost" type="button" data-pa="billedit" data-id="' + escapeAttr(c.id) + '" data-fk="be' + escapeAttr(c.id) + '" aria-label="Edit the ' + pmMonName(+c.month.slice(5) - 1) + " " + c.month.slice(0, 4) + ' bill">Edit</button></div>'; });
+      h += '<div class="pm-btns">' + pmBtn("Add bill", "billadd", { cls: "pri", icon: "plus" }) + (kk.length > 5 ? pmBtn(PM_UI.coolAll ? "Show fewer" : "Show all " + kk.length, "coolall", { cls: "ghost" }) : "") + "</div></section>";
+    } else {
+      var t = 0, yS = today.slice(0, 4) + "-01-01", yE = today.slice(0, 4) + "-12-31"; C.other.forEach(function (o) { pmOtherOcc(o, yS, today).forEach(function () { t += o.amount; }); });
+      h += '<section class="pm-card" aria-label="Other costs"><h2>Other costs <span class="hr">' + cur + " " + pmN(t) + " this year</span></h2>";
+      if (!C.other.length) h += '<p class="pm-note" style="margin:0">Insurance, repairs, agent fees. A cost that repeats makes a reminder 14 days before it is due.</p>';
+      C.other.slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; }).forEach(function (o) {
+        var nx = pmOtherNext(o);
+        h += '<div class="pm-row wrap"><span class="m">' + pmE(o.name) + "<small>" + pmFmt(o.date, true) + "</small>" + (o.recurring ? '<span class="pm-chips" style="margin-top:6px">' + pmChip("Repeats " + (o.recurring === "yearly" ? "every year" : o.recurring === "monthly" ? "every month" : "every quarter"), "acc") + (nx ? pmChip("Next " + pmFmt(nx), "") : "") + pmTxLogged(o.txId) + "</span>" : pmTxLogged(o.txId)) + '</span><span class="a">' + pmN(o.amount) + '</span><button class="pm-btn ghost" type="button" data-pa="costedit" data-id="' + escapeAttr(o.id) + '" data-fk="ce' + escapeAttr(o.id) + '" aria-label="Edit ' + escapeAttr(o.name) + '">Edit</button></div>';
+      });
+      h += '<div class="pm-btns">' + pmBtn("Add cost", "costadd", { cls: "pri", icon: "plus" }) + '</div><p class="pm-note">A cost marked as repeating is counted automatically every period and shows in Cash flow.</p></section>';
+    }
+    return h;
+  }
+
+  /* ----- Cash flow ----- */
+  function pmNiceStep(r) { var pw = Math.pow(10, Math.floor(Math.log10(r || 1))), f = (r || 1) / pw; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * pw; }
+  function pmChartSvg(p, res) {
+    var W = 340, H = 214, L = 38, R = 6, T = 10, B = 30, pw = W - L - R, ph = H - T - B, M = res.months, owner = p.role === "owner", buf = owner ? p.settings.buffer : 0;
+    var top = Math.max(buf, Math.max.apply(null, M.map(function (m) { return Math.max(m.inn, owner ? m.end : 0); }))), bot = Math.max.apply(null, M.map(function (m) { return m.out; }));
+    top = top || 1; bot = bot || 1;
+    var step = pmNiceStep((top + bot) / 5), yM = Math.ceil(top / step) * step, ym = -Math.ceil(bot / step) * step, y = function (v) { return T + ph * (yM - v) / (yM - ym); };
+    var cw = pw / 12, bw = Math.min(11, cw * 0.42), sel = PM_UI.month, s = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Twelve month cash flow chart, from ' + pmMonName(M[0].m) + " " + M[0].y + '. A table with the same numbers follows.">', v;
+    s += '<defs><pattern id="pm-hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2" height="4" style="fill:var(--pm-good)"/></pattern></defs>';
+    for (v = ym; v <= yM + 1; v += step) s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(v) + '" y2="' + y(v) + '" style="stroke:var(--soft-groove)" stroke-width="1"/><text class="pm-ax" x="' + (L - 5) + '" y="' + (y(v) + 3) + '" text-anchor="end">' + (v === 0 ? "0" : (v < 0 ? "−" : "") + Math.abs(v) / 1000 + "k") + "</text>";
+    s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(0) + '" y2="' + y(0) + '" style="stroke:var(--ink-muted)" stroke-width="1.2"/>';
+    var pts = [];
+    M.forEach(function (m, i) {
+      var cx = L + cw * (i + 0.5);
+      if (i === sel) s += '<rect x="' + (cx - cw / 2) + '" y="' + T + '" width="' + cw + '" height="' + ph + '" rx="6" style="fill:var(--accent)" opacity=".13"/>';
+      if (m.inn) s += '<rect x="' + (cx - bw / 2) + '" y="' + y(m.inn) + '" width="' + bw + '" height="' + (y(0) - y(m.inn)) + '" rx="2" style="' + (m.proj ? "fill:url(#pm-hatch);stroke:var(--pm-good)" : "fill:var(--pm-good)") + '"/>';
+      if (m.out) s += '<rect x="' + (cx - bw / 2) + '" y="' + y(0) + '" width="' + bw + '" height="' + (y(-m.out) - y(0)) + '" rx="2" style="fill:var(--accent)"/>';
+      pts.push(cx + "," + y(m.end));
+      s += '<text class="pm-ax" x="' + cx + '" y="' + (H - 15) + '" text-anchor="middle" style="' + (i === sel ? "font-weight:800;fill:var(--ink)" : "") + '">' + pmMonName(m.m)[0] + "</text>";
+      if (owner && m.topup > 0) s += '<text x="' + cx + '" y="' + (H - 2) + '" text-anchor="middle" style="fill:var(--pm-bad);font-size:12px;font-weight:800">!</text>';
+      else if (i === 0 || m.m === 0) s += '<text class="pm-ax" x="' + cx + '" y="' + (H - 3) + '" text-anchor="middle">' + m.y + "</text>";
+      s += '<rect data-pa="msel" data-i="' + i + '" x="' + (cx - cw / 2) + '" y="' + T + '" width="' + cw + '" height="' + (H - T) + '" fill="transparent" style="cursor:pointer"><title>' + pmMonName(m.m) + " " + m.y + ": in " + pmN(m.inn) + ", out " + pmN(m.out) + "</title></rect>";
+    });
+    if (owner) {
+      if (buf) s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y(buf) + '" y2="' + y(buf) + '" style="stroke:var(--ink-muted)" stroke-dasharray="4 3" stroke-width="1.4"/>';
+      s += '<polyline points="' + pts.join(" ") + '" fill="none" style="stroke:var(--ink)" stroke-width="2" stroke-linejoin="round"/>';
+      M.forEach(function (m, i) { s += '<circle cx="' + (L + cw * (i + 0.5)) + '" cy="' + y(m.end) + '" r="2.8" style="fill:var(--page);stroke:var(--ink)" stroke-width="1.6"/>'; });
+    }
+    return s + "</svg>";
+  }
+  function pmCashAlert(p, r) {
+    var d = r.firstShort, bf = r.firstBuf, cur = p.currency;
+    if (d) return '<div class="pm-alert bad" role="alert" id="pm-cf-alertbox"><span class="ai" aria-hidden="true">!</span><span><b>Rent will not cover ' + pmE(d.label.replace(" (estimate)", "").replace(" (recurring)", "")) + "</b>On " + pmFmt(d.d, true) + " the rent pot has " + pmMoney(d.fromPot, cur) + " and you need " + pmMoney(-d.amt, cur) + ". You would top up " + pmMoney(d.topup, cur) + ". Over the next 12 months the top-ups add up to " + pmMoney(r.top, cur) + ".</span></div>";
+    if (bf) return '<div class="pm-alert warn" id="pm-cf-alertbox"><span class="ai" aria-hidden="true">!</span><span><b>The rent pot drops below your buffer</b>On ' + pmFmt(bf.d, true) + " it falls to " + pmMoney(bf.pot, cur) + ", under the " + pmMoney(r.buffer, cur) + " you want to keep. No top-up is needed yet.</span></div>";
+    return '<div class="pm-alert ok" id="pm-cf-alertbox"><span class="ai" aria-hidden="true">✓</span><span><b>Covered for the next 12 months</b>The rent pot never runs out' + (r.buffer ? " and stays above your buffer" : "") + ".</span></div>";
+  }
+  function pmPgCash() {
+    var p = pmCur(), owner = p.role === "owner", h = pmSelector(false);
+    h += pmHead(owner ? "Rent in against installments and costs out." : "What you will pay over the next 12 months.");
+    h += '<div id="pm-cf-alert"></div>';
+    h += '<section class="pm-card" aria-label="12 month chart"><h2>Next 12 months <span class="hr">' + pmE(p.currency) + '</span></h2><div id="pm-cf-chart"></div><div class="pm-legend">' + (owner ? '<span><i style="background:var(--pm-good)"></i>Money in</span>' : "") + '<span><i style="background:var(--accent)"></i>Money out</span>' + (owner ? '<span><i style="background:var(--ink);height:3px;vertical-align:3px"></i>Rent pot</span><span><i style="border-top:2px dashed var(--ink-muted);height:0;border-radius:0;vertical-align:3px"></i>Buffer</span><span><b class="pm-neg">!</b> top-up needed</span>' : "") + "</div>";
+    h += '<div class="pm-mnav"><button class="pm-ib" type="button" data-pa="mprev" data-fk="mprev" aria-label="Previous month">' + pmSvg("chevron").replace('<svg class="">', '<svg class="chevron-flip">') + '</button><b id="pm-cf-mt" aria-live="polite"></b><button class="pm-ib" type="button" data-pa="mnext" data-fk="mnext" aria-label="Next month">' + pmSvg("chevron") + '</button></div><div id="pm-cf-month"></div>';
+    h += '<details style="margin-top:8px"><summary class="pm-sum">Show as a table</summary><div style="overflow-x:auto" id="pm-cf-table"></div></details></section>';
+    if (owner) {
+      h += '<section class="pm-card" aria-label="Your numbers"><h2>Your numbers</h2><div class="pm-num"><label for="pm-in-pot">Rent pot now (' + pmE(p.currency) + ')<input class="pm-in" id="pm-in-pot" type="number" inputmode="numeric" min="0" step="500"></label><label for="pm-in-buf">Buffer to keep (' + pmE(p.currency) + ')<input class="pm-in" id="pm-in-buf" type="number" inputmode="numeric" min="0" step="500"></label></div><p class="pm-note">The rent pot is the rent you have received and not yet spent. When it cannot cover a payment, you top up the difference. Money you mark received or paid moves the pot for you.</p></section>';
+      h += '<section class="pm-card" aria-label="What if rent is late"><h2>What if the rent is late <span class="hr" id="pm-cf-latev"></span></h2><label for="pm-in-late" class="pm-small pm-ink2">Every rent payment arrives later by</label><input class="pm-rng" id="pm-in-late" type="range" min="0" max="60" step="5" aria-describedby="pm-cf-lateres"><div id="pm-cf-lateres" class="pm-live" style="margin:6px 0 0"></div></section>';
+    }
+    h += '<section class="pm-card" aria-label="Coverage"><h2>' + (owner ? "Rolling summary" : "Summary") + '</h2><div id="pm-cf-cover"></div></section>';
+    return h;
+  }
+  function pmCashUpdate() {
+    var p = pmCur(); if (!p || !document.getElementById("pm-cf-chart")) return;
+    var owner = p.role === "owner", late = owner ? PM_UI.late : 0, r = pmSim(p, late), b = pmSim(p, 0), M = r.months, E = function (id) { return document.getElementById(id); }, cur = p.currency;
+    if (PM_UI.month < 0 || PM_UI.month > 11) PM_UI.month = owner && r.firstShort ? Math.max(0, M.findIndex(function (m) { return m.ev.indexOf(r.firstShort) >= 0; })) : 0;
+    E("pm-cf-alert").innerHTML = owner ? pmCashAlert(p, r) : "";
+    E("pm-cf-chart").innerHTML = pmChartSvg(p, r);
+    var m = M[PM_UI.month]; E("pm-cf-mt").textContent = pmMonName(m.m) + " " + m.y;
+    var h = '<div class="pm-stats" style="margin-top:8px"><div class="pm-stat"><small>In</small><b class="pm-pos">' + (m.inn ? "+" + pmN(m.inn) : "0") + '</b></div><div class="pm-stat"><small>Out</small><b>' + (m.out ? "−" + pmN(m.out) : "0") + "</b></div></div>";
+    m.ev.forEach(function (e) { h += '<div class="pm-row"><span class="m">' + pmE(e.label) + "<small>" + pmFmt(e.d) + (owner ? ", pot after: " + pmN(e.pot) : "") + (e.topup > 0 ? ' · <b class="pm-neg">you top up ' + pmN(e.topup) + "</b>" : "") + '</small></span><span class="a ' + (e.amt > 0 ? "pm-pos" : "") + '">' + pmSg(e.amt) + "</span></div>"; });
+    if (!m.ev.length) h += '<p class="pm-note">Nothing scheduled this month.</p>';
+    E("pm-cf-month").innerHTML = h;
+    var t = '<table class="pm-table"><thead><tr><th scope="col">Month</th><th scope="col">In</th><th scope="col">Out</th>' + (owner ? '<th scope="col">Pot at month end</th><th scope="col">Top-up</th>' : "") + "</tr></thead><tbody>";
+    M.forEach(function (x) { t += '<tr><th scope="row" style="font-weight:700">' + pmMonName(x.m) + " " + x.y + "</th><td>" + pmN(x.inn) + "</td><td>" + pmN(x.out) + "</td>" + (owner ? "<td>" + pmN(x.end) + "</td><td>" + (x.topup ? pmN(x.topup) : "") + "</td>" : "") + "</tr>"; });
+    E("pm-cf-table").innerHTML = t + "</tbody></table>";
+    if (owner) {
+      if (document.activeElement !== E("pm-in-pot")) E("pm-in-pot").value = Math.round(r.pot0 * 100) / 100;
+      if (document.activeElement !== E("pm-in-buf")) E("pm-in-buf").value = p.settings.buffer;
+      E("pm-in-late").value = PM_UI.late; E("pm-cf-latev").textContent = PM_UI.late + " days";
+      var res = PM_UI.late === 0 ? "Slide to see what a late payment does. Today the first top-up is " + (b.firstShort ? pmFmt(b.firstShort.d, true) : "not needed") + "." : "With rent " + PM_UI.late + " days late, the first top-up is " + (r.firstShort ? pmFmt(r.firstShort.d, true) : "not needed") + (b.firstShort ? " (on time: " + pmFmt(b.firstShort.d) + ")" : "") + ", and the 12 month top-ups are " + pmMoney(r.top, cur) + ", which is " + pmMoney(Math.abs(r.top - b.top), cur) + " " + (r.top >= b.top ? "more" : "less") + " than on time.";
+      E("pm-cf-lateres").textContent = res;
+      var gap = r.outT - r.inT;
+      E("pm-cf-cover").innerHTML = '<div class="pm-big">Rent covers ' + pmPct(r.covers, 0) + ' <small>of installments and costs</small></div><div class="pm-bar" role="img" aria-label="' + r.covers.toFixed(0) + ' percent covered"><i style="width:' + Math.min(100, r.covers).toFixed(1) + '%"></i></div><dl class="pm-kv" style="margin-top:12px"><dt>Money in, 12 months</dt><dd class="pm-pos">+' + pmN(r.inT) + "</dd><dt>Money out, 12 months</dt><dd>−" + pmN(r.outT) + "</dd><dt>Gap to fund yourself</dt><dd>" + pmMoney(Math.max(0, gap), cur) + "</dd><dt>That is per month</dt><dd>" + pmMoney(Math.max(0, gap) / 12, cur) + '</dd></dl><p class="pm-note">Includes installments, service charge, estimated cooling and recurring costs. Rent in a renewal period is assumed at the same rent.</p>';
+    } else {
+      E("pm-cf-cover").innerHTML = '<div class="pm-big">' + pmMoney(r.outT, cur) + ' <small>over 12 months</small></div><dl class="pm-kv" style="margin-top:12px"><dt>Per month, on average</dt><dd>' + pmMoney(r.outT / 12, cur) + "</dd></dl>";
+    }
+  }
+
+  /* ----- Docs and Reminders ----- */
+  function pmDocIcon(t) {
+    var P = { Contract: '<path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h4"/>', Ejari: '<path d="M7 3h7l5 5v13H7z"/><path d="M10 14l2 2 4-4"/>', "Payment plan": '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>', "Service charge": '<path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-6h6v6"/>', "Cooling bill": '<path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/>', Receipt: '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>' };
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (P[t] || '<path d="M7 3h7l5 5v13H7z"/>') + "</svg>";
+  }
+  function pmPgDocs() {
+    var p = pmCur(), h = pmSelector(false), types = ["All"].concat(PM_DOC_TYPES);
+    h += pmHead("Notes about the papers for this property. Only the details are kept here, no files are uploaded.");
+    h += '<div class="pm-seg" role="tablist" aria-label="Filter documents">' + types.map(function (t) { return '<button type="button" role="tab" aria-selected="' + (PM_UI.docf === t) + '" data-pa="docf" data-v="' + t + '" data-fk="docf' + t + '">' + t + "</button>"; }).join("") + "</div>";
+    var list = p.documents.filter(function (d) { return PM_UI.docf === "All" || d.type === PM_UI.docf; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    if (!list.length) h += '<div class="pm-empty">' + pmSvg("file") + "<h3>" + (PM_UI.docf === "All" ? "No documents yet" : "No " + PM_UI.docf.toLowerCase() + " documents") + "</h3><p>Note down where the contract, Ejari certificate, payment plan and notices are kept, with their dates.</p></div>";
+    else h += '<div class="pm-docs">' + list.map(function (d) { return '<button class="pm-doct" type="button" data-pa="docedit" data-id="' + escapeAttr(d.id) + '" data-fk="doc' + escapeAttr(d.id) + '" aria-label="' + escapeAttr(d.title + ", " + d.type + (d.date ? ", " + pmFmt(d.date, true) : "")) + '"><span class="di">' + pmDocIcon(d.type) + "</span><b>" + pmE(d.title) + "</b><small>" + (d.date ? pmFmt(d.date, true) : "No date") + (d.note ? " · " + pmE(d.note.slice(0, 40)) : "") + '</small><span class="pm-chip">' + pmE(d.type) + "</span></button>"; }).join("") + "</div>";
+    return h + '<div class="pm-btns">' + pmBtn("Add document note", "docadd", { cls: "pri", icon: "plus" }) + "</div>";
+  }
+  function pmPgRem() {
+    var p = pmCur(), list = pmReminders(p), on = list.filter(function (r) { return pmRemOn(p, r); }).length, h = pmSelector(false), today = todayISO();
+    h += pmHead(on + " of " + list.length + " reminders are on. They are made from the dates in this property.");
+    ["Money in", "Money out", "Contract", "Costs"].forEach(function (g) {
+      var l = list.filter(function (r) { return r.grp === g; }); if (!l.length) return;
+      h += '<section class="pm-card" aria-label="' + g + '"><h2>' + g + "</h2>";
+      l.forEach(function (r) {
+        var fire = pmAddDays(r.date, -r.lead), o = pmRemOn(p, r), t = pmRemTime(p, r);
+        h += '<div class="pm-row" style="flex-wrap:wrap"><span class="m" style="flex:1 1 100%">' + pmE(r.title) + "<small>" + pmE(r.sub) + "</small><small>" + (fire < today ? "Due " + pmFmt(r.date, true) + ", " + pmUntil(r.date) : "Reminds " + pmFmt(fire, true) + " at " + t) + (r.lead ? " (" + r.lead + " days before " + pmFmt(r.date) + ")" : "") + '</small></span><label class="pm-small pm-ink2" style="display:flex;align-items:center;gap:8px;flex:1">Time of day <input class="pm-time" type="time" value="' + t + '" data-pa="rtime" data-id="' + escapeAttr(r.id) + '" data-fk="rt' + escapeAttr(r.id) + '" aria-label="Time of day for ' + escapeAttr(r.title) + '"' + (o ? "" : " disabled") + ">" + "</label>" + pmSw(o, "rem", r.id, r.title) + "</div>";
+      });
+      h += "</section>";
+    });
+    return h + '<p class="pm-note">These reminders appear here and on the Home card. Phone notifications while the app is open use the "Bill reminders" switch in Settings; push notifications arrive with the Android app.</p>';
+  }
+
+  /* ----- sheets (the app's own bottom sheet) ----- */
+  function pmSheet(cfg) {
+    var html = '<div class="modal-head"><h3>' + pmE(cfg.title) + '</h3><button type="button" class="icon-btn ghost" data-close aria-label="Close" style="width:30px;height:30px">' + icon("x") + "</button></div>";
+    if (cfg.desc) html += '<p class="pm-fsub">' + cfg.desc + "</p>";
+    html += '<form id="pm-form" novalidate>';
+    cfg.fields.forEach(function (f) {
+      var id = "pmf-" + f.id, v = f.value == null ? "" : f.value, inner;
+      if (f.type === "switch") {
+        inner = '<div class="toggle-row"><span id="' + id + '-l">' + pmE(f.label) + '</span><label class="switch"><input type="checkbox" id="' + id + '" aria-labelledby="' + id + '-l"' + (v ? " checked" : "") + ' /><span class="track"></span><span class="thumb"></span></label></div>' + (f.hint ? '<div class="footnote" style="margin:-4px 0 12px">' + f.hint + "</div>" : "");
+      } else {
+        inner = '<div class="field"><label for="' + id + '">' + pmE(f.label) + "</label>";
+        if (f.type === "select") inner += '<select id="' + id + '">' + f.opts.map(function (o) { return '<option value="' + escapeAttr(o[0]) + '"' + (String(o[0]) === String(v) ? " selected" : "") + ">" + pmE(o[1]) + "</option>"; }).join("") + "</select>";
+        else inner += '<input id="' + id + '" type="' + f.type + '"' + (f.type === "number" ? ' step="' + (f.step || "any") + '" min="' + (f.min == null ? 0 : f.min) + '" inputmode="decimal"' : "") + ' value="' + escapeAttr(v) + '"' + (f.ph ? ' placeholder="' + escapeAttr(f.ph) + '"' : "") + (f.type === "text" ? ' autocomplete="off"' : "") + " />";
+        inner += (f.hint ? '<div class="footnote">' + f.hint + "</div>" : "") + "</div>";
+      }
+      html += '<div data-pmw="' + f.id + '">' + inner + "</div>";
+    });
+    html += '<div class="pm-live" id="pm-live" role="status" aria-live="polite" hidden></div><p class="pm-err" id="pm-err" role="alert" hidden></p>';
+    html += '<button type="submit" class="btn primary">' + pmE(cfg.ok || "Save") + "</button>";
+    if (cfg.danger) html += '<button type="button" class="btn danger" style="margin-top:10px" data-danger>' + pmE(cfg.danger.label) + "</button>";
+    html += "</form>";
+    openModal(html);
+    document.querySelector("#modal-sheet [data-close]").addEventListener("click", closeModal);
+    var form = document.getElementById("pm-form");
+    function vals() {
+      var v = {};
+      cfg.fields.forEach(function (f) {
+        var el = document.getElementById("pmf-" + f.id);
+        v[f.id] = f.type === "switch" ? el.checked : f.type === "number" ? (parseFloat(el.value) || 0) : el.value;
+      });
+      return v;
+    }
+    function refresh() {
+      var v = vals();
+      cfg.fields.forEach(function (f) { if (f.show) document.querySelector('#pm-form [data-pmw="' + f.id + '"]').hidden = !f.show(v); });
+      var lv = document.getElementById("pm-live"), t = cfg.live ? cfg.live(v) : "";
+      lv.hidden = !t; lv.innerHTML = t || "";
+    }
+    form.addEventListener("input", function () { document.getElementById("pm-err").hidden = true; refresh(); });
+    form.addEventListener("change", refresh); refresh();
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var v = vals(), err = cfg.check ? cfg.check(v) : "";
+      if (err) { var er = document.getElementById("pm-err"); er.textContent = err; er.hidden = false; return; }
+      closeModal(); cfg.submit(v);
+    });
+    if (cfg.danger) form.querySelector("[data-danger]").addEventListener("click", function () { closeModal(); cfg.danger.fn(); });
+    setTimeout(function () { var f = form.querySelector("input:not([type=checkbox]),select"); if (f) f.focus(); }, 30);
+  }
+  function pmSave() { save(); renderAll(); }
+  function pmCommit(msg, mutate) { // change the selected property, save, and offer Undo
+    var p = pmCur(), before = JSON.stringify(p), id = p.id;
+    mutate(p); pmSave();
+    todoToast(msg, "Undo", function () {
+      var i = state.properties.findIndex(function (x) { return x.id === id; }), old = normalizeProperty(JSON.parse(before), state.settings.currency);
+      if (i >= 0) state.properties[i] = old; else state.properties.push(old);
+      pmSave();
+    });
+  }
+  function pmByIdIn(list, id) { for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i]; return null; }
+  function pmTxSwitch(p, hintExtra) {
+    var diff = p.currency !== state.settings.currency;
+    return { id: "tx", label: "Also add to my transactions", type: "switch", value: state.ui.prop.alsoTx, hint: "Opens the Add Transaction sheet filled in, so you choose the card. Nothing is added unless you save it there." + (diff ? " Transactions use " + pmE(state.settings.currency) + ", this property uses " + pmE(p.currency) + ": check the amount." : "") + (hintExtra || "") };
+  }
+  function pmRememberTx(on) { if (state.ui.prop.alsoTx !== !!on) { state.ui.prop.alsoTx = !!on; } }
+  function pmCat(id) { return byId(state.categories, id) ? id : ""; }
+  function pmLogTx(spec) { // spec: { amount, merchant, cat, date, note, type, onSave }; the app's own Add Transaction sheet, nothing saved until Save
+    openTransactionForm(null, { amount: spec.amount, merchant: spec.merchant, categoryId: pmCat(spec.cat), date: spec.date, note: spec.note || "", type: spec.type || "expense", onSave: spec.onSave });
+  }
+  function pmAfter(p, wantTx, spec, setTx) { // after the property change is saved, open the transaction sheet if asked
+    if (!wantTx) return;
+    spec.onSave = function (rec) { var q = pmByIdIn(state.properties, p.id); if (q) setTx(q, rec.id); };
+    setTimeout(function () { pmLogTx(spec); }, 0);
+  }
+  var PM_STATUS = [["rented", "Rented"], ["vacant", "Vacant"], ["owner-occupied", "Owner-occupied"]];
+
+  function pmSheetProperty(p) {
+    var cur = state.settings.currency, edit = !!p;
+    pmSheet({
+      title: edit ? "Edit property" : "Add property", desc: "A home you own, or one you rent. You can add the payment plan, tenancy and costs next.", ok: edit ? "Save" : "Add property",
+      fields: [
+        { id: "name", label: "Name", type: "text", value: edit ? p.name : "", ph: "e.g. Marina Residence, Apt 1204" },
+        { id: "role", label: "Your role", type: "select", value: edit ? p.role : "owner", opts: [["owner", "I own it"], ["tenant", "I rent it"]] },
+        { id: "type", label: "Type", type: "select", value: edit ? p.type : "off-plan", opts: [["off-plan", "Off-plan, paying a developer"], ["ready", "Ready property"]], show: function (v) { return v.role === "owner"; } },
+        { id: "status", label: "Status", type: "select", value: edit ? p.status : "rented", opts: PM_STATUS, show: function (v) { return v.role === "owner"; } },
+        { id: "address", label: "Address or notes", type: "text", value: edit ? p.address : "" },
+        { id: "price", label: "Purchase price", type: "number", value: edit && p.purchasePrice ? p.purchasePrice : "", show: function (v) { return v.role === "owner"; } },
+        { id: "cur", label: "Currency", type: "select", value: edit ? p.currency : cur, opts: CURRENCIES.map(function (c) { return [c, c]; }) },
+        { id: "inst", label: "Has an installment plan", type: "switch", value: edit ? p.hasInstallments : true, show: function (v) { return v.role === "owner"; }, hint: "Off hides the Installments page and leaves it out of the cash flow." }
+      ],
+      check: function (v) { return v.name.trim() ? "" : "Enter a name for the property."; },
+      danger: edit ? { label: "Delete property", fn: function () { pmConfirmDelete(p); } } : null,
+      submit: function (v) {
+        var owner = v.role === "owner", o = edit ? p : normalizeProperty({ id: uid(), name: v.name }, cur);
+        o.name = v.name.trim(); o.role = v.role; o.type = owner ? v.type : "ready"; o.address = v.address.trim(); o.currency = v.cur;
+        o.status = owner ? v.status : "rented"; o.purchasePrice = owner ? pmMoney0(v.price) : 0; o.hasInstallments = owner ? !!v.inst : false;
+        if (edit) { pmSave(); todoToast("Property saved."); }
+        else {
+          o.settings.potDate = todayISO();
+          state.properties.push(normalizeProperty(o, cur)); pmSelV = o.id; PM_UI.month = -1; PM_UI.late = 0; save();
+          if (currentTab !== "pr-overview") setTab("pr-overview"); else renderAll();
+          setHeader(currentTab); todoToast("Property added. Finish setting it up below.");
+        }
+      }
+    });
+  }
+  function pmConfirmDelete(p) {
+    confirmAction("Delete " + p.name + " with all its payments, costs, reminders and documents? Transactions you added from it stay. A copy remains in Version history.", "Delete property", function () {
+      state.properties = state.properties.filter(function (x) { return x.id !== p.id; }); pmSelV = ""; pmSave(); setHeader(currentTab); todoToast("Property deleted.");
+    });
+  }
+  function pmSheetPlan(p) {
+    var I = p.installments, edit = !!(I.count && I.firstDate);
+    pmSheet({
+      title: edit ? "Edit installment plan" : "Add installment plan", desc: "The monthly payments to the developer. Handover can already be done.", ok: "Save plan",
+      fields: [
+        { id: "total", label: "Total price owed to the developer", type: "number", value: I.total || p.purchasePrice || "", hint: "Used for the progress ring and what you still owe." },
+        { id: "prepaid", label: "Paid before the monthly installments", type: "number", value: I.prepaid || "", hint: "Booking fee and down payment." },
+        { id: "count", label: "Number of monthly installments", type: "number", step: "1", value: I.count || "" },
+        { id: "amount", label: "Monthly installment", type: "number", value: I.amount || "" },
+        { id: "first", label: "Date of installment 1", type: "date", value: I.firstDate || "" },
+        { id: "paid", label: "Installments already paid", type: "number", step: "1", value: edit ? I.paid.length : 0 }
+      ],
+      check: function (v) { return !(v.count >= 1) ? "Enter how many installments there are." : !(v.amount > 0) ? "Enter the monthly amount." : !pmIsIso(v.first) ? "Pick the date of the first installment." : v.paid > v.count ? "Paid cannot be more than the number of installments." : ""; },
+      live: function (v) {
+        if (!(v.count >= 1) || !pmIsIso(v.first)) return "";
+        var last = pmAddMonths(v.first, Math.round(v.count) - 1), paid = Math.min(Math.round(v.paid), Math.round(v.count)), paidSum = (v.prepaid || 0) + paid * v.amount, owe = v.total ? Math.max(0, v.total - paidSum) : (Math.round(v.count) - paid) * v.amount;
+        return "Last installment " + pmFmt(last, true) + ". Paid so far " + pmMoney(paidSum, p.currency) + ", still to pay " + pmMoney(owe, p.currency) + ".";
+      },
+      submit: function (v) {
+        pmCommit("Installment plan saved.", function (q) {
+          var Q = q.installments, n = Math.round(v.count), k = Math.min(Math.round(v.paid), n), keep = {};
+          Q.total = v.total; Q.prepaid = v.prepaid; Q.count = n; Q.amount = v.amount; Q.firstDate = v.first;
+          Q.paid = Q.paid.filter(function (x) { return x.n <= k; }); Q.paid.forEach(function (x) { keep[x.n] = 1; });
+          for (var i = 1; i <= k; i++) if (!keep[i]) Q.paid.push({ n: i, on: "", amount: v.amount, txId: "" });
+          Q.paid.sort(function (a, b) { return a.n - b.n; }); q.hasInstallments = true;
+        });
+      }
+    });
+  }
+  function pmSheetMarkInst(p, n) {
+    var x = pmSched(p).filter(function (r) { return r.n === n; })[0]; if (!x) return;
+    pmSheet({
+      title: "Mark installment " + n + " paid", desc: "Installment " + n + " of " + p.installments.count + ", due " + pmFmt(x.date, true) + ": <b>" + pmMoney(x.amt, p.currency) + "</b>.", ok: "Mark paid",
+      fields: [{ id: "date", label: "Paid on", type: "date", value: todayISO() }, { id: "amt", label: "Amount paid", type: "number", value: x.amt }, pmTxSwitch(p)],
+      check: function (v) { return !pmIsIso(v.date) ? "Pick the date." : !(v.amt > 0) ? "Enter the amount." : ""; },
+      live: function (v) { var pot = pmPot(p); return "The rent pot goes from " + pmMoney(pot, p.currency) + " to " + pmMoney(Math.max(0, pot - v.amt), p.currency) + "."; },
+      submit: function (v) {
+        pmRememberTx(v.tx);
+        pmCommit("Installment " + n + " marked paid.", function (q) { q.installments.paid.push({ n: n, on: v.date, amount: v.amt, txId: "" }); q.installments.paid.sort(function (a, b) { return a.n - b.n; }); });
+        pmAfter(p, v.tx, { amount: v.amt, merchant: "Installment " + n + ", " + p.name, cat: "rent", date: v.date, note: "Installment " + n + " of " + p.installments.count }, function (q, tid) { var r = q.installments.paid.filter(function (z) { return z.n === n; })[0]; if (r) r.txId = tid; });
+      }
+    });
+  }
+  function pmSheetExtra(p) {
+    pmSheet({
+      title: "Add extra payment", desc: "An extra amount you paid the developer on top of the plan. It lowers what you still owe, so the last installments shrink.", ok: "Save payment",
+      fields: [{ id: "amt", label: "Amount", type: "number", value: "" }, { id: "date", label: "Paid on", type: "date", value: todayISO() }, { id: "note", label: "Note (optional)", type: "text", value: "" }, pmTxSwitch(p)],
+      check: function (v) { return !(v.amt > 0) ? "Enter the amount." : !pmIsIso(v.date) ? "Pick the date." : ""; },
+      submit: function (v) {
+        pmRememberTx(v.tx); var id = uid();
+        pmCommit("Extra payment saved.", function (q) { q.installments.extra.push({ id: id, date: v.date, amount: v.amt, note: v.note.trim(), txId: "" }); PM_UI.inst = "paid"; });
+        pmAfter(p, v.tx, { amount: v.amt, merchant: "Extra payment, " + p.name, cat: "rent", date: v.date, note: v.note.trim() || "Extra installment payment" }, function (q, tid) { var r = pmByIdIn(q.installments.extra, id); if (r) r.txId = tid; });
+      }
+    });
+  }
+  function pmSheetTenancy(p) {
+    var T = p.tenancy, edit = pmHasTenancy(p), owner = p.role === "owner", today = todayISO();
+    pmSheet({
+      title: edit ? (owner ? "Edit tenancy" : "Edit contract") : (owner ? "Add tenancy" : "Add contract"), desc: owner ? "The tenant, the contract and how often the rent comes in. The payment schedule is made from the start date." : "Your landlord, the contract and the rent you pay. The payment schedule is made from the start date.", ok: "Save",
+      fields: [
+        { id: "who", label: owner ? "Tenant" : "Landlord", type: "text", value: owner ? T.tenant : T.landlord },
+        { id: "note", label: "Contact note (optional)", type: "text", value: T.contactNote, ph: "Phone or email" },
+        { id: "ejari", label: "Ejari number", type: "text", value: T.ejari },
+        { id: "start", label: "Contract start", type: "date", value: T.start || today },
+        { id: "end", label: "Contract end", type: "date", value: T.end || pmAddDays(pmAddMonths(T.start || today, 12), -1) },
+        { id: "rent", label: owner ? "Yearly rent" : "Yearly rent you pay", type: "number", value: T.annualRent || "" },
+        { id: "freq", label: "Paid", type: "select", value: T.frequency, opts: [["quarterly", "Quarterly"], ["monthly", "Monthly"], ["semiannual", "Every 6 months"], ["annual", "Yearly"]] },
+        { id: "dep", label: owner ? "Security deposit held" : "Security deposit paid", type: "number", value: T.deposit || "" },
+        { id: "rec", label: owner ? "Payments already received" : "Payments already paid", type: "number", step: "1", value: 0, show: function () { return !edit; }, hint: "From the first one. You can undo or change any later." }
+      ],
+      check: function (v) { return !pmIsIso(v.start) || !pmIsIso(v.end) ? "Pick both dates." : pmDiff(v.end, v.start) <= 0 ? "The end date must be after the start date." : !(v.rent > 0) ? "Enter the yearly rent." : ""; },
+      live: function (v) { if (!pmIsIso(v.start) || !pmIsIso(v.end) || !(v.rent > 0)) return ""; var g = pmGenPayments(v.start, v.end, v.rent, v.freq); return g.length + " payment" + (g.length === 1 ? "" : "s") + " of " + pmMoney(g.length ? g[0].amount : 0, p.currency) + ", first on " + (g.length ? pmFmt(g[0].due, true) : "") + "."; },
+      submit: function (v) {
+        pmCommit(edit ? "Tenancy saved." : "Tenancy added.", function (q) {
+          var Q = q.tenancy, changed = !edit || Q.start !== v.start || Q.end !== v.end || Q.annualRent !== v.rent || Q.frequency !== v.freq;
+          if (owner) Q.tenant = v.who.trim(); else Q.landlord = v.who.trim();
+          Q.contactNote = v.note.trim(); Q.ejari = v.ejari.trim(); Q.deposit = v.dep;
+          if (changed) {
+            var old = Q.payments.filter(function (x) { return x.status === "received"; }), gen = pmGenPayments(v.start, v.end, v.rent, v.freq);
+            gen.forEach(function (g) { var m = old.filter(function (o) { return o.due === g.due; })[0]; if (m) { g.id = m.id; g.status = "received"; g.receivedOn = m.receivedOn; g.txId = m.txId; g.amount = m.amount; old = old.filter(function (o) { return o !== m; }); } });
+            Q.payments = gen.concat(old.filter(function (o) { return o.due < v.start; })).sort(function (a, b) { return a.due < b.due ? -1 : 1; });
+            Q.payments.forEach(function (x) { if (x.due >= v.start) x.no = 0; }); var k = 0; Q.payments.forEach(function (x) { if (x.due >= v.start && x.due <= v.end) x.no = ++k; });
+          }
+          Q.start = v.start; Q.end = v.end; Q.annualRent = v.rent; Q.frequency = v.freq;
+          if (!edit) { var rc = Math.round(v.rec), c = 0; Q.payments.forEach(function (x) { if (x.due >= v.start && c < rc) { x.status = "received"; c++; } }); if (owner && q.status !== "rented") q.status = "rented"; }
+        });
+      }
+    });
+  }
+  function pmSheetRent(p, id) {
+    var x = pmByIdIn(p.tenancy.payments, id), owner = p.role === "owner"; if (!x) return;
+    pmSheet({
+      title: owner ? "Mark rent received" : "Mark rent paid", desc: pmE(pmRentLabel(p, x)) + ", due " + pmFmt(x.due, true) + ": <b>" + pmMoney(x.amount, p.currency) + "</b>.", ok: owner ? "Mark received" : "Mark paid",
+      fields: [{ id: "date", label: owner ? "Received on" : "Paid on", type: "date", value: todayISO() }, { id: "amt", label: "Amount", type: "number", value: x.amount }, pmTxSwitch(p)],
+      check: function (v) { return !pmIsIso(v.date) ? "Pick the date." : !(v.amt > 0) ? "Enter the amount." : ""; },
+      live: function (v) { if (!owner) return ""; var pot = pmPot(p); return "The rent pot goes from " + pmMoney(pot, p.currency) + " to " + pmMoney(pot + v.amt, p.currency) + "."; },
+      submit: function (v) {
+        pmRememberTx(v.tx);
+        pmCommit(owner ? "Rent marked received." : "Rent marked paid.", function (q) { var r = pmByIdIn(q.tenancy.payments, id); r.status = "received"; r.receivedOn = v.date; r.amount = v.amt; });
+        pmAfter(p, v.tx, { amount: v.amt, merchant: owner ? "Rent, " + (p.tenancy.tenant || p.name) : "Rent, " + (p.tenancy.landlord || p.name), cat: owner ? "income" : "rent", date: v.date, type: owner ? "income" : "expense", note: pmRentLabel(p, x) + " " + pmFmt(x.due, true) }, function (q, tid) { var r = pmByIdIn(q.tenancy.payments, id); if (r) r.txId = tid; });
+      }
+    });
+  }
+  function pmSheetRenew(p) {
+    var T = p.tenancy, ns = pmAddDays(T.end, 1), owner = p.role === "owner";
+    pmSheet({
+      title: "Renew contract", desc: "New dates and rent for " + pmE((owner ? T.tenant : T.landlord) || p.name) + ". The old contract goes to History and a new payment schedule is made.", ok: "Renew",
+      fields: [
+        { id: "start", label: "New start", type: "date", value: ns }, { id: "end", label: "New end", type: "date", value: pmAddDays(pmAddMonths(ns, 12), -1) },
+        { id: "rent", label: "New yearly rent", type: "number", value: T.annualRent }, { id: "freq", label: "Paid", type: "select", value: T.frequency, opts: [["quarterly", "Quarterly"], ["monthly", "Monthly"], ["semiannual", "Every 6 months"], ["annual", "Yearly"]] },
+        { id: "ejari", label: "Ejari number (new)", type: "text", value: T.ejari }
+      ],
+      check: function (v) { return !pmIsIso(v.start) || !pmIsIso(v.end) ? "Pick both dates." : pmDiff(v.end, v.start) <= 0 ? "The end date must be after the start date." : !(v.rent > 0) ? "Enter the new rent." : ""; },
+      live: function (v) {
+        if (!(v.rent > 0)) return ""; var inc = (v.rent / T.annualRent - 1) * 100, gap = pmIsIso(v.start) ? pmDiff(v.start, T.end) - 1 : 0, per = 12 / pmFreqMonths(v.freq);
+        return 'Rent increase <b class="' + (inc > 0 ? "pm-wrn" : "") + '">' + (inc >= 0 ? "+" : "−") + Math.abs(inc).toFixed(1) + "%</b> (" + pmSg(v.rent - T.annualRent) + " " + pmE(p.currency) + " a year), " + pmN(v.rent / per) + " per payment." + (gap > 0 ? ' <span class="pm-neg">Gap of ' + gap + " days with no tenant, added to vacancy.</span>" : "");
+      },
+      submit: function (v) {
+        pmCommit("Contract renewed to " + pmFmt(v.end, true) + " at " + pmMoney(v.rent, p.currency) + ".", function (q) {
+          var Q = q.tenancy, gap = pmDiff(v.start, Q.end) - 1;
+          Q.history.push({ id: uid(), kind: "contract", from: Q.start, to: Q.end, rent: Q.annualRent, note: (owner ? Q.tenant : Q.landlord) });
+          if (gap > 0) Q.history.push({ id: uid(), kind: "vacancy", from: pmAddDays(Q.end, 1), to: pmAddDays(v.start, -1), rent: 0, note: "Between contracts" });
+          Q.payments = Q.payments.filter(function (x) { return x.status === "received" || x.due <= Q.end; });
+          Q.payments = Q.payments.concat(pmGenPayments(v.start, v.end, v.rent, v.freq));
+          Q.payments.sort(function (a, b) { return a.due < b.due ? -1 : 1; });
+          Q.start = v.start; Q.end = v.end; Q.annualRent = v.rent; Q.frequency = v.freq; Q.ejari = v.ejari.trim();
+          if (owner) q.status = "rented";
+        });
+      }
+    });
+  }
+  function pmSheetVacancy(p) {
+    pmSheet({
+      title: "Add vacancy period", desc: "A stretch with no tenant, for the history.", ok: "Save",
+      fields: [{ id: "from", label: "From", type: "date", value: todayISO() }, { id: "to", label: "To", type: "date", value: "" }, { id: "note", label: "Note (optional)", type: "text", value: "" }],
+      check: function (v) { return !pmIsIso(v.from) ? "Pick the first day." : v.to && pmDiff(v.to, v.from) < 0 ? "The end must not be before the start." : ""; },
+      submit: function (v) { pmCommit("Vacancy added.", function (q) { q.tenancy.history.push({ id: uid(), kind: "vacancy", from: v.from, to: v.to, rent: 0, note: v.note.trim() }); }); }
+    });
+  }
+  function pmSheetUtil(p) {
+    var U = p.tenancy.utilitiesInTenantName;
+    pmSheet({
+      title: "Tenant utilities", desc: "Water and electricity are paid by the tenant. Confirm they are in the tenant’s name.", ok: "Save",
+      fields: [{ id: "water", label: "Water in tenant’s name", type: "switch", value: U.water }, { id: "elec", label: "Electricity in tenant’s name", type: "switch", value: U.electricity }, { id: "date", label: "Last checked", type: "date", value: U.checkedOn || todayISO() }],
+      submit: function (v) { pmCommit("Utilities saved.", function (q) { var u = q.tenancy.utilitiesInTenantName; u.water = v.water; u.electricity = v.elec; u.checkedOn = pmIsIso(v.date) ? v.date : u.checkedOn; }); }
+    });
+  }
+  function pmSheetSc(p, payMode) {
+    var sc = p.costs.serviceCharge, due = pmScDue(p);
+    if (payMode && due) {
+      pmSheet({
+        title: "Mark service charge paid", desc: "Service charge " + due.year + ", due " + pmFmt(due.date, true) + ": <b>" + pmMoney(due.amount, p.currency) + "</b>.", ok: "Mark paid",
+        fields: [{ id: "date", label: "Paid on", type: "date", value: todayISO() }, { id: "amt", label: "Amount", type: "number", value: due.amount }, pmTxSwitch(p)],
+        check: function (v) { return !pmIsIso(v.date) ? "Pick the date." : !(v.amt > 0) ? "Enter the amount." : ""; },
+        submit: function (v) {
+          pmRememberTx(v.tx);
+          pmCommit("Service charge " + due.year + " marked paid.", function (q) { q.costs.serviceCharge.paidYears.push({ year: due.year, on: v.date, amount: v.amt, txId: "" }); });
+          pmAfter(p, v.tx, { amount: v.amt, merchant: "Service charge " + due.year + ", " + p.name, cat: "utilities", date: v.date, note: "Service charge for the common areas" }, function (q, tid) { var r = q.costs.serviceCharge.paidYears.filter(function (z) { return z.year === due.year; })[0]; if (r) r.txId = tid; });
+        }
+      });
+      return;
+    }
+    pmSheet({
+      title: sc.amount ? "Edit service charge" : "Add service charge", desc: "The fixed yearly amount from the developer or owners association for the common areas.", ok: "Save",
+      fields: [{ id: "amt", label: "Amount per year", type: "number", value: sc.amount || "" }, { id: "month", label: "Due month", type: "select", value: sc.dueMonth, opts: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (m) { return [m, ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][m - 1]]; }) }, { id: "day", label: "Due day", type: "number", step: "1", min: 1, value: sc.dueDay }],
+      check: function (v) { return !(v.amt > 0) ? "Enter the amount." : !(v.day >= 1 && v.day <= 31) ? "Enter a day from 1 to 31." : ""; },
+      live: function (v) { var last = sc.paidYears.slice().sort(function (a, b) { return b.year - a.year; })[0]; return last && last.amount && v.amt ? "That is " + (v.amt >= last.amount ? "+" : "−") + Math.abs((v.amt / last.amount - 1) * 100).toFixed(1) + "% vs " + last.year + "." : ""; },
+      submit: function (v) { pmCommit("Service charge is now " + pmMoney(v.amt, p.currency) + ".", function (q) { var s = q.costs.serviceCharge; s.amount = v.amt; s.dueMonth = +v.month; s.dueDay = Math.round(v.day); }); }
+    });
+  }
+  function pmSheetCooling(p, id) {
+    var ex = id ? pmByIdIn(p.costs.cooling, id) : null, today = todayISO(), months = [], i, avg = Math.round(pmCoolAvg(p));
+    for (i = -11; i <= 1; i++) { var m = pmAddMonths(today.slice(0, 7) + "-01", i).slice(0, 7); months.push([m, pmMonName(+m.slice(5) - 1) + " " + m.slice(0, 4)]); }
+    var firstFree = months.filter(function (m) { return !p.costs.cooling.some(function (c) { return c.month === m[0]; }); }).map(function (m) { return m[0]; });
+    var def = ex ? ex.month : (firstFree.indexOf(today.slice(0, 7)) !== -1 ? today.slice(0, 7) : (firstFree[firstFree.length - 1] || today.slice(0, 7)));
+    pmSheet({
+      title: ex ? "Edit cooling bill" : "Add cooling bill", desc: "The amount changes every month. A bill replaces the estimate for that month.", ok: "Save bill",
+      fields: [{ id: "m", label: "Bill month", type: "select", value: def, opts: months }, { id: "amt", label: "Amount", type: "number", value: ex ? ex.amount : (avg || "") }].concat(ex ? [] : [pmTxSwitch(p)]),
+      check: function (v) { return v.amt > 0 ? "" : "Enter the bill amount."; },
+      live: function (v) { var rep = p.costs.cooling.filter(function (c) { return c.month === v.m && (!ex || c.id !== ex.id); })[0]; return (avg && v.amt ? "Average is " + pmMoney(avg, p.currency) + ". This bill is " + Math.abs((v.amt / avg - 1) * 100).toFixed(0) + "% " + (v.amt >= avg ? "above" : "below") + " it." : "") + (rep ? " It replaces the " + pmMoney(rep.amount, p.currency) + " bill saved for that month." : ""); },
+      danger: ex ? { label: "Delete bill", fn: function () { pmCommit("Bill deleted.", function (q) { q.costs.cooling = q.costs.cooling.filter(function (c) { return c.id !== ex.id; }); }); } } : null,
+      submit: function (v) {
+        var nid = ex ? ex.id : uid(); if (!ex) pmRememberTx(v.tx);
+        pmCommit("Cooling bill saved.", function (q) {
+          q.costs.cooling = q.costs.cooling.filter(function (c) { return c.month !== v.m && c.id !== nid; });
+          q.costs.cooling.push({ id: nid, month: v.m, amount: v.amt, on: ex && ex.on ? ex.on : todayISO(), txId: ex ? ex.txId : "" }); q.costs.cooling.sort(function (a, b) { return a.month < b.month ? -1 : 1; }); PM_UI.cost = "cool";
+        });
+        if (!ex) pmAfter(p, v.tx, { amount: v.amt, merchant: (p.role === "owner" ? "District cooling, " : "Cooling, ") + p.name, cat: "utilities", date: todayISO(), note: "Cooling bill " + pmMonName(+v.m.slice(5) - 1) + " " + v.m.slice(0, 4) }, function (q, tid) { var r = pmByIdIn(q.costs.cooling, nid); if (r) r.txId = tid; });
+      }
+    });
+  }
+  function pmSheetOther(p, id) {
+    var ex = id ? pmByIdIn(p.costs.other, id) : null;
+    pmSheet({
+      title: ex ? "Edit cost" : "Add cost", desc: "Insurance, repairs, agent fees. A cost that repeats is counted every period and makes a reminder 14 days before.", ok: "Save cost",
+      fields: [{ id: "name", label: "What is it", type: "text", value: ex ? ex.name : "" }, { id: "amt", label: "Amount", type: "number", value: ex ? ex.amount : "" }, { id: "date", label: ex ? "Date (first time)" : "Date", type: "date", value: ex ? ex.date : todayISO() },
+        { id: "rec", label: "Does it come back", type: "select", value: ex ? ex.recurring : "", opts: [["", "No, one time"], ["monthly", "Every month"], ["quarterly", "Every quarter"], ["yearly", "Every year"]] }].concat(ex ? [] : [pmTxSwitch(p)]),
+      check: function (v) { return !v.name.trim() ? "Enter what the cost is." : !(v.amt > 0) ? "Enter an amount." : !pmIsIso(v.date) ? "Pick a date." : ""; },
+      danger: ex ? { label: "Delete cost", fn: function () { pmCommit("Cost deleted.", function (q) { q.costs.other = q.costs.other.filter(function (o) { return o.id !== ex.id; }); }); } } : null,
+      submit: function (v) {
+        var nid = ex ? ex.id : uid(); if (!ex) pmRememberTx(v.tx);
+        pmCommit("Cost saved.", function (q) {
+          var rec = { id: nid, name: v.name.trim(), amount: v.amt, date: v.date, recurring: v.rec, txId: ex ? ex.txId : "" };
+          if (ex) q.costs.other = q.costs.other.map(function (o) { return o.id === nid ? rec : o; }); else q.costs.other.push(rec); PM_UI.cost = "oth";
+        });
+        if (!ex) pmAfter(p, v.tx, { amount: v.amt, merchant: v.name.trim() + ", " + p.name, cat: "other", date: v.date, note: "Property cost" }, function (q, tid) { var r = pmByIdIn(q.costs.other, nid); if (r) r.txId = tid; });
+      }
+    });
+  }
+  function pmSheetDoc(p, id) {
+    var ex = id ? pmByIdIn(p.documents, id) : null;
+    pmSheet({
+      title: ex ? "Edit document note" : "Add document note", desc: "Only the details are kept here. No file is uploaded.", ok: "Save",
+      fields: [{ id: "title", label: "Title", type: "text", value: ex ? ex.title : "" }, { id: "type", label: "Type", type: "select", value: ex ? ex.type : "Contract", opts: PM_DOC_TYPES.map(function (t) { return [t, t]; }) }, { id: "date", label: "Date", type: "date", value: ex ? ex.date : todayISO() }, { id: "note", label: "Note (where it is kept)", type: "text", value: ex ? ex.note : "" }],
+      check: function (v) { return v.title.trim() ? "" : "Enter a title."; },
+      danger: ex ? { label: "Delete note", fn: function () { pmCommit("Document note deleted.", function (q) { q.documents = q.documents.filter(function (d) { return d.id !== ex.id; }); }); } } : null,
+      submit: function (v) { pmCommit("Document note saved.", function (q) { var rec = { id: ex ? ex.id : uid(), type: v.type, title: v.title.trim(), date: pmIsoOr(v.date), note: v.note.trim() }; if (ex) q.documents = q.documents.map(function (d) { return d.id === rec.id ? rec : d; }); else q.documents.push(rec); PM_UI.docf = "All"; }); }
+    });
+  }
+  function pmSheetSettings(p) {
+    pmSheet({
+      title: "Property settings", desc: pmE(p.name), ok: "Save",
+      fields: [
+        { id: "buf", label: "Buffer to keep in the rent pot", type: "number", value: p.settings.buffer || "", show: function () { return p.role === "owner"; } },
+        { id: "pot", label: "Rent pot now", type: "number", value: Math.round(pmPot(p) * 100) / 100, show: function () { return p.role === "owner"; }, hint: "The rent you have received and not spent. It moves when you mark money received or paid." },
+        { id: "cday", label: "Cooling bill reminder: day of the month", type: "number", step: "1", min: 1, value: p.settings.coolDay },
+        { id: "fc", label: "Include properties in Forecast", type: "switch", value: state.ui.prop.forecast, hint: "Adds installments, service charge, cooling and other costs of properties in " + pmE(state.settings.currency) + " to the Forecast page. Off by default." }
+      ],
+      check: function (v) { return v.cday >= 1 && v.cday <= 28 ? "" : "Enter a day from 1 to 28."; },
+      submit: function (v) {
+        pmCommit("Settings saved.", function (q) {
+          if (q.role === "owner") { q.settings.buffer = v.buf; if (Math.abs(v.pot - pmPot(q)) > 0.004) { q.settings.potStart = v.pot; q.settings.potDate = todayISO(); } }
+          q.settings.coolDay = Math.max(1, Math.min(28, Math.round(v.cday))); state.ui.prop.forecast = !!v.fc;
+        });
+      }
+    });
+  }
+
+  /* ----- actions ----- */
+  function pmUndoLast(label, mutate) { pmCommit(label, mutate); }
+  var PM_ACT = {
+    go: function (el) { setTab(el.getAttribute("data-v")); },
+    seg: function (el) { var g = el.getAttribute("data-g"), v = el.getAttribute("data-v"); if (g === "Schedule") PM_UI.inst = v; else if (g === "Costs") PM_UI.cost = v; else if (g === "Period") PM_UI.ov = v; renderAll(); },
+    sel: function (el) { pmSelV = el.getAttribute("data-id"); PM_UI.month = -1; PM_UI.late = 0; PM_UI.inst = "up"; renderAll(); setHeader(currentTab); },
+    padd: function () { pmSheetProperty(null); },
+    pedit: function () { pmSheetProperty(pmCur()); },
+    pset: function () { pmSheetSettings(pmCur()); },
+    demo: function () { var d = pmDemo(); state.properties.push(d); pmSelV = d.id; PM_UI.month = -1; pmSave(); setHeader(currentTab); todoToast("Sample property loaded. Delete it from Overview, Edit property."); },
+    pinst: function () { pmSheetPlan(pmCur()); },
+    install: function () { PM_UI.instAll = !PM_UI.instAll; renderAll(); },
+    instpay: function (el) { pmSheetMarkInst(pmCur(), +el.getAttribute("data-n")); },
+    instundo: function (el) { var n = +el.getAttribute("data-n"); pmUndoLast("Installment " + n + " put back.", function (q) { q.installments.paid = q.installments.paid.filter(function (x) { return x.n !== n; }); }); },
+    instextra: function () { pmSheetExtra(pmCur()); },
+    extradel: function (el) { var id = el.getAttribute("data-id"); pmUndoLast("Extra payment removed.", function (q) { q.installments.extra = q.installments.extra.filter(function (x) { return x.id !== id; }); }); },
+    tedit: function () { pmSheetTenancy(pmCur()); },
+    rentrec: function (el) { pmSheetRent(pmCur(), el.getAttribute("data-id")); },
+    rentundo: function (el) { var id = el.getAttribute("data-id"); pmUndoLast("Rent put back as not received.", function (q) { var r = pmByIdIn(q.tenancy.payments, id); if (r) { r.status = "due"; r.receivedOn = ""; } }); },
+    renew: function () { pmSheetRenew(pmCur()); },
+    vacadd: function () { pmSheetVacancy(pmCur()); },
+    ren: function (el) { var n = el.getAttribute("data-id"); pmCommit("Reminder " + (pmCur().tenancy.reminders["d" + n] ? "turned off." : "turned on."), function (q) { q.tenancy.reminders["d" + n] = !q.tenancy.reminders["d" + n]; }); },
+    utilrem: function () { pmCommit("Reminder changed.", function (q) { q.tenancy.utilitiesInTenantName.remind = !q.tenancy.utilitiesInTenantName.remind; }); },
+    utilchk: function () { pmCommit("Marked checked today. Next check " + pmFmt(pmAddDays(todayISO(), 90), true) + ".", function (q) { q.tenancy.utilitiesInTenantName.checkedOn = todayISO(); }); },
+    utiledit: function () { pmSheetUtil(pmCur()); },
+    scpay: function () { pmSheetSc(pmCur(), true); },
+    scundo: function () { var y = +todayISO().slice(0, 4); pmUndoLast("Service charge put back.", function (q) { q.costs.serviceCharge.paidYears = q.costs.serviceCharge.paidYears.filter(function (x) { return x.year !== y; }); }); },
+    scedit: function () { pmSheetSc(pmCur(), false); },
+    billadd: function () { pmSheetCooling(pmCur(), ""); },
+    billedit: function (el) { pmSheetCooling(pmCur(), el.getAttribute("data-id")); },
+    costadd: function () { pmSheetOther(pmCur(), ""); },
+    costedit: function (el) { pmSheetOther(pmCur(), el.getAttribute("data-id")); },
+    coolall: function () { PM_UI.coolAll = !PM_UI.coolAll; renderAll(); },
+    docf: function (el) { PM_UI.docf = el.getAttribute("data-v"); renderAll(); },
+    docadd: function () { pmSheetDoc(pmCur(), ""); },
+    docedit: function (el) { pmSheetDoc(pmCur(), el.getAttribute("data-id")); },
+    rem: function (el) {
+      var p = pmCur(), id = el.getAttribute("data-id");
+      pmCommit("Reminder changed.", function (q) {
+        if (/^ren\d/.test(id)) q.tenancy.reminders["d" + id.slice(3)] = !q.tenancy.reminders["d" + id.slice(3)];
+        else if (id === "util") q.tenancy.utilitiesInTenantName.remind = !q.tenancy.utilitiesInTenantName.remind;
+        else if (q.settings.remOn[id] === false) delete q.settings.remOn[id]; else q.settings.remOn[id] = false;
+      });
+    },
+    mprev: function () { PM_UI.month = Math.max(0, PM_UI.month - 1); pmCashUpdate(); },
+    mnext: function () { PM_UI.month = Math.min(11, PM_UI.month + 1); pmCashUpdate(); },
+    msel: function (el) { PM_UI.month = +el.getAttribute("data-i"); pmCashUpdate(); }
+  };
+  function pmFab() { // the floating + adds whatever the page is about
+    var p = pmCur(); if (!p || currentTab === "pr-overview") { pmSheetProperty(null); return; }
+    if (currentTab === "pr-inst") { if (p.role === "owner" && p.hasInstallments && p.installments.count) pmSheetExtra(p); else if (p.role === "owner") pmSheetPlan(p); }
+    else if (currentTab === "pr-tenancy") pmSheetTenancy(p);
+    else if (currentTab === "pr-costs") { var v = p.role === "tenant" && PM_UI.cost === "sc" ? "cool" : PM_UI.cost; if (v === "sc") pmSheetSc(p, false); else if (v === "cool") pmSheetCooling(p, ""); else pmSheetOther(p, ""); }
+    else if (currentTab === "pr-docs") pmSheetDoc(p, "");
+  }
+  function pmBindSections() {
+    Object.keys(PM_PAGE_FNS).forEach(function (id) {
+      var sec = document.getElementById("tab-" + id); if (!sec) return;
+      sec.addEventListener("click", function (e) {
+        var el = e.target.closest("[data-pa]"); if (!el || !sec.contains(el) || el.tagName === "INPUT") return;
+        var f = PM_ACT[el.getAttribute("data-pa")]; if (f) f(el);
+      });
+      sec.addEventListener("change", function (e) {
+        var t = e.target, p = pmCur(); if (!p) return;
+        if (t.id === "pm-in-pot") { pmCommit("Rent pot set to " + pmMoney(Math.max(0, parseFloat(t.value) || 0), p.currency) + ".", function (q) { q.settings.potStart = Math.max(0, parseFloat(t.value) || 0); q.settings.potDate = todayISO(); }); }
+        else if (t.id === "pm-in-buf") { pmCommit("Buffer set.", function (q) { q.settings.buffer = Math.max(0, parseFloat(t.value) || 0); }); }
+        else if (t.getAttribute && t.getAttribute("data-pa") === "rtime") {
+          var id = t.getAttribute("data-id"), val = pmTime(t.value, "09:00");
+          pmCommit("Reminder time saved.", function (q) { if (/^ren\d/.test(id)) q.tenancy.reminders.time = val; else q.settings.remTime[id] = val; });
+        }
+      });
+      sec.addEventListener("input", function (e) { if (e.target.id === "pm-in-late") { PM_UI.late = +e.target.value; pmCashUpdate(); } });
+    });
+  }
+
+  /* ----- Home card ----- */
+  function pmHomeInfo() {
+    var l = state.properties, today = todayISO(), best = null, ren = null;
+    l.forEach(function (p) {
+      var nx = pmNextEvent(p); if (nx && (!best || nx.date < best.nx.date)) best = { p: p, nx: nx };
+      if (pmHasTenancy(p)) { var d = pmDiff(p.tenancy.end, today); if (d >= 0 && (!ren || d < ren.d)) ren = { d: d, p: p }; }
+    });
+    return { best: best, ren: ren };
+  }
+  function homePropsHtml() {
+    var l = state.properties, head = '<div class="hct"><span class="ic">' + icon("building") + "</span><span><b>Properties</b><small>Property manager</small></span></div>", n, s = "", chips = "";
+    if (!l.length) {
+      n = "Add your first property"; s = '<div class="s">Installments, rent, service charge and renewals in one place</div>';
+      return head + '<div class="hcv"><div class="n num">' + n + "</div>" + s + '</div><div class="hcf"><div class="chips"><span class="chip">Not started</span></div><span class="go">' + icon("arrow") + "</span></div>";
+    }
+    var I = pmHomeInfo(), p = I.best ? I.best.p : (pmCur() || l[0]), today = todayISO();
+    if (I.best) { var over = pmDiff(I.best.nx.date, today) < 0; n = I.best.nx.text + (over ? " overdue" : " due " + pmFmt(I.best.nx.date)); }
+    else n = I.ren ? "Renewal in " + I.ren.d + (I.ren.d === 1 ? " day" : " days") : "Nothing due";
+    var L = pmLedger(p, +today.slice(0, 4), false);
+    s += '<div class="s">' + (p.role === "tenant" ? "Paid this year " + pmMoney(-L.net, p.currency) : "Net this year " + pmMoney(L.net, p.currency)) + (l.length > 1 ? " · " + pmE(p.name) : "") + "</div>";
+    if (I.ren && I.best) s += '<div class="s">Renewal in ' + I.ren.d + (I.ren.d === 1 ? " day" : " days") + (l.length > 1 ? " · " + pmE(I.ren.p.name) : "") + "</div>";
+    var sim = p.role === "owner" ? pmSim(p, 0) : null;
+    chips += '<span class="chip">' + (p.role === "tenant" ? "I rent this" : p.status === "rented" ? "Rented" : p.status === "vacant" ? "Vacant" : "Owner-occupied") + "</span>";
+    if (sim && (sim.firstShort || sim.firstBuf)) chips += '<span class="chip">' + (sim.firstShort ? "Top-up from " + pmFmt(sim.firstShort.d) : "Below buffer " + pmFmt(sim.firstBuf.d)) + "</span>";
+    if (l.length > 1) chips += '<span class="chip">' + l.length + " properties</span>";
+    return head + '<div class="hcv"><div class="n num">' + pmE(n) + "</div>" + s + '</div><div class="hcf"><div class="chips">' + chips + '</div><span class="go">' + icon("arrow") + "</span></div>";
+  }
+
+  /* ----- in-app notifications (best effort, same switch and permission as the bill reminders) ----- */
+  function pmNotify() {
+    if (!state.settings.notifyBills || typeof Notification === "undefined" || Notification.permission !== "granted" || !state.properties.length) return;
+    var notified = loadNotified(), changed = false, now = new Date(), today = todayISO(), hm = pad(now.getHours()) + ":" + pad(now.getMinutes());
+    state.properties.forEach(function (p) {
+      pmReminders(p).forEach(function (r) {
+        if (!pmRemOn(p, r)) return;
+        var fire = pmAddDays(r.date, -r.lead); if (fire > today || pmDiff(today, r.date) > 2) return;
+        if (fire === today && hm < pmRemTime(p, r)) return;
+        var key = "pm:" + p.id + ":" + r.id; if (notified[key] === r.date) return;
+        try { new Notification(p.name + ": " + r.title, { body: r.sub + " · " + pmFmt(r.date) }); } catch (e) {}
+        notified[key] = r.date; changed = true;
+      });
+    });
+    if (changed) localStorage.setItem(NOTIFIED_KEY, JSON.stringify(notified));
+  }
+
+  /* ----- Forecast: optional property items (Properties settings, Include properties in Forecast) ----- */
+  function pmForecastItems(windowStart, windowEnd) { // [{ date, amount, catKey }] money OUT only: the Forecast is an expense forecast
+    var out = [], today = todayISO();
+    if (!state.ui.prop.forecast) return out;
+    state.properties.forEach(function (p) {
+      if (p.currency !== state.settings.currency) return;
+      function add(d, a, cat) { if (a > 0 && d >= windowStart && d < windowEnd && d >= today.slice(0, 7) + "-01") out.push({ date: d, amount: a, catKey: cat }); }
+      pmEvents(p, 0).forEach(function (e) {
+        if (e.amt >= 0) return;
+        add(e.d, -e.amt, e.k === "inst" || e.k === "rent" ? pmCat("rent") || "__none" : e.k === "sc" || e.k === "cool" ? pmCat("utilities") || "__none" : pmCat("other") || "__none");
+      });
+    });
+    return out;
+  }
+
+  /* ----- sample property (a clearly named demo, only on request) ----- */
+  function pmDemo() {
+    var t = todayISO(), m1 = t.slice(0, 8) + "01", y = +t.slice(0, 4), start = pmAddMonths(m1, -8), end = pmAddDays(pmAddMonths(start, 12), -1), p;
+    var cool = [420, 380, 410, 560, 760, 980, 1120, 1180].map(function (a, i) { return { month: pmAddMonths(m1, i - 8).slice(0, 7), amount: a, on: "" }; });
+    p = normalizeProperty({
+      id: uid(), name: "Demo apartment (sample data)", type: "off-plan", role: "owner", status: "rented", address: "Sample Tower, Apt 1204", purchasePrice: 1450000, currency: state.settings.currency, hasInstallments: true,
+      installments: { total: 1450000, prepaid: 870000, count: 40, amount: 14500, firstDate: pmAddMonths(t.slice(0, 8) + "26", -13), paid: Array.apply(null, Array(13)).map(function (z, i) { return { n: i + 1, on: "", amount: 14500 }; }) },
+      tenancy: { tenant: "Sample Tenant", ejari: "EJR-0000-00000", start: start, end: end, annualRent: 96000, frequency: "quarterly", deposit: 4800, payments: pmGenPayments(start, end, 96000, "quarterly").map(function (x) { if (pmDiff(x.due, t) < -3) { x.status = "received"; } return x; }), utilitiesInTenantName: { checkedOn: pmAddDays(t, -15) } },
+      costs: { serviceCharge: { amount: 18150, dueMonth: 11, dueDay: 30, paidYears: [{ year: y - 1, on: (y - 1) + "-11-28", amount: 17600 }] }, cooling: cool, other: [{ name: "Building insurance", amount: 1200, date: pmAddMonths(t, -5), recurring: "yearly" }] },
+      documents: [{ type: "Contract", title: "Tenancy contract", date: start, note: "Sample note" }, { type: "Payment plan", title: "Payment plan (sale agreement)", date: pmAddMonths(t, -40), note: "Sample note" }],
+      settings: { buffer: 5000, potStart: 36000, potDate: t }
+    }, state.settings.currency);
+    return p;
+  }
+  pmBindSections();
+  /* PM:END */
 
   /* ---------- to-do ----------
      state.tasks: [{ id, title, notes, dueDate "YYYY-MM-DD"|"", dueTime "HH:MM"|"",
@@ -8610,6 +9990,7 @@
     renderGoals();
     renderTodo();
     renderGrocery();
+    renderProperties();
     renderCardsPage();
     renderCategoriesPage();
     renderTransfer();
@@ -8658,6 +10039,7 @@
   }
 
   function checkBillReminders() {
+    try { pmNotify(); } catch (e) {}
     if (!state.settings.notifyBills) return;
     if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
     var notified = loadNotified();
