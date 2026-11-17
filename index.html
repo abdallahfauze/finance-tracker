@@ -3673,7 +3673,7 @@
     ssMenu.hidden = true; ssBtn.setAttribute("aria-expanded", "false");
     if (refocus) ssBtn.focus({ preventScroll: true });
   }
-  ssBtn.addEventListener("click", function () { if (ssMenu.hidden) openSpaceMenu(false); else closeSpaceMenu(true); });
+  ssBtn.addEventListener("click", function (e) { if (ssMenu.hidden) openSpaceMenu(e.detail === 0); else closeSpaceMenu(true); }); // detail 0 = from the keyboard: move focus into the menu
   ssBtn.addEventListener("keydown", function (e) {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); if (ssMenu.hidden) openSpaceMenu(true); else { var it = spaceMenuItems(); (e.key === "ArrowDown" ? it[0] : it[it.length - 1]).focus(); } }
     else if (e.key === "Escape" && !ssMenu.hidden) { e.preventDefault(); e.stopPropagation(); closeSpaceMenu(true); }
@@ -8212,7 +8212,7 @@
     return {
       total: pmMoney0(r.total), count: count, firstDate: pmIsoOr(r.firstDate), amount: pmMoney0(r.amount), prepaid: pmMoney0(r.prepaid),
       paid: pmArr(r.paid).map(function (x) {
-        x = pmObj(x); var n = pmInt(x.n, 1, 600, 0);
+        x = pmObj(x); var n = parseInt(x.n, 10); if (!(n >= 1 && n <= 600)) n = 0;
         if (!n || seen[n]) return null; seen[n] = 1;
         return { n: n, on: pmIsoOr(x.on), amount: pmMoney0(x.amount), txId: pmStr(x.txId, 64) };
       }).filter(Boolean).sort(function (a, b) { return a.n - b.n; }),
