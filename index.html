@@ -8174,8 +8174,8 @@
   /* =========================================================================
      Properties (the third space): a rental property you own (optionally still
      paying the developer by installments) or rent. state.properties = [{ id, name,
-     type "off-plan"|"ready", address, role "owner"|"tenant", status "rented"|"vacant"|"owner-occupied",
-     purchasePrice, currency, hasInstallments, installments, tenancy, costs, documents, settings }].
+     type "off-plan"|"ready", address, status "rented"|"vacant",
+     purchasePrice, currency, installments, tenancy, costs, documents, settings }].
      It lives in the one synced state blob, so save() carries it to the cloud, Version history and Backup.
      Dates are "YYYY-MM-DD" strings. Everything below this line up to "Properties UI" is plain data logic.
      normalizeProperty runs from load(), before the var declarations further down have executed,
@@ -8232,7 +8232,7 @@
     var rem = pmObj(r.reminders), ut = pmObj(r.utilitiesInTenantName);
     var pays = pmArr(r.payments).map(normalizePayment).filter(Boolean).sort(function (a, b) { return a.due < b.due ? -1 : a.due > b.due ? 1 : 0; });
     return {
-      tenant: pmStr(r.tenant, 120), landlord: pmStr(r.landlord, 120), contactNote: pmStr(r.contactNote, 400), ejari: pmStr(r.ejari, 60),
+      tenant: pmStr(r.tenant, 120), contactNote: pmStr(r.contactNote, 400), ejari: pmStr(r.ejari, 60),
       start: pmIsoOr(r.start), end: pmIsoOr(r.end), annualRent: pmMoney0(r.annualRent),
       frequency: ["monthly", "quarterly", "semiannual", "annual"].indexOf(r.frequency) !== -1 ? r.frequency : "quarterly",
       deposit: pmMoney0(r.deposit), payments: pays,
@@ -8267,13 +8267,12 @@
   }
   function normalizeProperty(r, defCur) {
     r = pmObj(r); if (!Object.keys(r).length) return null;
-    var role = r.role === "tenant" ? "tenant" : "owner", type = r.type === "ready" ? "ready" : "off-plan";
-    var st = ["rented", "vacant", "owner-occupied"].indexOf(r.status) !== -1 ? r.status : (role === "tenant" ? "rented" : "vacant"), se = pmObj(r.settings);
+    var type = r.type === "ready" ? "ready" : "off-plan";
+    var st = r.status === "rented" ? "rented" : "vacant", se = pmObj(r.settings);
     var cur = /^[A-Za-z]{3}$/.test(r.currency || "") ? String(r.currency).toUpperCase() : (defCur || "SAR");
     return {
-      id: pmIdOf(r.id), name: pmStr(r.name, 120) || "Property", type: type, address: pmStr(r.address, 400), role: role, status: st,
+      id: pmIdOf(r.id), name: pmStr(r.name, 120) || "Property", type: type, address: pmStr(r.address, 400), status: st,
       purchasePrice: pmMoney0(r.purchasePrice), currency: cur,
-      hasInstallments: role === "tenant" ? false : (typeof r.hasInstallments === "boolean" ? r.hasInstallments : type === "off-plan"),
       installments: normalizeInstallments(r.installments), tenancy: normalizeTenancy(r.tenancy), costs: normalizeCosts(r.costs),
       documents: pmArr(r.documents).map(function (d) {
         d = pmObj(d); return { id: pmIdOf(d.id), type: pmStr(d.type, 40) || "Other", title: pmStr(d.title, 160) || "Document", date: pmIsoOr(d.date), note: pmStr(d.note, 1000) };
@@ -8360,10 +8359,10 @@
   function pmRenewDates(p) { var T = p.tenancy; if (!pmIsIso(T.end)) return []; return [90, 60, 30].map(function (n) { return { n: n, date: pmAddDays(T.end, -n), on: T.reminders["d" + n] }; }); }
   function pmPot(p) { // the rent pot now: the balance you entered on its date, plus what came in and went out since, in date order, never below zero
     var S = p.settings, from = S.potDate || "0000-00-00", today = todayISO(), fx = [];
-    if (p.role === "owner") {
+    {
       p.tenancy.payments.forEach(function (x) { if (x.status === "received" && x.receivedOn && x.receivedOn >= from && x.receivedOn <= today) fx.push([x.receivedOn, x.amount]); });
-      p.installments.paid.forEach(function (x) { if (p.hasInstallments && x.on && x.on >= from && x.on <= today) fx.push([x.on, -x.amount]); });
-      if (p.hasInstallments) p.installments.extra.forEach(function (x) { if (x.date >= from && x.date <= today) fx.push([x.date, -x.amount]); });
+      p.installments.paid.forEach(function (x) { if (true && x.on && x.on >= from && x.on <= today) fx.push([x.on, -x.amount]); });
+      p.installments.extra.forEach(function (x) { if (x.date >= from && x.date <= today) fx.push([x.date, -x.amount]); });
       p.costs.serviceCharge.paidYears.forEach(function (x) { if (x.on && x.on >= from && x.on <= today) fx.push([x.on, -x.amount]); });
     }
     p.costs.cooling.forEach(function (x) { var d = x.on || (x.month + "-28"); if (d >= from && d <= today) fx.push([d, -x.amount]); });
@@ -8378,8 +8377,8 @@
     var today = todayISO(), W = pmWindow(), ev = [], avg = pmCoolAvg(p), T = p.tenancy, i;
     late = late || 0;
     function push(d, k, label, amt, o) { ev.push({ d: d, k: k, label: label, amt: amt, proj: !!(o && o.proj), ref: o && o.ref }); }
-    var owner = p.role === "owner";
-    if (owner && p.hasInstallments) pmSched(p).forEach(function (x) { if (!x.paid && x.amt > 0 && x.date < W.end) push(x.date < today ? today : x.date, "inst", "Installment " + x.n + " of " + p.installments.count, -x.amt, { ref: x.n }); });
+    var owner = true;
+    if (true) pmSched(p).forEach(function (x) { if (!x.paid && x.amt > 0 && x.date < W.end) push(x.date < today ? today : x.date, "inst", "Installment " + x.n + " of " + p.installments.count, -x.amt, { ref: x.n }); });
     if (pmHasTenancy(p) && T.annualRent > 0) {
       T.payments.forEach(function (x) {
         if (x.status === "received" || x.due >= W.end) return;
@@ -8433,7 +8432,7 @@
   function pmLedger(p, year, proj) { // what really happened in a year (and, with proj, what is still expected in it)
     var L = { rent: 0, inst: 0, sc: 0, cool: 0, other: 0 }, yS = year + "-01-01", yE = year + "-12-31", today = todayISO();
     p.tenancy.payments.forEach(function (x) { if (x.status === "received" && (x.receivedOn || x.due).slice(0, 4) === String(year)) L.rent += x.amount; });
-    if (p.hasInstallments) {
+    if (true) {
       p.installments.paid.forEach(function (x) { if ((x.on || pmAddMonths(p.installments.firstDate || yS, x.n - 1)).slice(0, 4) === String(year)) L.inst += x.amount; });
       p.installments.extra.forEach(function (x) { if (x.date.slice(0, 4) === String(year)) L.inst += x.amount; });
     }
@@ -8444,8 +8443,7 @@
       if (e.d.slice(0, 4) !== String(year)) return;
       if (e.k === "rent") L.rent += Math.abs(e.amt); else if (e.k === "inst") L.inst += -e.amt; else if (e.k === "sc") L.sc += -e.amt; else if (e.k === "cool") L.cool += -e.amt; else L.other += -e.amt;
     });
-    if (p.role === "tenant") { L.net = -(L.rent + L.cool + L.other); L.op = L.net; }
-    else { L.net = L.rent - L.inst - L.sc - L.cool - L.other; L.op = L.rent - L.sc - L.cool - L.other; }
+    L.net = L.rent - L.inst - L.sc - L.cool - L.other; L.op = L.rent - L.sc - L.cool - L.other;
     return L;
   }
   function pmYield(p) {
@@ -8455,10 +8453,10 @@
     return { gross: T.annualRent / price * 100, net: (T.annualRent - cost) / price * 100, cost: cost };
   }
   function pmReminders(p) { // the reminders made from this property's dates
-    var r = [], today = todayISO(), T = p.tenancy, S = p.settings, owner = p.role === "owner", i;
+    var r = [], today = todayISO(), T = p.tenancy, S = p.settings, owner = true, i;
     var nx = T.payments.filter(function (x) { return x.status !== "received"; })[0];
     if (nx) r.push({ id: "rent", grp: owner ? "Money in" : "Money out", title: owner ? "Rent due" : "Rent to pay", date: nx.due, lead: 2, sub: pmMoney(nx.amount, p.currency) + (owner && T.tenant ? " from " + T.tenant : !owner && T.landlord ? " to " + T.landlord : "") });
-    if (owner && p.hasInstallments) { var ni = pmSched(p).filter(function (x) { return !x.paid && x.amt > 0; })[0]; if (ni) r.push({ id: "inst", grp: "Money out", title: "Installment due", date: ni.date, lead: 3, sub: pmMoney(ni.amt, p.currency) + ", number " + ni.n + " of " + p.installments.count }); }
+    if (true) { var ni = pmSched(p).filter(function (x) { return !x.paid && x.amt > 0; })[0]; if (ni) r.push({ id: "inst", grp: "Money out", title: "Installment due", date: ni.date, lead: 3, sub: pmMoney(ni.amt, p.currency) + ", number " + ni.n + " of " + p.installments.count }); }
     if (owner) { var sd = pmScDue(p); if (sd) r.push({ id: "sc", grp: "Money out", title: "Service charge due", date: sd.date, lead: 7, sub: pmMoney(sd.amount, p.currency) + ", every year on " + pmFmt(sd.date) }); }
     var cd = today.slice(0, 7) + "-" + pad(S.coolDay); if (cd < today) cd = pmAddMonths(today.slice(0, 7) + "-01", 1).slice(0, 8) + pad(S.coolDay);
     r.push({ id: "cool", grp: owner ? "Money out" : "Costs", title: "Enter the cooling bill", date: cd, lead: 0, sub: "Monthly on day " + S.coolDay + ", the amount changes each month" });
@@ -8513,15 +8511,15 @@
     }
     return '<div role="radiogroup" aria-label="Your properties">' + l.map(function (p) {
       var L = pmLedger(p, +todayISO().slice(0, 4), false), nx = pmNextEvent(p), over = nx && pmDiff(nx.date, todayISO()) < 0;
-      var st = p.role === "tenant" ? "I rent this" : p.status === "rented" ? "Rented" : p.status === "vacant" ? "Vacant" : "Owner-occupied";
-      return '<button type="button" class="pm-prop" role="radio" aria-checked="' + (p === cur) + '" data-pa="sel" data-id="' + escapeAttr(p.id) + '" data-fk="sel' + escapeAttr(p.id) + '"><div class="top"><div><h3>' + pmE(p.name) + '</h3><div class="sub">' + pmE([p.address, p.role === "tenant" ? "rented by you" : p.type === "off-plan" ? "bought off-plan" : "ready property"].filter(Boolean).join(" · ")) + "</div></div>" + pmChip(st, p.status === "vacant" ? "warn" : "ok") + "</div>" +
-        '<div class="ln">' + (p.role === "tenant" ? "Paid this year " + pmMoney(-L.net, p.currency) : "Net this year " + pmMoney(L.net, p.currency)) + (nx ? " · " + (over ? "overdue: " : "next: ") + pmE(nx.text) + ", " + pmFmt(nx.date) : "") + "</div></button>";
+      var st = p.status === "rented" ? "Rented" : "Vacant";
+      return '<button type="button" class="pm-prop" role="radio" aria-checked="' + (p === cur) + '" data-pa="sel" data-id="' + escapeAttr(p.id) + '" data-fk="sel' + escapeAttr(p.id) + '"><div class="top"><div><h3>' + pmE(p.name) + '</h3><div class="sub">' + pmE([p.address, false ? "rented by you" : p.type === "off-plan" ? "bought off-plan" : "ready property"].filter(Boolean).join(" · ")) + "</div></div>" + pmChip(st, p.status === "vacant" ? "warn" : "ok") + "</div>" +
+        '<div class="ln">' + "Net this year " + pmMoney(L.net, p.currency) + (nx ? " · " + (over ? "overdue: " : "next: ") + pmE(nx.text) + ", " + pmFmt(nx.date) : "") + "</div></button>";
     }).join("") + "</div>";
   }
   function pmNextEvent(p) { // the nearest money event that is not an estimate: rent, an installment or the service charge
-    var c = [], nx = p.tenancy.payments.filter(function (x) { return x.status !== "received"; })[0], owner = p.role === "owner";
+    var c = [], nx = p.tenancy.payments.filter(function (x) { return x.status !== "received"; })[0], owner = true;
     if (nx) c.push({ date: nx.due, text: pmRentLabel(p, nx), kind: "rent" });
-    if (owner && p.hasInstallments) { var ni = pmSched(p).filter(function (x) { return !x.paid && x.amt > 0; })[0]; if (ni) c.push({ date: ni.date, text: "Installment " + ni.n, kind: "inst" }); }
+    if (true) { var ni = pmSched(p).filter(function (x) { return !x.paid && x.amt > 0; })[0]; if (ni) c.push({ date: ni.date, text: "Installment " + ni.n, kind: "inst" }); }
     if (owner) { var sd = pmScDue(p); if (sd) c.push({ date: sd.date, text: "Service charge", kind: "sc" }); }
     c.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : 0; });
     return c[0] || null;
@@ -8550,9 +8548,9 @@
   /* ----- Overview ----- */
   function pmSetupCard(p) {
     var s = [];
-    if (p.role === "owner" && p.hasInstallments && !(p.installments.count && p.installments.firstDate)) s.push(pmGo("pr-inst", "Add the installment plan"));
-    if (p.status === "rented" && !pmHasTenancy(p)) s.push(pmGo("pr-tenancy", p.role === "tenant" ? "Add your tenancy contract" : "Add the tenancy and rent"));
-    if (p.role === "owner" && !p.costs.serviceCharge.amount) s.push(pmGo("pr-costs", "Add the yearly service charge"));
+    if (true && !(p.installments.count && p.installments.firstDate)) s.push(pmGo("pr-inst", "Add the installment plan"));
+    if (p.status === "rented" && !pmHasTenancy(p)) s.push(pmGo("pr-tenancy", false ? "Add your tenancy contract" : "Add the tenancy and rent"));
+    if (true && !p.costs.serviceCharge.amount) s.push(pmGo("pr-costs", "Add the yearly service charge"));
     if (!s.length) return "";
     return '<section class="pm-card" aria-label="Finish setting up"><h2>Finish setting up</h2><div class="pm-steps">' + s.join("") + "</div></section>";
   }
@@ -8560,36 +8558,28 @@
     var today = todayISO(), up = [], T = p.tenancy;
     pmEvents(p, 0).forEach(function (e) { if (pmDiff(e.d, today) <= 90) up.push({ d: e.d, label: e.label.replace(" (renewal assumed)", ""), amt: e.amt, est: e.proj && e.k !== "rent" }); });
     pmRenewDates(p).forEach(function (x) { var n = pmDiff(x.date, today); if (n >= 0 && n <= 90 && x.on) up.push({ d: x.date, label: "Renewal reminder, " + x.n + " days to go", amt: 0 }); });
-    if (p.role === "owner" && pmHasTenancy(p) && T.utilitiesInTenantName.remind) { var ud = pmAddDays(T.utilitiesInTenantName.checkedOn || today, 90); if (pmDiff(ud, today) <= 90) up.push({ d: ud, label: "Check tenant utilities", amt: 0 }); }
+    if (true && pmHasTenancy(p) && T.utilitiesInTenantName.remind) { var ud = pmAddDays(T.utilitiesInTenantName.checkedOn || today, 90); if (pmDiff(ud, today) <= 90) up.push({ d: ud, label: "Check tenant utilities", amt: 0 }); }
     up.sort(function (a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
     return up;
   }
   function pmPgOverview() {
-    var p = pmCur(), L = pmLedger(p, +todayISO().slice(0, 4), PM_UI.ov === "fy"), owner = p.role === "owner", y = +todayISO().slice(0, 4);
-    var h = pmHead(owner ? "Everything about " + pmE(p.name) + " in one place." : "Your rented home, " + pmE(p.name) + ".");
+    var p = pmCur(), L = pmLedger(p, +todayISO().slice(0, 4), PM_UI.ov === "fy"), owner = true, y = +todayISO().slice(0, 4);
+    var h = pmHead("Everything about " + pmE(p.name) + " in one place.");
     h += pmSelector(true) + '<button class="pm-add" type="button" data-pa="padd" data-fk="padd">' + pmSvg("plus") + "Add property</button>";
     h += pmSetupCard(p);
     var I = p.installments;
-    if (owner && p.hasInstallments && I.count && I.firstDate) {
+    if (true && I.count && I.firstDate) {
       var tot = pmPlanTotal(p), paid = pmPaidTotal(p), pc = tot ? Math.min(100, paid / tot * 100) : 0, rows = pmSched(p), left = rows.filter(function (x) { return !x.paid && x.amt > 0; });
       h += '<section class="pm-card" aria-label="Installment progress"><h2>Installment progress '  + '<span class="hr">' + pmE(p.currency) + '</span></h2><div class="pm-hero"><div class="pm-ring" style="--p:' + pc.toFixed(1) + '" role="img" aria-label="' + pc.toFixed(0) + ' percent paid"><span><div>' + pmPct(pc, 0) + "<small>paid</small></div></span></div>";
       h += "<dl><div><dt>Paid</dt><dd>" + pmN(paid) + "</dd></div><div><dt>Remaining</dt><dd>" + pmN(Math.max(0, tot - paid)) + "</dd></div><div><dt>Total price</dt><dd>" + pmN(tot) + "</dd></div></dl></div>";
       h += '<p class="pm-note">' + (left.length ? left.length + " monthly installment" + (left.length === 1 ? "" : "s") + " of " + pmMoney(I.amount, p.currency) + " left, the last on " + pmFmt(left[left.length - 1].date, true) + "." : "All installments are paid.") + "</p></section>";
-    } else if (owner && !p.hasInstallments) {
-      h += '<section class="pm-card" aria-label="Installments"><h2>Installments</h2><p class="pm-note" style="margin:0">No installment plan for this property. You can add one in Edit property.</p></section>';
-    }
-    if (!owner) {
-      var T = p.tenancy, nx = T.payments.filter(function (x) { return x.status !== "received"; })[0];
-      h += '<section class="pm-card" aria-label="Your rent"><h2>Your rent <span class="hr">' + pmE(p.currency) + '</span></h2>' + (pmHasTenancy(p) ? '<div class="pm-big">' + pmN(T.annualRent) + ' <small>a year, ' + pmFreqLabel(T.frequency) + "</small></div>" +
-        '<dl class="pm-kv" style="margin-top:12px"><dt>Landlord</dt><dd>' + (pmE(T.landlord) || "Not set") + "</dd><dt>Next payment</dt><dd>" + (nx ? pmFmt(nx.due) + ", " + pmUntil(nx.due) + " · " + pmN(nx.amount) : "None left") + "</dd><dt>Contract ends</dt><dd>" + pmFmt(T.end, true) + ", " + pmUntil(T.end) + "</dd></dl>" : '<p class="pm-note" style="margin:0">Add your tenancy contract to see rent and renewal dates.</p>') + "</section>";
     }
     h += '<section class="pm-card" aria-label="This year"><h2>' + y + ' <span class="hr">' + pmE(p.currency) + "</span></h2>" + pmSeg("Period", [["so", "So far"], ["fy", "Full year, projected"]], PM_UI.ov);
     var rows2 = owner ? [["in", "↓", "Rent in", L.rent, "+"], ["out", "↑", "Installments", L.inst, "−", "Builds ownership, not a cost"], ["out", "↑", "Service charge", L.sc, "−"], ["out", "↑", "Cooling", L.cool, "−"], ["out", "↑", "Other costs", L.other, "−"]]
       : [["out", "↑", "Rent paid", L.rent, "−"], ["out", "↑", "Cooling and utilities", L.cool, "−"], ["out", "↑", "Other costs", L.other, "−"]];
-    if (owner && !p.hasInstallments) rows2.splice(1, 1);
     rows2.forEach(function (r) { h += '<div class="pm-row"><span class="pm-dot ' + r[0] + '" aria-hidden="true">' + r[1] + '</span><span class="m">' + r[2] + (r[5] ? "<small>" + r[5] + "</small>" : "") + '</span><span class="a ' + (r[0] === "in" ? "pm-pos" : "") + '">' + (r[3] === 0 ? "0" : r[4] + pmN(r[3])) + "</span></div>"; });
     h += '<div class="pm-row"><span class="m"><b>' + (owner ? "Net" : "Total cost") + "</b><small>" + (owner ? "Cash in minus cash out" : "What your home costs you") + '</small></span><span class="a pm-big ' + (L.net < 0 ? "pm-neg" : "pm-pos") + '" style="font-size:20px">' + pmSg(L.net) + "</span></div>";
-    if (owner && p.hasInstallments) h += '<p class="pm-note">Before installments, the property earns <b class="' + (L.op >= 0 ? "pm-pos" : "pm-neg") + '">' + pmSg(L.op) + "</b>. The installments are what turn the net negative.</p>";
+    if (true) h += '<p class="pm-note">Before installments, the property earns <b class="' + (L.op >= 0 ? "pm-pos" : "pm-neg") + '">' + pmSg(L.op) + "</b>. The installments are what turn the net negative.</p>";
     h += "</section>";
     var yl = owner ? pmYield(p) : null;
     if (yl) h += '<section class="pm-card" aria-label="Yield"><h2>Yield on the purchase price</h2><div class="pm-stats"><div class="pm-stat"><small>Gross</small><b>' + pmPct(yl.gross, 2) + "</b><span>rent / price</span></div><div class=\"pm-stat\"><small>Net</small><b>" + pmPct(yl.net, 2) + "</b><span>after " + pmN(yl.cost) + " a year of costs</span></div></div></section>";
@@ -8616,8 +8606,6 @@
   }
   function pmPgInst() {
     var p = pmCur(), I = p.installments, h = pmSelector(false);
-    if (p.role === "tenant") return h + pmHead("You rent this home.") + '<div class="pm-empty">' + pmSvg("cal") + "<h3>No installments</h3><p>Installments are for a property you own and pay off. You pay rent, see Tenancy.</p>" + pmGo("pr-tenancy", "Open Tenancy") + "</div>";
-    if (!p.hasInstallments) return h + pmHead("The developer payment plan.") + '<div class="pm-empty">' + pmSvg("cal") + "<h3>No installment plan</h3><p>This property has no payment plan, so installments are left out of the cash flow and the rent pot. Add one if you are still paying the developer.</p>" + '<div class="pm-btns">' + pmBtn("Add installment plan", "pinst", { cls: "pri", icon: "plus" }) + "</div></div>";
     if (!I.count || !I.firstDate) return h + pmHead("The developer payment plan.") + '<div class="pm-empty">' + pmSvg("cal") + "<h3>Set up the payment plan</h3><p>Enter the total price, the number of monthly installments, the amount and the date of the first one. Tell us how many you have paid.</p>" + '<div class="pm-btns">' + pmBtn("Add installment plan", "pinst", { cls: "pri", icon: "plus" }) + "</div></div>";
     var sc = pmSched(p), ev = pmSim(p, 0).ev, left = sc.filter(function (x) { return !x.paid && x.amt > 0; }), paid = sc.filter(function (x) { return x.paid; }), tot = pmPlanTotal(p), pt = pmPaidTotal(p);
     var lastPaid = paid.length ? paid[paid.length - 1].n : 0, firstUnpaid = left.length ? left[0].n : 0;
@@ -8646,16 +8634,15 @@
   }
 
   /* ----- Tenancy ----- */
-  function pmPayRow(p, x, lastRec, owner) {
+  function pmPayRow(p, x, lastRec, owner, firstOpen) {
     var st = pmPayStatus(x), tag = pmRentTag(p, x), word = owner ? "received" : "paid";
     var cs = st === "received" ? pmChip(owner ? "Received" : "Paid", "ok") + (x.receivedOn ? pmChip(pmFmt(x.receivedOn), "") : "") : st === "overdue" ? pmChip("Overdue " + Math.abs(pmDiff(x.due, todayISO())) + " days", "bad") : st === "postdated" ? pmChip("Postdated cheque", "warn") : st === "due" ? pmChip("Due " + pmUntil(x.due), "warn") : pmChip("Upcoming", "");
-    var b = x.status !== "received" && pmDiff(x.due, todayISO()) <= 14 ? pmBtn(owner ? "Mark received" : "Mark paid", "rentrec", { data: { id: x.id }, fk: x.id, aria: "Mark " + pmRentLabel(p, x) + " " + word }) : x.status === "received" && x.id === lastRec ? pmBtn("Undo", "rentundo", { cls: "ghost", data: { id: x.id }, fk: x.id, aria: "Undo " + pmRentLabel(p, x) }) : "";
+    var b = x.status !== "received" && (pmDiff(x.due, todayISO()) <= 14 || x.id === firstOpen) ? pmBtn(owner ? "Mark received" : "Mark paid", "rentrec", { data: { id: x.id }, fk: x.id, aria: "Mark " + pmRentLabel(p, x) + " " + word }) : x.status === "received" && x.id === lastRec ? pmBtn("Undo", "rentundo", { cls: "ghost", data: { id: x.id }, fk: x.id, aria: "Undo " + pmRentLabel(p, x) }) : "";
     return '<div class="pm-row wrap"><span class="m">' + pmE(tag === "yearly" ? "Yearly rent" : (p.tenancy.frequency === "monthly" ? "Rent " + tag : tag)) + " · " + pmFmt(x.due, true) + "<small>" + pmN(x.amount) + (x.cheque ? " · cheque " + pmE(x.cheque) : "") + '</small><span class="pm-chips" style="margin-top:6px">' + cs + pmTxLogged(x.txId) + "</span></span>" + b + "</div>";
   }
   function pmPgTenancy() {
-    var p = pmCur(), T = p.tenancy, owner = p.role === "owner", h = pmSelector(false), today = todayISO();
-    if (!owner) h += pmHead("Your landlord, contract and the rent you pay.");
-    else h += pmHead("Who lives there, what they pay, and when the contract ends.");
+    var p = pmCur(), T = p.tenancy, owner = true, h = pmSelector(false), today = todayISO();
+    h += pmHead("Who lives there, what they pay, and when the contract ends.");
     if (!pmHasTenancy(p)) {
       var vac = p.status !== "rented";
       return h + '<div class="pm-empty">' + pmSvg("key") + "<h3>" + (owner ? (vac ? "No tenant right now" : "No tenancy yet") : "No tenancy contract yet") + "</h3><p>" + (owner ? "Add the tenant, contract dates, rent and how often it is paid. The payment schedule is made for you." : "Add your landlord, contract dates and rent. The payment schedule is made for you.") + "</p>" + '<div class="pm-btns">' + pmBtn(owner ? "Add tenancy" : "Add contract", "tedit", { cls: "pri", icon: "plus" }) + "</div></div>" + pmHistoryCard(p);
@@ -8670,7 +8657,7 @@
     var pays = T.payments.slice().sort(function (a, b) { return a.due < b.due ? -1 : 1; }), lastRec = ""; pays.forEach(function (x) { if (x.status === "received") lastRec = x.id; });
     var shown = pays.filter(function (x) { return x.due >= T.start || x.status === "received"; });
     h += '<section class="pm-card" aria-label="Rent payments"><h2>' + (owner ? "Rent payments" : "Rent you pay") + ' <span class="hr">' + cur + "</span></h2>";
-    shown.slice(-12).forEach(function (x) { h += pmPayRow(p, x, lastRec, owner); });
+    var fo = pays.filter(function (x) { return x.status !== "received"; })[0]; shown.slice(-12).forEach(function (x) { h += pmPayRow(p, x, lastRec, owner, fo ? fo.id : ""); });
     h += '<p class="pm-note">' + (owner ? "Marking a payment received raises the rent pot. You can also add it to your transactions." : "Marking a payment paid can also add it to your transactions.") + "</p></section>";
     if (owner) {
       var U = T.utilitiesInTenantName, dsl = U.checkedOn ? pmDiff(today, U.checkedOn) : null;
@@ -8690,7 +8677,7 @@
       var n = v.to ? pmDiff(v.to, v.from) + 1 : 0;
       h += '<div class="pm-row"><span class="m">' + pmFmt(v.from, true) + (v.to ? " to " + pmFmt(v.to, true) : " onwards") + "<small>" + (v.kind === "vacancy" ? "Vacant" : "Contract") + (v.note ? ", " + pmE(v.note) : "") + (v.rent ? ", rent " + pmN(v.rent) : "") + '</small></span><span class="a">' + (n ? n + " days" : "") + "</span></div>";
     });
-    if (vd && p.role === "owner" && p.tenancy.annualRent) h += '<p class="pm-note">' + vd + " days vacant in total, about " + pmMoney(vd / 365 * p.tenancy.annualRent, p.currency) + " of rent not earned at today’s rent. Cooling and service charge still had to be paid.</p>";
+    if (vd && true && p.tenancy.annualRent) h += '<p class="pm-note">' + vd + " days vacant in total, about " + pmMoney(vd / 365 * p.tenancy.annualRent, p.currency) + " of rent not earned at today’s rent. Cooling and service charge still had to be paid.</p>";
     return h + '<div class="pm-btns">' + pmBtn("Add vacancy period", "vacadd", { cls: "ghost", icon: "plus" }) + "</div></section>";
   }
 
@@ -8705,7 +8692,7 @@
     return s + '<text class="pm-ax" x="' + (W - 2) + '" y="' + (ya - 3) + '" text-anchor="end">avg ' + Math.round(avg) + "</text></svg>";
   }
   function pmPgCosts() {
-    var p = pmCur(), owner = p.role === "owner", C = p.costs, h = pmSelector(false), cur = pmE(p.currency), today = todayISO();
+    var p = pmCur(), owner = true, C = p.costs, h = pmSelector(false), cur = pmE(p.currency), today = todayISO();
     h += pmHead(owner ? "What you pay as the owner. The tenant pays water and electricity." : "What you pay as the tenant: cooling, utilities and other costs.");
     var tabs = owner ? [["sc", "Service charge"], ["cool", "Cooling"], ["oth", "Other"]] : [["cool", "Cooling"], ["oth", "Other"]];
     var view = tabs.some(function (t) { return t[0] === PM_UI.cost; }) ? PM_UI.cost : tabs[0][0];
@@ -8744,7 +8731,7 @@
   /* ----- Cash flow ----- */
   function pmNiceStep(r) { var pw = Math.pow(10, Math.floor(Math.log10(r || 1))), f = (r || 1) / pw; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * pw; }
   function pmChartSvg(p, res) {
-    var W = 340, H = 214, L = 38, R = 6, T = 10, B = 30, pw = W - L - R, ph = H - T - B, M = res.months, owner = p.role === "owner", buf = owner ? p.settings.buffer : 0;
+    var W = 340, H = 214, L = 38, R = 6, T = 10, B = 30, pw = W - L - R, ph = H - T - B, M = res.months, owner = true, buf = owner ? p.settings.buffer : 0;
     var top = Math.max(buf, Math.max.apply(null, M.map(function (m) { return Math.max(m.inn, owner ? m.end : 0); }))), bot = Math.max.apply(null, M.map(function (m) { return m.out; }));
     top = top || 1; bot = bot || 1;
     var step = pmNiceStep((top + bot) / 5), yM = Math.ceil(top / step) * step, ym = -Math.ceil(bot / step) * step, y = function (v) { return T + ph * (yM - v) / (yM - ym); };
@@ -8778,7 +8765,7 @@
     return '<div class="pm-alert ok" id="pm-cf-alertbox"><span class="ai" aria-hidden="true">✓</span><span><b>Covered for the next 12 months</b>The rent pot never runs out' + (r.buffer ? " and stays above your buffer" : "") + ".</span></div>";
   }
   function pmPgCash() {
-    var p = pmCur(), owner = p.role === "owner", h = pmSelector(false);
+    var p = pmCur(), owner = true, h = pmSelector(false);
     h += pmHead(owner ? "Rent in against installments and costs out." : "What you will pay over the next 12 months.");
     h += '<div id="pm-cf-alert"></div>';
     h += '<section class="pm-card" aria-label="12 month chart"><h2>Next 12 months <span class="hr">' + pmE(p.currency) + '</span></h2><div id="pm-cf-chart"></div><div class="pm-legend">' + (owner ? '<span><i style="background:var(--pm-good)"></i>Money in</span>' : "") + '<span><i style="background:var(--accent)"></i>Money out</span>' + (owner ? '<span><i style="background:var(--ink);height:3px;vertical-align:3px"></i>Rent pot</span><span><i style="border-top:2px dashed var(--ink-muted);height:0;border-radius:0;vertical-align:3px"></i>Buffer</span><span><b class="pm-neg">!</b> top-up needed</span>' : "") + "</div>";
@@ -8793,7 +8780,7 @@
   }
   function pmCashUpdate() {
     var p = pmCur(); if (!p || !document.getElementById("pm-cf-chart")) return;
-    var owner = p.role === "owner", late = owner ? PM_UI.late : 0, r = pmSim(p, late), b = pmSim(p, 0), M = r.months, E = function (id) { return document.getElementById(id); }, cur = p.currency;
+    var owner = true, late = owner ? PM_UI.late : 0, r = pmSim(p, late), b = pmSim(p, 0), M = r.months, E = function (id) { return document.getElementById(id); }, cur = p.currency;
     if (PM_UI.month < 0 || PM_UI.month > 11) PM_UI.month = owner && r.firstShort ? Math.max(0, M.findIndex(function (m) { return m.ev.indexOf(r.firstShort) >= 0; })) : 0;
     E("pm-cf-alert").innerHTML = owner ? pmCashAlert(p, r) : "";
     E("pm-cf-chart").innerHTML = pmChartSvg(p, r);
@@ -8921,28 +8908,26 @@
     spec.onSave = function (rec) { var q = pmByIdIn(state.properties, p.id); if (q) setTx(q, rec.id); };
     setTimeout(function () { pmLogTx(spec); }, 0);
   }
-  var PM_STATUS = [["rented", "Rented"], ["vacant", "Vacant"], ["owner-occupied", "Owner-occupied"]];
+  var PM_STATUS = [["rented", "Rented"], ["vacant", "Vacant"]];
 
   function pmSheetProperty(p) {
     var cur = state.settings.currency, edit = !!p;
     pmSheet({
-      title: edit ? "Edit property" : "Add property", desc: "A home you own, or one you rent. You can add the payment plan, tenancy and costs next.", ok: edit ? "Save" : "Add property",
+      title: edit ? "Edit property" : "Add property", desc: "The home you own. You can add the payment plan, tenancy and costs next.", ok: edit ? "Save" : "Add property",
       fields: [
         { id: "name", label: "Name", type: "text", value: edit ? p.name : "", ph: "e.g. Marina Residence, Apt 1204" },
-        { id: "role", label: "Your role", type: "select", value: edit ? p.role : "owner", opts: [["owner", "I own it"], ["tenant", "I rent it"]] },
-        { id: "type", label: "Type", type: "select", value: edit ? p.type : "off-plan", opts: [["off-plan", "Off-plan, paying a developer"], ["ready", "Ready property"]], show: function (v) { return v.role === "owner"; } },
-        { id: "status", label: "Status", type: "select", value: edit ? p.status : "rented", opts: PM_STATUS, show: function (v) { return v.role === "owner"; } },
+        { id: "type", label: "Type", type: "select", value: edit ? p.type : "off-plan", opts: [["off-plan", "Off-plan, paying a developer"], ["ready", "Ready property"]] },
+        { id: "status", label: "Status", type: "select", value: edit ? p.status : "rented", opts: PM_STATUS },
         { id: "address", label: "Address or notes", type: "text", value: edit ? p.address : "" },
-        { id: "price", label: "Purchase price", type: "number", value: edit && p.purchasePrice ? p.purchasePrice : "", show: function (v) { return v.role === "owner"; } },
+        { id: "price", label: "Purchase price", type: "number", value: edit && p.purchasePrice ? p.purchasePrice : "" },
         { id: "cur", label: "Currency", type: "select", value: edit ? p.currency : cur, opts: CURRENCIES.map(function (c) { return [c, c]; }) },
-        { id: "inst", label: "Has an installment plan", type: "switch", value: edit ? p.hasInstallments : true, show: function (v) { return v.role === "owner"; }, hint: "Off hides the Installments page and leaves it out of the cash flow." }
       ],
       check: function (v) { return v.name.trim() ? "" : "Enter a name for the property."; },
       danger: edit ? { label: "Delete property", fn: function () { pmConfirmDelete(p); } } : null,
       submit: function (v) {
-        var owner = v.role === "owner", o = edit ? p : normalizeProperty({ id: uid(), name: v.name }, cur);
-        o.name = v.name.trim(); o.role = v.role; o.type = owner ? v.type : "ready"; o.address = v.address.trim(); o.currency = v.cur;
-        o.status = owner ? v.status : "rented"; o.purchasePrice = owner ? pmMoney0(v.price) : 0; o.hasInstallments = owner ? !!v.inst : false;
+        var owner = true, o = edit ? p : normalizeProperty({ id: uid(), name: v.name }, cur);
+        o.name = v.name.trim(); o.type = v.type; o.address = v.address.trim(); o.currency = v.cur;
+        o.status = v.status; o.purchasePrice = pmMoney0(v.price);
         if (edit) { pmSave(); todoToast("Property saved."); }
         else {
           o.settings.potDate = todayISO();
@@ -8982,7 +8967,7 @@
           Q.total = v.total; Q.prepaid = v.prepaid; Q.count = n; Q.amount = v.amount; Q.firstDate = v.first;
           Q.paid = Q.paid.filter(function (x) { return x.n <= k; }); Q.paid.forEach(function (x) { keep[x.n] = 1; });
           for (var i = 1; i <= k; i++) if (!keep[i]) Q.paid.push({ n: i, on: "", amount: v.amount, txId: "" });
-          Q.paid.sort(function (a, b) { return a.n - b.n; }); q.hasInstallments = true;
+          Q.paid.sort(function (a, b) { return a.n - b.n; }); 
         });
       }
     });
@@ -9014,7 +8999,7 @@
     });
   }
   function pmSheetTenancy(p) {
-    var T = p.tenancy, edit = pmHasTenancy(p), owner = p.role === "owner", today = todayISO();
+    var T = p.tenancy, edit = pmHasTenancy(p), owner = true, today = todayISO();
     pmSheet({
       title: edit ? (owner ? "Edit tenancy" : "Edit contract") : (owner ? "Add tenancy" : "Add contract"), desc: owner ? "The tenant, the contract and how often the rent comes in. The payment schedule is made from the start date." : "Your landlord, the contract and the rent you pay. The payment schedule is made from the start date.", ok: "Save",
       fields: [
@@ -9048,12 +9033,12 @@
     });
   }
   function pmSheetRent(p, id) {
-    var x = pmByIdIn(p.tenancy.payments, id), owner = p.role === "owner"; if (!x) return;
+    var x = pmByIdIn(p.tenancy.payments, id), owner = true; if (!x) return;
     pmSheet({
       title: owner ? "Mark rent received" : "Mark rent paid", desc: pmE(pmRentLabel(p, x)) + ", due " + pmFmt(x.due, true) + ": <b>" + pmMoney(x.amount, p.currency) + "</b>.", ok: owner ? "Mark received" : "Mark paid",
       fields: [{ id: "date", label: owner ? "Received on" : "Paid on", type: "date", value: todayISO() }, { id: "amt", label: "Amount", type: "number", value: x.amount }, pmTxSwitch(p)],
       check: function (v) { return !pmIsIso(v.date) ? "Pick the date." : !(v.amt > 0) ? "Enter the amount." : ""; },
-      live: function (v) { if (!owner) return ""; var pot = pmPot(p); return "The rent pot goes from " + pmMoney(pot, p.currency) + " to " + pmMoney(pot + v.amt, p.currency) + "."; },
+      live: function (v) { var pot = pmPot(p); return "The rent pot goes from " + pmMoney(pot, p.currency) + " to " + pmMoney(pot + v.amt, p.currency) + "."; },
       submit: function (v) {
         pmRememberTx(v.tx);
         pmCommit(owner ? "Rent marked received." : "Rent marked paid.", function (q) { var r = pmByIdIn(q.tenancy.payments, id); r.status = "received"; r.receivedOn = v.date; r.amount = v.amt; });
@@ -9062,7 +9047,7 @@
     });
   }
   function pmSheetRenew(p) {
-    var T = p.tenancy, ns = pmAddDays(T.end, 1), owner = p.role === "owner";
+    var T = p.tenancy, ns = pmAddDays(T.end, 1), owner = true;
     pmSheet({
       title: "Renew contract", desc: "New dates and rent for " + pmE((owner ? T.tenant : T.landlord) || p.name) + ". The old contract goes to History and a new payment schedule is made.", ok: "Renew",
       fields: [
@@ -9145,7 +9130,7 @@
           q.costs.cooling = q.costs.cooling.filter(function (c) { return c.month !== v.m && c.id !== nid; });
           q.costs.cooling.push({ id: nid, month: v.m, amount: v.amt, on: ex && ex.on ? ex.on : todayISO(), txId: ex ? ex.txId : "" }); q.costs.cooling.sort(function (a, b) { return a.month < b.month ? -1 : 1; }); PM_UI.cost = "cool";
         });
-        if (!ex) pmAfter(p, v.tx, { amount: v.amt, merchant: (p.role === "owner" ? "District cooling, " : "Cooling, ") + p.name, cat: "utilities", date: todayISO(), note: "Cooling bill " + pmMonName(+v.m.slice(5) - 1) + " " + v.m.slice(0, 4) }, function (q, tid) { var r = pmByIdIn(q.costs.cooling, nid); if (r) r.txId = tid; });
+        if (!ex) pmAfter(p, v.tx, { amount: v.amt, merchant: (true ? "District cooling, " : "Cooling, ") + p.name, cat: "utilities", date: todayISO(), note: "Cooling bill " + pmMonName(+v.m.slice(5) - 1) + " " + v.m.slice(0, 4) }, function (q, tid) { var r = pmByIdIn(q.costs.cooling, nid); if (r) r.txId = tid; });
       }
     });
   }
@@ -9181,15 +9166,15 @@
     pmSheet({
       title: "Property settings", desc: pmE(p.name), ok: "Save",
       fields: [
-        { id: "buf", label: "Buffer to keep in the rent pot", type: "number", value: p.settings.buffer || "", show: function () { return p.role === "owner"; } },
-        { id: "pot", label: "Rent pot now", type: "number", value: Math.round(pmPot(p) * 100) / 100, show: function () { return p.role === "owner"; }, hint: "The rent you have received and not spent. It moves when you mark money received or paid." },
+        { id: "buf", label: "Buffer to keep in the rent pot", type: "number", value: p.settings.buffer || "", show: function () { return true; } },
+        { id: "pot", label: "Rent pot now", type: "number", value: Math.round(pmPot(p) * 100) / 100, show: function () { return true; }, hint: "The rent you have received and not spent. It moves when you mark money received or paid." },
         { id: "cday", label: "Cooling bill reminder: day of the month", type: "number", step: "1", min: 1, value: p.settings.coolDay },
         { id: "fc", label: "Include properties in Forecast", type: "switch", value: state.ui.prop.forecast, hint: "Adds installments, service charge, cooling and other costs of properties in " + pmE(state.settings.currency) + " to the Forecast page. Off by default." }
       ],
       check: function (v) { return v.cday >= 1 && v.cday <= 28 ? "" : "Enter a day from 1 to 28."; },
       submit: function (v) {
         pmCommit("Settings saved.", function (q) {
-          if (q.role === "owner") { q.settings.buffer = v.buf; if (Math.abs(v.pot - pmPot(q)) > 0.004) { q.settings.potStart = v.pot; q.settings.potDate = todayISO(); } }
+          if (true) { q.settings.buffer = v.buf; if (Math.abs(v.pot - pmPot(q)) > 0.004) { q.settings.potStart = v.pot; q.settings.potDate = todayISO(); } }
           q.settings.coolDay = Math.max(1, Math.min(28, Math.round(v.cday))); state.ui.prop.forecast = !!v.fc;
         });
       }
@@ -9246,9 +9231,9 @@
   };
   function pmFab() { // the floating + adds whatever the page is about
     var p = pmCur(); if (!p || currentTab === "pr-overview") { pmSheetProperty(null); return; }
-    if (currentTab === "pr-inst") { if (p.role === "owner" && p.hasInstallments && p.installments.count) pmSheetExtra(p); else if (p.role === "owner") pmSheetPlan(p); }
+    if (currentTab === "pr-inst") { if (true && p.installments.count) pmSheetExtra(p); else if (true) pmSheetPlan(p); }
     else if (currentTab === "pr-tenancy") pmSheetTenancy(p);
-    else if (currentTab === "pr-costs") { var v = p.role === "tenant" && PM_UI.cost === "sc" ? "cool" : PM_UI.cost; if (v === "sc") pmSheetSc(p, false); else if (v === "cool") pmSheetCooling(p, ""); else pmSheetOther(p, ""); }
+    else if (currentTab === "pr-costs") { var v = false && PM_UI.cost === "sc" ? "cool" : PM_UI.cost; if (v === "sc") pmSheetSc(p, false); else if (v === "cool") pmSheetCooling(p, ""); else pmSheetOther(p, ""); }
     else if (currentTab === "pr-docs") pmSheetDoc(p, "");
   }
   function pmBindSections() {
@@ -9290,10 +9275,10 @@
     if (I.best) { var over = pmDiff(I.best.nx.date, today) < 0; n = I.best.nx.text + (over ? " overdue" : " due " + pmFmt(I.best.nx.date)); }
     else n = I.ren ? "Renewal in " + I.ren.d + (I.ren.d === 1 ? " day" : " days") : "Nothing due";
     var L = pmLedger(p, +today.slice(0, 4), false);
-    s += '<div class="s">' + (p.role === "tenant" ? "Paid this year " + pmMoney(-L.net, p.currency) : "Net this year " + pmMoney(L.net, p.currency)) + (l.length > 1 ? " · " + pmE(p.name) : "") + "</div>";
+    s += '<div class="s">' + "Net this year " + pmMoney(L.net, p.currency) + (l.length > 1 ? " · " + pmE(p.name) : "") + "</div>";
     if (I.ren && I.best) s += '<div class="s">Renewal in ' + I.ren.d + (I.ren.d === 1 ? " day" : " days") + (l.length > 1 ? " · " + pmE(I.ren.p.name) : "") + "</div>";
-    var sim = p.role === "owner" ? pmSim(p, 0) : null;
-    chips += '<span class="chip">' + (p.role === "tenant" ? "I rent this" : p.status === "rented" ? "Rented" : p.status === "vacant" ? "Vacant" : "Owner-occupied") + "</span>";
+    var sim = true ? pmSim(p, 0) : null;
+    chips += '<span class="chip">' + (p.status === "rented" ? "Rented" : "Vacant") + "</span>";
     if (sim && (sim.firstShort || sim.firstBuf)) chips += '<span class="chip">' + (sim.firstShort ? "Top-up from " + pmFmt(sim.firstShort.d) : "Below buffer " + pmFmt(sim.firstBuf.d)) + "</span>";
     if (l.length > 1) chips += '<span class="chip">' + l.length + " properties</span>";
     return head + '<div class="hcv"><div class="n num">' + pmE(n) + "</div>" + s + '</div><div class="hcf"><div class="chips">' + chips + '</div><span class="go">' + icon("arrow") + "</span></div>";
@@ -9336,7 +9321,7 @@
     var t = todayISO(), m1 = t.slice(0, 8) + "01", y = +t.slice(0, 4), start = pmAddMonths(m1, -8), end = pmAddDays(pmAddMonths(start, 12), -1), p;
     var cool = [420, 380, 410, 560, 760, 980, 1120, 1180].map(function (a, i) { return { month: pmAddMonths(m1, i - 8).slice(0, 7), amount: a, on: "" }; });
     p = normalizeProperty({
-      id: uid(), name: "Demo apartment (sample data)", type: "off-plan", role: "owner", status: "rented", address: "Sample Tower, Apt 1204", purchasePrice: 1450000, currency: state.settings.currency, hasInstallments: true,
+      id: uid(), name: "Demo apartment (sample data)", type: "off-plan", status: "rented", address: "Sample Tower, Apt 1204", purchasePrice: 1450000, currency: state.settings.currency,
       installments: { total: 1450000, prepaid: 870000, count: 40, amount: 14500, firstDate: pmAddMonths(t.slice(0, 8) + "26", -13), paid: Array.apply(null, Array(13)).map(function (z, i) { return { n: i + 1, on: "", amount: 14500 }; }) },
       tenancy: { tenant: "Sample Tenant", ejari: "EJR-0000-00000", start: start, end: end, annualRent: 96000, frequency: "quarterly", deposit: 4800, payments: pmGenPayments(start, end, 96000, "quarterly").map(function (x) { if (pmDiff(x.due, t) < -3) { x.status = "received"; } return x; }), utilitiesInTenantName: { checkedOn: pmAddDays(t, -15) } },
       costs: { serviceCharge: { amount: 18150, dueMonth: 11, dueDay: 30, paidYears: [{ year: y - 1, on: (y - 1) + "-11-28", amount: 17600 }] }, cooling: cool, other: [{ name: "Building insurance", amount: 1200, date: pmAddMonths(t, -5), recurring: "yearly" }] },
