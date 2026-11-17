@@ -1490,6 +1490,36 @@
   .hc .go { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; box-shadow: var(--soft-raise-sm); flex: none; }
   .hc .go svg { width: 16px; height: 16px; }
   .home-hint { margin: 0; text-align: center; font-size: 12px; color: var(--ink-muted); padding: 14px 24px 0; line-height: 1.5; font-weight: 600; }
+  /* ---------- version history, sync notices, backup reminder ---------- */
+  .vh-backup { margin: 0 0 12px; font-size: 13.5px; font-weight: 600; color: var(--ink-2); }
+  .vh-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .vh-item { padding: 14px 14px 12px; border-radius: 18px; background: var(--page); box-shadow: var(--soft-raise-sm); min-width: 0; }
+  .vh-top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 2px 10px; }
+  .vh-when { font-size: 14.5px; font-weight: 700; color: var(--ink); }
+  .vh-kind { font-size: 11.5px; font-weight: 700; letter-spacing: .02em; color: var(--accent); }
+  .vh-counts { margin-top: 4px; font-size: 12.5px; line-height: 1.5; color: var(--ink-muted); overflow-wrap: anywhere; }
+  .vh-detail { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 12.5px; }
+  .vh-detail th, .vh-detail td { padding: 5px 4px; text-align: right; font-weight: 600; color: var(--ink); border-top: 1px solid var(--line); }
+  .vh-detail thead th { border-top: none; color: var(--ink-muted); font-size: 11.5px; }
+  .vh-detail tbody th { text-align: left; color: var(--ink-2); }
+  .vh-detail small { font-weight: 700; }
+  .vh-down { color: var(--critical); } .vh-up { color: var(--ink-muted); }
+  .vh-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .vh-btn { width: auto; flex: 1 1 130px; padding: 10px 12px; font-size: 12px; min-height: 42px; }
+  .sync-notices { position: fixed; z-index: 70; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); max-width: 460px; top: calc(70px + env(safe-area-inset-top)); display: grid; gap: 8px; pointer-events: none; }
+  .sync-notice { pointer-events: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 18px; background: var(--page); color: var(--ink); border-left: 4px solid var(--warning); box-shadow: 0 10px 28px rgba(0,0,0,.28); font-size: 13px; line-height: 1.45; font-weight: 600; animation: todo-rise .25s ease; }
+  .sn-text { overflow-wrap: anywhere; }
+  .sn-acts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .sn-btn { border: none; border-radius: 999px; padding: 8px 14px; min-height: 36px; background: var(--surface-2); color: var(--accent); font: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; }
+  .sn-btn.sn-x { margin-left: auto; color: var(--ink-muted); font-size: 18px; line-height: 1; padding: 6px 12px; }
+  .home-note { margin: 0 18px 14px; padding: 12px 14px; border-radius: 18px; background: var(--page); box-shadow: var(--soft-raise-sm); display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.45; font-weight: 600; color: var(--ink-2); }
+  .home-note[hidden] { display: none; }
+  .hb-acts { display: flex; gap: 8px; }
+  .hb-btn { border: none; border-radius: 999px; padding: 8px 14px; min-height: 36px; background: var(--surface-2); color: var(--accent); font: inherit; font-size: 12.5px; font-weight: 800; cursor: pointer; }
+  .hb-btn:last-child { color: var(--ink-muted); }
+  :root[data-skin="soft"] .hb-btn, :root[data-skin="soft"] .sn-btn { background: var(--page); box-shadow: var(--soft-raise-sm); }
+  @media (prefers-reduced-motion: reduce) { .sync-notice { animation: none; } }
+
   @media (prefers-reduced-motion: reduce) {
     .home, .home.open, main, .navzone, .fab-anchor { transition: none; }
   }
@@ -1750,6 +1780,7 @@
       </div>
     </div>
     <div class="hello"><small id="home-greet">Welcome</small><b>What next?</b></div>
+    <div class="home-note" id="home-backup" role="status" hidden></div>
     <div class="hcards">
       <button type="button" class="hc" id="hc-money"></button>
       <button type="button" class="hc" id="hc-lists"></button>
@@ -1971,7 +2002,8 @@
       bankCardConfig: defaultBankCardConfig(),
       nav: defaultNav(),
       ui: defaultUi(),
-      settings: { currency: guessCurrency(), accentColor: "orange" }
+      settings: { currency: guessCurrency(), accentColor: "orange" },
+      meta: normalizeMeta(null)
     };
   }
 
@@ -1979,9 +2011,29 @@
     return "SAR";
   }
 
+  /* ---------- safety net: per-device sync bookkeeping (declared before the first load/save below) ----------
+     state.meta = { rev, savedAt, deviceId } stamps every save. baseRev is the rev of the cloud document this
+     device last applied or wrote; the cloud write is a transaction that refuses to overwrite a newer cloud doc. */
+  var SYNC_KEY = "ledger.financeTracker.sync", DEVICE_KEY = "ledger.financeTracker.deviceId";
+  var BACKUP_KEY = "ledger.financeTracker.lastBackup", BACKUP_SEEN_KEY = "ledger.financeTracker.backupSeen", BACKUP_SNOOZE_KEY = "ledger.financeTracker.backupSnooze";
+  var CLOUD_DAILY_KEY = "ledger.financeTracker.cloudDaily";
+  var baseRev = 0, baseKnown = "", baseHash = "", syncDirty = false, lastCounts = null, lastSyncedJson = "", lastSavedJson = "", syncUid = "";
+  var saveSeq = 0, explicitPending = false, pushRunning = false, pushAgain = false, inflightRev = 0, retryTimer = null, retryDelay = 4000;
+  var lastEchoRev = -1, lastEchoHash = "", sessionId = "", deviceIdMem = "";
+  var COUNT_KEYS = ["transactions", "recurring", "loans", "goals", "cards"];
+  var HIST_MAX = 15, HIST_AUTO_MAX = 8, HIST_DB = "ledger.financeTracker.history";
+  var histMem = [], histDb = null, histLoaded = false, histPersisted = {}, histOpenP = null, histCtr = 0, histDone = {};
+  var cloudDailyTried = false, cloudHistWarned = false, cloudHist = { status: "idle", items: [], err: "" }, histExpanded = "";
+  syncLoad();
+
   var state = load();
   if (assignCategorySlots()) save();
   applyAccentColor();
+  (function () { // a copy of this device's data as it was when the app opened, once a day (before any cloud data is applied)
+    backupRefMs();
+    var openJson = JSON.stringify(state);
+    histOpen().then(function () { try { histDaily("daily", JSON.parse(openJson)); } catch (e) {} });
+  })();
 
   function normalizeState(parsed) {
     if (!parsed.categories || !parsed.categories.length) parsed.categories = defaultState().categories;
@@ -1999,6 +2051,7 @@
     if (!parsed.bankCardConfig) parsed.bankCardConfig = defaultBankCardConfig();
     parsed.nav = normalizeNav(parsed.nav);
     parsed.ui = normalizeUi(parsed.ui);
+    parsed.meta = normalizeMeta(parsed.meta);
     BANK_CARDS.concat(parsed.customBankCards.map(function (c) { return c.label; })).forEach(function (label) {
       if (!parsed.bankCardConfig[label]) parsed.bankCardConfig[label] = { value: 0 };
     });
@@ -2046,12 +2099,21 @@
     try {
       var raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return defaultState();
+      lastSavedJson = raw;
       return normalizeState(JSON.parse(raw));
     } catch (e) { return defaultState(); }
   }
 
-  function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  // opts.explicit marks a deliberate whole-data change (restore, reset): the shrink guard lets it through.
+  function save(opts) {
+    var prev = lastSavedJson;
+    stampMeta();
+    lastSavedJson = JSON.stringify(state);
+    localStorage.setItem(STORAGE_KEY, lastSavedJson);
+    saveSeq++; syncDirty = true;
+    if (opts && opts.explicit) explicitPending = true;
+    syncPersist();
+    try { histAutoOnSave(prev); } catch (e) {}
     pushToCloud();
   }
 
@@ -2079,42 +2141,511 @@
   var unsubscribeSnapshot = null;
   var pendingFirstAccount = false;
 
+  /* ---------- version stamp, conflict guard, shrink guard, history (see also the cloud section below) ---------- */
+
+  function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function deviceId() {
+    if (deviceIdMem) return deviceIdMem;
+    var d = lsGet(DEVICE_KEY);
+    if (!d) { d = "dev-" + uid().replace(/-/g, "").slice(0, 16); lsSet(DEVICE_KEY, d); }
+    return (deviceIdMem = d);
+  }
+  function getSessionId() { return sessionId || (sessionId = "s-" + uid().replace(/-/g, "").slice(0, 12)); }
+  function normalizeMeta(raw) {
+    raw = raw && typeof raw === "object" ? raw : {};
+    var rev = typeof raw.rev === "number" && isFinite(raw.rev) ? Math.max(0, Math.floor(raw.rev)) : 0;
+    return { rev: rev, savedAt: typeof raw.savedAt === "string" ? raw.savedAt.slice(0, 40) : "", deviceId: typeof raw.deviceId === "string" ? raw.deviceId.slice(0, 64) : "" };
+  }
+  function metaRev(d) { return d && d.meta && typeof d.meta.rev === "number" && isFinite(d.meta.rev) ? Math.max(0, Math.floor(d.meta.rev)) : 0; }
+  function stampMeta() {
+    state.meta = { rev: Math.max((state.meta && state.meta.rev) || 0, baseRev) + 1, savedAt: new Date().toISOString(), deviceId: deviceId() };
+  }
+  function localDay(d) { return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+
+  // Stable, key-order independent hash of a document without its meta (to tell "same content" apart from "same rev").
+  function canon(v) {
+    if (Array.isArray(v)) return "[" + v.map(canon).join(",") + "]";
+    if (v && typeof v === "object") return "{" + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ":" + canon(v[k]); }).join(",") + "}";
+    var j = JSON.stringify(v); return j === undefined ? "null" : j;
+  }
+  function hashData(d) {
+    var cp = {}; Object.keys(d || {}).forEach(function (k) { if (k !== "meta") cp[k] = d[k]; });
+    var s = canon(cp), h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    for (var i = 0; i < s.length; i++) { var c = s.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36) + "." + s.length;
+  }
+  function jsonNoMeta(st) { var cp = {}; Object.keys(st).forEach(function (k) { if (k !== "meta") cp[k] = st[k]; }); return JSON.stringify(cp); }
+
+  function countsOf(st) {
+    var c = {}, latest = "";
+    COUNT_KEYS.forEach(function (k) { c[k] = Array.isArray(st[k]) ? st[k].length : 0; });
+    (Array.isArray(st.transactions) ? st.transactions : []).forEach(function (t) { if (t && typeof t.date === "string" && t.date > latest) latest = t.date; });
+    c.latest = latest.slice(0, 10);
+    return c;
+  }
+  // Shrink guard: more than 25% fewer records AND at least 5 fewer, against the last synced state.
+  function shrinkCheck(st) {
+    if (!lastCounts) return null;
+    var now = countsOf(st), bad = [];
+    COUNT_KEYS.forEach(function (k) {
+      var before = +lastCounts[k] || 0;
+      if (before - now[k] >= 5 && now[k] < before * 0.75) bad.push({ key: k, from: before, to: now[k] });
+    });
+    return bad.length ? bad : null;
+  }
+  function fewerRecords(a, b) { return COUNT_KEYS.some(function (k) { return a[k] < b[k]; }); }
+
+  function syncPersist() { lsSet(SYNC_KEY, JSON.stringify({ uid: syncUid, baseRev: baseRev, baseKnown: baseKnown, baseHash: baseHash, dirty: syncDirty, counts: lastCounts })); }
+  function syncLoad() {
+    try {
+      var o = JSON.parse(lsGet(SYNC_KEY) || "null");
+      if (!o || typeof o !== "object") return;
+      syncUid = typeof o.uid === "string" ? o.uid : "";
+      baseRev = Math.max(0, parseInt(o.baseRev, 10) || 0);
+      baseKnown = o.baseKnown === "exists" || o.baseKnown === "none" ? o.baseKnown : "";
+      baseHash = typeof o.baseHash === "string" ? o.baseHash : "";
+      syncDirty = !!o.dirty;
+      lastCounts = o.counts && typeof o.counts === "object" ? o.counts : null;
+    } catch (e) {}
+  }
+
+  /* ----- local history (IndexedDB): snapshots as compact JSON strings, identical ones skipped ----- */
+  function idbPut(e) { if (!histDb) return; try { histDb.transaction("snaps", "readwrite").objectStore("snaps").put(e); histPersisted[e.id] = true; } catch (err) {} }
+  function idbDel(id) { if (!histDb) return; try { histDb.transaction("snaps", "readwrite").objectStore("snaps").delete(id); delete histPersisted[id]; } catch (err) {} }
+  function histOpen() {
+    if (histOpenP) return histOpenP;
+    histOpenP = new Promise(function (resolve) {
+      var done = false; function fin(db) { if (!done) { done = true; resolve(db); } }
+      try {
+        if (!window.indexedDB) return fin(null);
+        var rq = indexedDB.open(HIST_DB, 1);
+        rq.onupgradeneeded = function () { try { rq.result.createObjectStore("snaps", { keyPath: "id" }); } catch (e) {} };
+        rq.onsuccess = function () { fin(rq.result); };
+        rq.onerror = function () { fin(null); };
+        rq.onblocked = function () { fin(null); };
+        setTimeout(function () { fin(null); }, 4000);
+      } catch (e) { fin(null); }
+    }).then(function (db) {
+      histDb = db;
+      if (!db) { histLoaded = true; return; }
+      return new Promise(function (resolve) {
+        try {
+          var rq = db.transaction("snaps", "readonly").objectStore("snaps").getAll();
+          rq.onsuccess = function () {
+            (rq.result || []).forEach(function (e) { histPersisted[e.id] = true; if (!histMem.some(function (m) { return m.id === e.id; })) histMem.push(e); });
+            histMem.sort(function (a, b) { return b.ts - a.ts; });
+            resolve();
+          };
+          rq.onerror = function () { resolve(); };
+        } catch (e) { resolve(); }
+      }).then(function () {
+        histLoaded = true; histPrune();
+        histMem.forEach(function (e) { if (!histPersisted[e.id]) idbPut(e); });
+      });
+    }).catch(function () { histLoaded = true; });
+    return histOpenP;
+  }
+  function histPrune() {
+    var autos = 0, keep = [], drop = [];
+    histMem.forEach(function (e) { if (e.kind === "auto" && ++autos > HIST_AUTO_MAX) drop.push(e); else keep.push(e); });
+    while (keep.length > HIST_MAX) drop.push(keep.pop());
+    histMem = keep;
+    drop.forEach(function (e) { idbDel(e.id); });
+  }
+  function histSnap(kind, st, o) {
+    o = o || {};
+    try {
+      var hash = hashData(st), now = Date.now(), newest = histMem[0];
+      if (newest && newest.hash === hash) { // identical to the newest: skip, but make a conflict copy findable
+        if (kind === "conflict" && newest.kind !== "conflict") { newest.kind = "conflict"; newest.label = "conflict-" + new Date(now).toISOString().slice(0, 19).replace(/:/g, "-"); idbPut(newest); }
+        return newest;
+      }
+      if (o.minGapMs) for (var i = 0; i < histMem.length; i++) if (histMem[i].kind === kind && now - histMem[i].ts / 1000 < o.minGapMs) return null;
+      var cp = {}; Object.keys(st).forEach(function (k) { if (k !== "meta") cp[k] = st[k]; });
+      var e = {
+        id: "h-" + now.toString(36) + "-" + uid().replace(/-/g, "").slice(0, 6), ts: now * 1000 + (histCtr++ % 1000), at: new Date(now).toISOString(), day: localDay(new Date(now)),
+        kind: kind, label: kind === "conflict" ? "conflict-" + new Date(now).toISOString().slice(0, 19).replace(/:/g, "-") : "", counts: countsOf(st), hash: hash, json: JSON.stringify(cp)
+      };
+      histMem.unshift(e); histPrune(); idbPut(e);
+      return e;
+    } catch (err) { try { console.warn("Version history snapshot skipped:", err); } catch (x) {} return null; }
+  }
+  function histDaily(kind, st) {
+    var day = localDay(new Date()), k = kind + day;
+    if (histDone[k]) return; histDone[k] = true;
+    if (histMem.some(function (e) { return e.kind === kind && e.day === day; })) return;
+    histSnap(kind, st);
+  }
+  function histAutoOnSave(prevJson) { // at most one hourly snapshot while editing: the state as it was before this edit
+    if (!prevJson) return;
+    var now = Date.now(), last = 0;
+    histMem.forEach(function (e) { if ((e.kind === "auto" || e.kind === "daily" || e.kind === "synced") && e.ts / 1000 > last) last = e.ts / 1000; });
+    if (now - last < 3600000) return;
+    histSnap("auto", JSON.parse(prevJson));
+  }
+  function histFind(id) {
+    for (var i = 0; i < histMem.length; i++) if (histMem[i].id === id) return histMem[i];
+    for (var j = 0; j < cloudHist.items.length; j++) if (cloudHist.items[j].id === id) return cloudHist.items[j];
+    return null;
+  }
+
+  /* ----- cloud daily history (best effort): users/{uid}/history/{YYYY-MM-DD}, newest 14 kept ----- */
+  function cloudHistWarn(err) {
+    if (cloudHistWarned) return; cloudHistWarned = true;
+    try { console.warn("Cloud history is not available (the Firestore rules may not allow users/{uid}/history yet):", (err && (err.code || err.message)) || err); } catch (e) {}
+  }
+  function cloudHistCol() { return db.collection("users").doc(auth.currentUser.uid).collection("history"); }
+  function cloudDailyMaybe(st) {
+    try {
+      if (!cloudEnabled || !auth || !auth.currentUser) return;
+      var day = localDay(new Date()), key = auth.currentUser.uid + ":" + day;
+      if (lsGet(CLOUD_DAILY_KEY) === key || cloudDailyTried) return;
+      cloudDailyTried = true; // one attempt per page load, whatever happens
+      var json = jsonNoMeta(st);
+      if (json.length > 900000) { cloudHistWarn("snapshot too large for one document"); return; }
+      var col = cloudHistCol(), ref = col.doc(day);
+      ref.get().then(function (snap) {
+        if (snap.exists) return;
+        return ref.set({ date: day, savedAt: new Date().toISOString(), rev: metaRev(st), deviceId: deviceId(), counts: countsOf(st), json: json });
+      }).then(function () {
+        lsSet(CLOUD_DAILY_KEY, key);
+        return col.get();
+      }).then(function (qs) {
+        var ids = []; qs.forEach(function (d) { ids.push(d.id); }); ids.sort().reverse();
+        ids.slice(14).forEach(function (id) { col.doc(id).delete().catch(cloudHistWarn); });
+      }).catch(cloudHistWarn);
+    } catch (e) { cloudHistWarn(e); }
+  }
+  function loadCloudHist() {
+    if (!cloudEnabled || !auth || !auth.currentUser) { cloudHist = { status: "off", items: [], err: "" }; return; }
+    cloudHist = { status: "loading", items: [], err: "" };
+    var mine = cloudHist;
+    cloudHistCol().get().then(function (qs) {
+      var items = [];
+      qs.forEach(function (d) {
+        var x = d.data() || {}; if (typeof x.json !== "string") return;
+        items.push({ id: "c-" + d.id, cloud: true, day: d.id, at: x.savedAt || (d.id + "T00:00:00"), kind: "cloud", counts: x.counts || {}, json: x.json });
+      });
+      items.sort(function (a, b) { return a.day < b.day ? 1 : -1; });
+      if (cloudHist !== mine) return;
+      cloudHist = { status: "ok", items: items, err: "" };
+    }).catch(function (err) {
+      cloudHistWarn(err);
+      if (cloudHist === mine) cloudHist = { status: "error", items: [], err: (err && err.code) || "" };
+    }).then(function () { if (settingsView === "history") renderSettings(); });
+  }
+
+  /* ----- notices (conflict / blocked push / restore): persistent, dismissable, role=alert for warnings ----- */
+  function syncNotice(id, text, actions, role, autoMs) {
+    var host = document.getElementById("sync-notices");
+    if (!host) { host = document.createElement("div"); host.id = "sync-notices"; host.className = "sync-notices"; document.body.appendChild(host); }
+    var old = document.getElementById("sn-" + id); if (old) old.remove();
+    var n = document.createElement("div"); n.className = "sync-notice"; n.id = "sn-" + id; n.setAttribute("role", role || "status");
+    n.innerHTML = '<span class="sn-text">' + escapeHtml(text) + '</span><span class="sn-acts"></span>';
+    var acts = n.querySelector(".sn-acts");
+    (actions || []).forEach(function (a) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "sn-btn"; b.textContent = a.label;
+      b.addEventListener("click", function () { n.remove(); a.fn(); }); acts.appendChild(b);
+    });
+    var x = document.createElement("button"); x.type = "button"; x.className = "sn-btn sn-x"; x.setAttribute("aria-label", "Dismiss"); x.textContent = "×";
+    x.addEventListener("click", function () { n.remove(); }); acts.appendChild(x);
+    host.appendChild(n);
+    if (autoMs) setTimeout(function () { if (n.parentNode) n.remove(); }, autoMs);
+  }
+  function syncNoticeClear(id) { var n = document.getElementById("sn-" + id); if (n) n.remove(); }
+
+  /* ----- the cloud write: a transaction that never overwrites a newer cloud document ----- */
+  function adoptRemote(data, opts) {
+    opts = opts || {};
+    var rhash = hashData(data), rrev = metaRev(data);
+    var remote = normalizeState(data);
+    var differs = hashData(state) !== hashData(remote);
+    if (syncDirty || opts.conflict) {
+      if (differs) { histSnap("conflict", state); syncNotice("conflict", "Another device saved newer changes. Your local changes were kept in Version history", [{ label: "View history", fn: openHistoryFromNotice }], "alert"); }
+    } else if (baseKnown !== "exists" && differs) histSnap("before-sync", state);
+    else if (fewerRecords(countsOf(remote), countsOf(state))) histSnap("before-sync", state, { minGapMs: 300000 });
+    isApplyingRemoteUpdate = true;
+    try {
+      state = remote; gSynced = true;
+      // Slot assignment only fixes colours on this device; it is never pushed from here (a stale snapshot must not write).
+      assignCategorySlots();
+      lastSavedJson = JSON.stringify(state); lsSet(STORAGE_KEY, lastSavedJson);
+      applyAccentColor(); renderAll();
+    } finally { isApplyingRemoteUpdate = false; }
+    baseRev = rrev; baseKnown = "exists"; baseHash = rhash; syncDirty = false; explicitPending = false;
+    lastCounts = countsOf(state); lastSyncedJson = jsonNoMeta(state);
+    syncNoticeClear("shrink");
+    syncPersist();
+    histOpen().then(function () { histDaily("synced", state); });
+    cloudDailyMaybe(state);
+    setTimeout(guideMaybeStart, 0);
+  }
+
+  function onCloudSnapshot(snap) {
+    if (snap.metadata.hasPendingWrites) return; // our own optimistic write echoing back
+    if (snap.metadata.fromCache) return;        // a cached copy can be days old: never act on it, wait for the server
+    var data = snap.data();
+    if (!data) { // the server confirms there is no document: a brand-new account, seed it
+      gSynced = true; baseKnown = "none"; baseRev = 0; baseHash = ""; lastCounts = null; syncPersist();
+      pushToCloud(); setTimeout(guideMaybeStart, 0); return;
+    }
+    var rrev = metaRev(data);
+    if (data.meta && data.meta.writer === getSessionId() && rrev <= Math.max(baseRev, inflightRev)) { // our own transaction echoing back
+      lastEchoRev = rrev; lastEchoHash = hashData(data);
+      if (rrev === baseRev && !baseHash) { baseHash = lastEchoHash; syncPersist(); }
+      return;
+    }
+    var rhash = hashData(data);
+    var hashOk = baseHash ? rhash === baseHash : rrev > 0;
+    var unchanged = baseKnown === "exists" && rrev === baseRev && hashOk;
+    if (unchanged && gSynced) return;           // re-delivery of what we already have
+    if (unchanged && syncDirty) {               // our unsynced edits are ahead of an unchanged cloud: keep them and push
+      gSynced = true; if (!baseHash) baseHash = rhash; syncPersist();
+      pushToCloud(); setTimeout(guideMaybeStart, 0); return;
+    }
+    adoptRemote(data, {});
+  }
+
   function pushToCloud() {
-    if (!cloudEnabled || isApplyingRemoteUpdate || !auth.currentUser) return;
-    // Firestore rejects any field valued `undefined`; round-tripping through
-    // JSON strips those defensively rather than risking a write failure.
-    var payload = JSON.parse(JSON.stringify(state));
-    db.collection("users").doc(auth.currentUser.uid).set(payload).catch(function (err) {
-      console.error("Cloud sync failed (will retry once back online):", err);
+    if (!cloudEnabled || isApplyingRemoteUpdate || !auth || !auth.currentUser) return;
+    if (!gSynced || !baseKnown) return;         // never write before the first server snapshot has been applied
+    if (auth.currentUser.uid !== syncUid) return;
+    if (baseKnown === "exists" && !syncDirty && !explicitPending) return;
+    if (pushRunning) { pushAgain = true; return; }
+    pushRunning = true; clearTimeout(retryTimer);
+    var seq = saveSeq, ref = db.collection("users").doc(syncUid), wrote = null, conflict = null, refused = null;
+    db.runTransaction(function (tx) {
+      wrote = null; conflict = null; refused = null;
+      return tx.get(ref).then(function (snap) {
+        var cloud = snap.exists ? snap.data() : null, cRev = cloud ? metaRev(cloud) : 0;
+        if (cloud && (baseKnown !== "exists" || cRev > baseRev || (baseHash && cRev === baseRev && hashData(cloud) !== baseHash))) { conflict = cloud; return; }
+        var bad = baseKnown === "exists" && !explicitPending ? shrinkCheck(state) : null;
+        if (bad) { refused = bad; return; }
+        // Firestore rejects any field valued `undefined`; the JSON round trip strips those defensively.
+        var payload = JSON.parse(JSON.stringify(state)), rev = Math.max(cRev, baseRev) + 1;
+        payload.meta = { rev: rev, savedAt: new Date().toISOString(), deviceId: deviceId(), writer: getSessionId() };
+        wrote = { rev: rev, payload: payload }; inflightRev = rev;
+        tx.set(ref, payload);
+      });
+    }).then(function () {
+      pushRunning = false; retryDelay = 4000;
+      if (conflict) adoptRemote(conflict, { conflict: true });
+      else if (refused) onShrinkRefused(refused);
+      else if (wrote) onPushed(wrote, seq);
+      if (pushAgain) { pushAgain = false; pushToCloud(); }
+    }).catch(function (err) {
+      pushRunning = false; pushAgain = false; inflightRev = 0;
+      try { console.error("Cloud sync failed (will retry):", err); } catch (e) {}
+      schedulePushRetry();
+    });
+  }
+  function schedulePushRetry() {
+    clearTimeout(retryTimer);
+    retryTimer = setTimeout(pushToCloud, retryDelay);
+    retryDelay = Math.min(retryDelay * 2, 120000);
+  }
+  window.addEventListener("online", function () { retryDelay = 4000; pushToCloud(); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") pushToCloud(); });
+
+  function onPushed(wrote, seq) {
+    baseRev = wrote.rev; baseKnown = "exists"; baseHash = lastEchoRev === wrote.rev ? lastEchoHash : ""; explicitPending = false;
+    lastCounts = countsOf(wrote.payload); lastSyncedJson = jsonNoMeta(wrote.payload);
+    syncNoticeClear("shrink");
+    cloudDailyMaybe(state); // a brand-new account has no adopted snapshot, so its first push is where the day's cloud copy starts
+    if (saveSeq === seq) { // nothing changed while the write was in flight
+      syncDirty = false;
+      state.meta = normalizeMeta(wrote.payload.meta);
+      lastSavedJson = JSON.stringify(state); lsSet(STORAGE_KEY, lastSavedJson);
+    }
+    syncPersist();
+  }
+
+  function onShrinkRefused(bad) {
+    try { if (lastSyncedJson) histSnap("last-synced", JSON.parse(lastSyncedJson)); } catch (e) {}
+    histSnap("blocked", state, { minGapMs: 600000 });
+    var what = bad.map(function (b) { return b.key + " " + b.from + " → " + b.to; }).join(", ");
+    syncNotice("shrink", "Not synced: this device now has far fewer records (" + what + "). Your cloud copy is unchanged and this version is saved in Version history.", [
+      { label: "Restore previous", fn: restorePreviousSynced },
+      { label: "Sync anyway", fn: function () { explicitPending = true; pushToCloud(); } }
+    ], "alert");
+  }
+  function restorePreviousSynced() {
+    var h = lastSyncedJson ? hashData(JSON.parse(lastSyncedJson)) : "", e = null;
+    for (var i = 0; i < histMem.length; i++) if (histMem[i].hash === h) { e = histMem[i]; break; }
+    if (!e) { openHistoryFromNotice(); return; }
+    confirmRestoreVersion(e);
+  }
+
+  /* ----- replace everything (restore / reset) as an explicit user action: snapshot first, then the normal save ----- */
+  function replaceStateExplicit(next, kind, hasGuide) {
+    histSnap(kind, state);
+    var keepGuide = state.ui.guide;
+    state = next;
+    if (!hasGuide) state.ui.guide = keepGuide; // an older backup / reset never re-runs or clears the first-run guide flag
+    assignCategorySlots();
+    save({ explicit: true }); renderAll();
+  }
+
+  /* ----- backup reminders ----- */
+  function noteBackupDownloaded() { lsSet(BACKUP_KEY, String(Date.now())); }
+  function backupRefMs() {
+    var t = +lsGet(BACKUP_KEY) || 0; if (t) return t;
+    var s = +lsGet(BACKUP_SEEN_KEY) || 0; if (!s) { s = Date.now(); lsSet(BACKUP_SEEN_KEY, String(s)); }
+    return s;
+  }
+  function backupAgoText() {
+    var t = +lsGet(BACKUP_KEY) || 0; if (!t) return "never";
+    var d = Math.floor((Date.now() - t) / 864e5);
+    return d <= 0 ? "today" : d === 1 ? "yesterday" : d + " days ago";
+  }
+  function backupReminderDue() {
+    if (Date.now() - backupRefMs() < 14 * 864e5) return false;
+    var sn = +lsGet(BACKUP_SNOOZE_KEY) || 0;
+    return !(sn && Date.now() - sn < 7 * 864e5);
+  }
+  function backupRecent() { var t = +lsGet(BACKUP_KEY) || 0; return !!t && Date.now() - t < 864e5; }
+  // Before a destructive action: offer a backup download if none was taken in the last 24 hours.
+  function backupGate(next) {
+    if (backupRecent()) { next(); return; }
+    var html = '<div class="modal-head"><h3>Download a backup first?</h3></div>';
+    html += '<p style="font-size:14.5px;color:var(--ink-2);margin:0 0 18px">You have not downloaded a backup in the last 24 hours. It takes a second and gives you a copy outside the app.</p>';
+    html += '<button type="button" class="btn primary" data-bg-yes>Download backup, then continue</button>';
+    html += '<button type="button" class="btn plain" style="margin-top:10px" data-bg-skip>Continue without a backup</button>';
+    html += '<button type="button" class="btn plain" style="margin-top:10px" data-bg-no>Cancel</button>';
+    openModal(html);
+    document.querySelector("[data-bg-yes]").addEventListener("click", function () { exportBackup(); closeModal(); next(); });
+    document.querySelector("[data-bg-skip]").addEventListener("click", function () { closeModal(); next(); });
+    document.querySelector("[data-bg-no]").addEventListener("click", closeModal);
+  }
+
+  /* ---------- Settings > Version history (sub-page, same pattern as Navigation) ---------- */
+  var HIST_KIND_TEXT = { daily: "First open today", synced: "Cloud copy when opened", auto: "Hourly while editing", conflict: "Kept after a sync conflict", blocked: "Held back: far fewer records", "last-synced": "Last synced copy", "before-restore": "Before a restore", "before-reset": "Before a reset", "before-sync": "Before a smaller version arrived", cloud: "Cloud daily snapshot" };
+  function fmtWhen(iso) {
+    var d = new Date(iso); if (isNaN(d)) return String(iso);
+    return d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" }) + ", " + d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  }
+  function fmtDayOnly(day) { var d = new Date(day + "T12:00:00"); return isNaN(d) ? day : d.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" }); }
+  function fmtLatest(s) { if (!s) return "none"; var d = new Date(s + "T12:00:00"); return isNaN(d) ? s : d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }); }
+  function countsLine(c) {
+    c = c || {};
+    return (c.transactions || 0) + " transactions · " + (c.recurring || 0) + " recurring · " + (c.loans || 0) + " loans · " + (c.goals || 0) + " goals · " + (c.cards || 0) + " cards" + (c.latest ? " · latest " + fmtLatest(c.latest) : "");
+  }
+  function histWhen(e) { return e.cloud ? fmtDayOnly(e.day) + (e.at && e.at.length > 10 ? ", " + new Date(e.at).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) : "") : fmtWhen(e.at); }
+
+  function openHistoryPage() {
+    settingsView = "history"; histExpanded = "";
+    document.getElementById("appbar-title").textContent = "Version history";
+    document.getElementById("appbar-sub").textContent = "Settings";
+    loadCloudHist();
+    renderSettings(); scrollTop0();
+    var b = document.getElementById("hist-back"); if (b) b.focus({ preventScroll: true });
+  }
+  function closeHistoryPage() {
+    if (settingsView !== "history") return;
+    settingsView = "main";
+    setHeader("settings");
+    renderSettings(); scrollTop0();
+    var b = document.getElementById("hist-open"); if (b) b.focus({ preventScroll: true });
+  }
+  function openHistoryFromNotice() { if (homeIsOpen()) closeHome(); if (!onSettings()) openSettingsPage(); openHistoryPage(); }
+
+  function histItemHtml(e) {
+    var open = histExpanded === e.id, cur = countsOf(state), c = e.counts || {};
+    var h = '<li class="vh-item" data-vh="' + escapeAttr(e.id) + '"><div class="vh-top"><span class="vh-when">' + escapeHtml(histWhen(e)) + '</span><span class="vh-kind">' + escapeHtml(HIST_KIND_TEXT[e.kind] || "Saved") + '</span></div>';
+    h += '<div class="vh-counts">' + escapeHtml(countsLine(c)) + '</div>';
+    if (open) {
+      h += '<table class="vh-detail" aria-label="Counts in this version compared with now"><thead><tr><th></th><th>This version</th><th>Now</th></tr></thead><tbody>';
+      [["transactions", "Transactions"], ["recurring", "Recurring"], ["loans", "Loans"], ["goals", "Goals"], ["cards", "Cards"]].forEach(function (r) {
+        var d = cur[r[0]] - (c[r[0]] || 0); // now compared with this version
+        h += '<tr><th scope="row">' + r[1] + '</th><td>' + (c[r[0]] || 0) + '</td><td>' + cur[r[0]] + (d ? ' <small class="' + (d < 0 ? "vh-down" : "vh-up") + '">(' + (d > 0 ? "+" : "") + d + ')</small>' : "") + '</td></tr>';
+      });
+      h += '<tr><th scope="row">Latest transaction</th><td>' + escapeHtml(fmtLatest(c.latest)) + '</td><td>' + escapeHtml(fmtLatest(cur.latest)) + '</td></tr></tbody></table>';
+    }
+    var nm = escapeAttr(histWhen(e));
+    h += '<div class="vh-acts"><button type="button" class="btn plain vh-btn" data-vh-preview="' + escapeAttr(e.id) + '" aria-expanded="' + (open ? "true" : "false") + '" aria-label="Preview counts for ' + nm + '">' + (open ? "Hide counts" : "Preview counts") + '</button>';
+    h += '<button type="button" class="btn plain vh-btn" data-vh-restore="' + escapeAttr(e.id) + '" aria-label="Restore the version from ' + nm + '">Restore this version</button></div></li>';
+    return h;
+  }
+
+  function renderHistoryPage() {
+    var html = '<button type="button" class="nav-back" id="hist-back" aria-label="Back to Settings">' + icon("chevron", "chevron-flip") + '<span>Settings</span></button>';
+    html += '<div class="card"><h2>Version history</h2>';
+    html += '<p class="footnote" style="margin-top:0">Earlier copies of your data, kept as a safety net. Restoring one saves your current data here first, so nothing is lost either way.</p>';
+    html += '<p class="vh-backup" id="vh-backup-line">Last backup downloaded: ' + escapeHtml(backupAgoText()) + '</p>';
+    html += '<button type="button" class="btn primary" id="hist-download">' + icon("download", "") + ' Download backup now</button>';
+    html += '</div>';
+    html += '<div class="card"><h2>On this device</h2>';
+    html += histMem.length ? '<ul class="vh-list" id="vh-local">' + histMem.map(histItemHtml).join("") + '</ul>' : '<p class="footnote" style="margin:0">Nothing saved yet. A copy is kept when you first open the app each day and about once an hour while you edit.</p>';
+    html += '</div>';
+    html += '<div class="card"><h2>In the cloud (daily)</h2>';
+    if (cloudHist.status === "loading") html += '<p class="footnote" style="margin:0">Loading…</p>';
+    else if (cloudHist.status === "off") html += '<p class="footnote" style="margin:0">Sign in to see the daily cloud copies. They are kept for 14 days.</p>';
+    else if (cloudHist.status === "error") html += '<p class="footnote" style="margin:0">Daily cloud copies are not available yet. Your data is still saved normally, and the copies on this device above keep working.</p>';
+    else if (!cloudHist.items.length) html += '<p class="footnote" style="margin:0">No daily cloud copies yet. One is saved the first time the app opens each day (14 days are kept).</p>';
+    else html += '<ul class="vh-list" id="vh-cloud">' + cloudHist.items.map(histItemHtml).join("") + '</ul>';
+    html += '</div><div class="sr-live" id="hist-live" role="status" aria-live="polite"></div>';
+    var el = document.getElementById("tab-settings");
+    el.innerHTML = html;
+    document.getElementById("hist-back").addEventListener("click", closeHistoryPage);
+    document.getElementById("hist-download").addEventListener("click", function () {
+      exportBackup();
+      document.getElementById("vh-backup-line").textContent = "Last backup downloaded: " + backupAgoText();
+      document.getElementById("hist-live").textContent = "Backup downloaded";
     });
   }
 
+  document.addEventListener("click", function (ev) {
+    if (settingsView !== "history") return;
+    var p = ev.target.closest("[data-vh-preview]"), r = ev.target.closest("[data-vh-restore]");
+    if (p) { var id = p.getAttribute("data-vh-preview"); histExpanded = histExpanded === id ? "" : id; renderSettings(); var again = document.querySelector('[data-vh-preview="' + id + '"]'); if (again) again.focus({ preventScroll: true }); }
+    else if (r) { var e = histFind(r.getAttribute("data-vh-restore")); if (e) confirmRestoreVersion(e); }
+  });
+
+  function confirmRestoreVersion(e) {
+    var c = e.counts || {}, cur = countsOf(state);
+    var html = '<div class="modal-head"><h3>Restore this version?</h3></div>';
+    html += '<p style="font-size:14.5px;color:var(--ink-2);margin:0 0 8px">Your current data (' + cur.transactions + ' transactions) is saved to Version history first. Then the version from <b>' + escapeHtml(histWhen(e)) + '</b> (' + (c.transactions || 0) + ' transactions) replaces it and syncs to your other devices.</p>';
+    html += '<button type="button" class="btn primary" style="margin-top:12px" data-vh-yes>Restore this version</button>';
+    html += '<button type="button" class="btn plain" style="margin-top:10px" data-vh-no>Cancel</button>';
+    openModal(html);
+    document.querySelector("[data-vh-no]").addEventListener("click", closeModal);
+    document.querySelector("[data-vh-yes]").addEventListener("click", function () {
+      closeModal();
+      var parsed;
+      try { parsed = JSON.parse(e.json); } catch (err) { showMessage("That saved version could not be read."); return; }
+      replaceStateExplicit(normalizeState(parsed), "before-restore", !!(parsed.ui && parsed.ui.guide));
+      syncNotice("restored", "Restored the version from " + histWhen(e) + ". Your previous data is in Version history.", [], "status", 7000);
+    });
+  }
+
+  /* ----- Home: gentle reminder after 14 days without a downloaded backup ----- */
+  function renderHomeBackupNote() {
+    var el = document.getElementById("home-backup"); if (!el) return;
+    if (!backupReminderDue()) { el.hidden = true; el.innerHTML = ""; return; }
+    var d = Math.floor((Date.now() - backupRefMs()) / 864e5);
+    el.hidden = false;
+    el.innerHTML = '<span class="hb-text">It has been ' + d + ' days since your last backup. Save a copy outside the app?</span><span class="hb-acts"><button type="button" class="hb-btn" data-hb="download">Download</button><button type="button" class="hb-btn" data-hb="later">Not now</button></span>';
+  }
+  document.getElementById("home-backup").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-hb]"); if (!b) return;
+    if (b.getAttribute("data-hb") === "download") exportBackup(); else lsSet(BACKUP_SNOOZE_KEY, String(Date.now()));
+    renderHomeBackupNote();
+  });
+
   function startSync(uid) {
     stopSync();
-    unsubscribeSnapshot = db.collection("users").doc(uid).onSnapshot(function (snap) {
-      if (snap.metadata.hasPendingWrites) return; // our own optimistic write echoing back
-      var data = snap.data();
-      if (!data) { gSynced = true; pushToCloud(); setTimeout(guideMaybeStart, 0); return; } // brand-new account, seed the cloud doc
-      isApplyingRemoteUpdate = true;
-      state = normalizeState(data);
-      gSynced = true;
-      // A category-slot migration inside normalizeState only clears slots -
-      // it doesn't reassign them, so a synced device needs this to avoid
-      // showing every category as colorless "Other" until its next edit.
-      var slotsChanged = assignCategorySlots();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      applyAccentColor();
-      renderAll();
-      isApplyingRemoteUpdate = false;
-      if (slotsChanged) save();
-      setTimeout(guideMaybeStart, 0);
-    }, function (err) {
+    if (syncUid !== uid) { syncUid = uid; baseRev = 0; baseKnown = ""; baseHash = ""; syncDirty = false; lastCounts = null; syncPersist(); }
+    unsubscribeSnapshot = db.collection("users").doc(uid).onSnapshot(onCloudSnapshot, function (err) {
       console.error("Cloud sync listener error:", err);
     });
   }
 
   function stopSync() {
     if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+    gSynced = false; clearTimeout(retryTimer); // a new sign-in must wait for its own first server snapshot before writing
   }
 
   function showLockScreen(mode) {
@@ -2155,7 +2686,9 @@
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db = firebase.firestore();
-    db.enablePersistence({ synchronizeTabs: true }).catch(function () {});
+    // No offline persistence on purpose: its on-disk cache served stale documents as the first snapshot and replayed old queued
+    // writes on reconnect, both of which could overwrite newer cloud data. Offline edits live in localStorage and are pushed (through
+    // the conflict check) once the first server snapshot is in.
 
     auth.onAuthStateChanged(function (user) {
       if (user) {
@@ -3192,6 +3725,7 @@
     if (e.key !== "Escape") return;
     if (document.getElementById("modal-overlay").classList.contains("open")) closeModal();
     else if (onSettings() && settingsView === "nav") closeNavPage();
+    else if (onSettings() && settingsView === "history") closeHistoryPage();
   });
 
   /* Custom confirm dialog — window.confirm() is blocked inside a sandboxed iframe
@@ -6180,6 +6714,7 @@
 
   function renderSettings() {
     if (settingsView === "nav") return renderNavPage();
+    if (settingsView === "history") return renderHistoryPage();
     var html = '';
 
     html += '<div class="card"><h2>Currency</h2><select id="currency-select">';
@@ -6221,8 +6756,13 @@
     html += '<p class="footnote" style="margin-top:0">Get a notification when a fixed bill or subscription is due within 2 days. Only fires while this tab or app is open on this device — it won\'t wake your phone in the background.</p>';
     html += '</div>';
 
+    html += '<div class="card"><h2>Version history</h2>';
+    html += '<button type="button" class="nav-open" id="hist-open"><span class="nav-open-text"><span class="nav-open-title">Version history</span><span class="nav-open-hint">' + histMem.length + ' saved on this device. Restore an earlier copy of your data.</span></span>' + icon("chevron") + '</button>';
+    html += '</div>';
+
     html += '<div class="card"><h2>Backup</h2>';
     html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">A local backup is still worth keeping occasionally as a second copy. Tap below to download it, then use your phone’s share sheet or the Files app to save it into Google Drive.</p>';
+    html += '<p class="footnote" style="margin-top:0;margin-bottom:12px">Last backup downloaded: ' + escapeHtml(backupAgoText()) + '.</p>';
     html += '<button class="btn primary" id="export-backup" style="margin-bottom:10px">' + icon("download", "") + ' Save Backup (JSON)</button>';
     html += '<button class="btn plain" id="import-backup">Restore from Backup</button>';
     html += '<input type="file" id="import-backup-file" accept="application/json,.json" style="display:none" />';
@@ -6243,6 +6783,7 @@
 
     document.getElementById("open-calc").addEventListener("click", function () { openCalculator(); });
     document.getElementById("nav-open").addEventListener("click", openNavPage);
+    document.getElementById("hist-open").addEventListener("click", openHistoryPage);
     document.getElementById("currency-select").addEventListener("change", function (e) {
       state.settings.currency = e.target.value;
       save(); renderAll();
@@ -6299,10 +6840,10 @@
     document.getElementById("export-csv").addEventListener("click", exportCSV);
     document.getElementById("export-report").addEventListener("click", exportReport);
     document.getElementById("reset-data").addEventListener("click", function () {
-      confirmAction("Reset all data? This cannot be undone.", "Reset Everything", function () {
-        var keepGuide = state.ui.guide;
-        state = defaultState(); state.ui.guide = keepGuide; // starting over never re-runs the first-run guide
-        save(); renderAll();
+      backupGate(function () {
+        confirmAction("Reset all data? Your current data is saved to Version history first.", "Reset Everything", function () {
+          replaceStateExplicit(defaultState(), "before-reset", false); // starting over never re-runs the first-run guide
+        });
       });
     });
   }
@@ -6396,6 +6937,7 @@
   }
 
   function exportBackup() {
+    noteBackupDownloaded();
     saveFile("finance-tracker-backup.json", JSON.stringify(state, null, 2), "application/json");
   }
 
@@ -6722,12 +7264,11 @@
         showMessage("That file doesn't look like a Finance Tracker backup.");
         return;
       }
-      confirmAction("Restore this backup? It will replace all data currently in the app.", "Restore", function () {
-        var keepGuide = state.ui.guide;
-        state = normalizeState(parsed);
-        if (!(parsed.ui && parsed.ui.guide)) state.ui.guide = keepGuide; // an older backup does not carry the flag
-        save();
-        renderAll();
+      backupGate(function () {
+        confirmAction("Restore this backup? It will replace all data currently in the app (a copy is saved to Version history first).", "Restore", function () {
+          var hasGuide = !!(parsed.ui && parsed.ui.guide); // an older backup does not carry the guide flag
+          replaceStateExplicit(normalizeState(parsed), "before-restore", hasGuide);
+        });
       });
     };
     reader.readAsText(file);
@@ -7390,6 +7931,7 @@
     document.getElementById("hc-money").innerHTML = homeMoneyHtml();
     document.getElementById("hc-lists").innerHTML = homeListsHtml();
     ["money", "lists"].forEach(function (k) { document.getElementById("hc-" + k).classList.toggle("last", !homeFirst && currentSpace === k); });
+    renderHomeBackupNote();
   }
   function openHome() {
     if (homeIsOpen()) return;
