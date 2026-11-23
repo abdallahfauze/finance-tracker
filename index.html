@@ -1701,6 +1701,12 @@
   .g-pill[hidden] { display: none; }
   .guide :focus-visible, .g-pill:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   @media (prefers-reduced-motion: reduce) { .g-spot { animation: none; } }
+  /* Phones/tablets: iOS Safari zooms the whole page whenever a field with a font
+     smaller than 16px gets focus, and it stays zoomed afterwards. Keep every
+     text-entry control at 16px on touch screens so that never triggers. */
+  @media (pointer: coarse) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]), select, textarea { font-size: 16px !important; }
+  }
 </style>
 
 <svg width="0" height="0" style="position:absolute">
@@ -1970,6 +1976,23 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
+<script>
+/* Safety net for iOS zoom: if the page ends up zoomed in after a field loses
+   focus, briefly cap the scale so the browser snaps back to fit-to-width. */
+(function () {
+  var vp = document.querySelector('meta[name="viewport"]');
+  if (!vp || !window.visualViewport) return;
+  var base = vp.getAttribute("content");
+  document.addEventListener("focusout", function () {
+    setTimeout(function () {
+      if (window.visualViewport.scale > 1.02) {
+        vp.setAttribute("content", base + ", maximum-scale=1");
+        setTimeout(function () { vp.setAttribute("content", base); }, 300);
+      }
+    }, 150);
+  });
+})();
+</script>
 <script>
 (function () {
   "use strict";
