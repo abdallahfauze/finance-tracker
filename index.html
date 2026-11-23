@@ -285,15 +285,15 @@
   /* The floating add button (and calculator) sit above the dial: dial top is
      ~74px up, the + is 64px tall, so the last rows need ~190px to scroll clear.
      */
-  main { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; touch-action: pan-y; padding: 16px 16px calc(192px + env(safe-area-inset-bottom)); }
-  section.tab { display: none; touch-action: pan-y; }
+  main { flex: 1; overflow-y: auto; overflow-x: hidden; position: relative; touch-action: pan-y pinch-zoom; padding: 16px 16px calc(192px + env(safe-area-inset-bottom)); }
+  section.tab { display: none; touch-action: pan-y pinch-zoom; }
   section.tab.active { display: block; }
   /* Page slide (dial taps, swipes, Settings): the incoming page is lifted out of
      the flow beside the current one and both are translated together. */
   section.tab.peek { display: block; position: absolute; left: 16px; right: 16px; }
   section.tab.sliding { will-change: transform; }
   section.tab.anim { transition: transform .3s cubic-bezier(.22,.9,.25,1); }
-  .month-picker, .forecast-scroll { touch-action: pan-x pan-y; }
+  .month-picker, .forecast-scroll { touch-action: pan-x pan-y pinch-zoom; }
   @media (prefers-reduced-motion: reduce) { section.tab.anim { transition: none; } }
 
   .card {
@@ -1196,7 +1196,7 @@
   .todo-act svg { width: 18px; height: 18px; }
   .todo-act.l { background: var(--good); justify-content: flex-start; }
   .todo-act.r { background: var(--warning); justify-content: flex-end; color: #1d1405; }
-  .todo-item { position: relative; background: var(--page); border-radius: 20px; box-shadow: var(--soft-raise-sm); padding: 12px 8px 12px 12px; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; }
+  .todo-item { position: relative; background: var(--page); border-radius: 20px; box-shadow: var(--soft-raise-sm); padding: 12px 8px 12px 12px; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; cursor: grab; }
   .todo-item.dragging { transition: none; cursor: grabbing; }
   .todo-item.settle { transition: transform .22s cubic-bezier(.22,.9,.25,1); }
   .todo-item.flash { animation: todo-flash 1.4s ease; }
@@ -1321,7 +1321,7 @@
   .gro-grp.shut .gro-gbody { display: none; }
   .gro-itw { position: relative; overflow: hidden; border-top: 1px solid var(--soft-groove); }
   .gro-del { position: absolute; right: 0; top: 0; bottom: 0; width: 84px; border: none; background: var(--critical); color: #fff; font-size: 12.5px; font-weight: 800; cursor: pointer; font-family: inherit; }
-  .gro-itc { position: relative; background: var(--page); display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 12px; transform: translateX(0); transition: transform .22s ease; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+  .gro-itc { position: relative; background: var(--page); display: flex; align-items: center; gap: 8px; padding: 10px 10px 10px 12px; transform: translateX(0); transition: transform .22s ease; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; }
   .gro-itc.open { transform: translateX(-84px); }
   .gro-itc.drag { transition: none; }
   .gro-itc.flash { animation: gro-flash 1.4s ease; }
